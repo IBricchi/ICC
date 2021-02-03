@@ -1,0 +1,11 @@
+FROM ubuntu:xenial
+
+RUN apt-get update
+
+RUN apt-get -y install g++ gdb make dos2unix git \
+        bison flex \
+        g++-mips-linux-gnu gdb-multiarch \
+        qemu
+
+RUN rm -rf /var/lib/apt/lists/* && \
+    apt clean
