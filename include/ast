@@ -1,1 +1,3 @@
+#pragma once
+
 #include "ast_src/ast.hpp"
