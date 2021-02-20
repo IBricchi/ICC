@@ -1,3 +1,8 @@
 #pragma once
 
 #include "ast_src/ast.hpp"
+#include "ast_src/constant.hpp"
+#include "ast_src/declaration.hpp"
+#include "ast_src/expression.hpp"
+#include "ast_src/statement.hpp"
+#include "ast_src/structure.hpp"
