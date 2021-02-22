@@ -11,7 +11,7 @@ public:
     {}
 
     std::string compile() override{
-        return "Not Yet Implemented.\n";
+        throw std::runtime_error("Not Implemented Yet.\n");
     }
 
     ~AST_Return(){
@@ -19,6 +19,8 @@ public:
     }
 }
 
+// Represents both standalone if-statements and combined if-else statements
+// Does not yet support if-elseif-else style statements
 class AST_IfStmt : AST {
 private:
     AST* cond;
@@ -32,7 +34,7 @@ public:
     {}
 
     std::string compile() override{
-        return "Not Implemented Yet.\n";
+        throw std::runtime_error("Not Implemented Yet.\n");
     }
 
     ~AST_IfStmt(){

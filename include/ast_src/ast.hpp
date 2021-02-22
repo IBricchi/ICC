@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <stdexcept>
 
 class AST;
 

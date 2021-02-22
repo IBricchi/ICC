@@ -36,7 +36,7 @@ public:
     {}
 
     std::string compile() override{
-        return "Not Implemented Yet.\n";
+        throw std::runtime_error("Not Implemented Yet.\n");
     }
 
     ~AST_FunDeclaration(){
@@ -55,7 +55,7 @@ public:
     {}
 
     std::string compile() override{
-        return "Not Implemented Yet.\n";
+        throw std::runtime_error("Not Implemented Yet.\n");
     }
 
     ~AST_VarDeclaration(){
