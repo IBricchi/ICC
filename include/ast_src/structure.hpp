@@ -55,7 +55,7 @@ public:
     {}
 
     std::string compile() override{
-        return "Not Implemented Yet.\n"
+        return "Not Implemented Yet.\n";
     }
 
     ~AST_VarDeclaration(){
