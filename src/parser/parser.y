@@ -1,9 +1,8 @@
 %code requires{
   #include <ast>
-
   #include <cassert>
 
-  extern const Program *g_root; // A way of getting the AST out
+  extern const AST *g_root; // A way of getting the AST out
 
   //! This is to fix problems when generating C++
   // We are declaring the functions provided by Flex, so
@@ -171,9 +170,9 @@ PRIMARY : T_CONST_NUM
 
 %%
 
-const Program *g_root; // Definition of variable (to match declaration earlier)
+const AST *g_root; // Definition of variable (to match declaration earlier)
 
-const Program *parseAST()
+const AST *parseAST()
 {
   g_root=0;
   yyparse();
