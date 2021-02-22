@@ -49,13 +49,13 @@
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY CALL PRIMARY // Expressions
 
-%start ROOT
+%start PROGRAM
 
 %%
 
 // grammar
 
-PROGRAM : SEQUENCE { $$ = $1; }
+PROGRAM : SEQUENCE { g_root = $1; }
         ;
 
 SEQUENCE : DECLARATION SEQUENCE { $$ = new AST_Sequence($1, $2); }

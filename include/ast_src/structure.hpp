@@ -1,64 +1,72 @@
 #pragma once
 
+#include <string>
 #include "ast.hpp"
 
-class AST_Sequence : AST{
+/*
+    Base class for ast structures.
+    Used for dynamic_cast functionality.
+*/
+class AST_Structure
+    : public AST
+{
+public:
+    virtual ~AST_Structure() = 0;
+};
+
+class AST_Sequence
+    : public AST_Structure
+{
 private:
     AST* first;
     AST* second;
+
 public:
-    AST_Sequence(AST* _first, AST* _second):
-        first(_first),
-        second(_second)
-    {}
+    AST_Sequence(AST* _first, AST* _second);
 
-    std::string compile() override{
-        std::string out = first->compile();
-        out += second->compile();
-    }
+    void compile(std::ostream &assemblyOut) override;
 
-    ~AST_Sequence(){
-        delete first;
-        delete second;
-    }
+    ~AST_Sequence();
 };
 
-class AST_FunDeclaration : AST {
+class AST_FunDeclaration 
+    : public AST_Structure 
+{
 private:
     std::string type;
     std::string name;
     AST* body;
+
 public:
-    AST_FunDeclaration(std::string _type, std::string _name, AST* _body):
-        type(_type),
-        name(_name),
-        body(_body)
-    {}
+    /*
+        See AST_VarDeclaration below: Need to solve similar problem.
+    */
+    AST_FunDeclaration(std::string _type, std::string _name, AST* _body);
 
-    std::string compile() override{
-        throw std::runtime_error("Not Implemented Yet.\n");
-    }
+    void compile(std::ostream &assemblyOut) override;
 
-    ~AST_FunDeclaration(){
-        delete body;
-    }
+    ~AST_FunDeclaration();
 };
 
-class AST_VarDeclaration : AST {
+class AST_VarDeclaration 
+    : public AST_Structure {
 private:
-    std::string type;
+    std::string type; // replace with Enum?
     AST* assignment;
+
 public:
-    AST_VarDeclaration(std::string _type, AST* _assignment):
-        type(_type),
-        assignment(_assignment)
-    {}
+    /*
+        Need some kind of central 'bindings' data structure that can be used to 
+        get the corresponding value from a variable name.
 
-    std::string compile() override{
-        throw std::runtime_error("Not Implemented Yet.\n");
-    }
+        Maybe use unordered_map<string, int> where string is the variable name
+        and int is the memory address. Then can use "lw $someReg memAddress($fp)"
+        to allocate variables at right position relative to frame pointer.
+        Double check exact location in lecture 10.
+    */
+    AST_VarDeclaration(std::string _type, AST* _assignment);
 
-    ~AST_VarDeclaration(){
-        delete assignment; 
-    }
+    void compile(std::ostream &assemblyOut) override;
+
+    ~AST_VarDeclaration();
 }

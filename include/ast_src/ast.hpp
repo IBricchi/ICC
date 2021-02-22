@@ -7,10 +7,22 @@
 #include <map>
 #include <stdexcept>
 
-class AST;
-
+/*
+    Base class for all ast nodes
+*/
 class AST
 {
+protected:
+    AST();
+
 public:
-    virtual std::string compile() = 0;
+    virtual ~AST() = 0;
+    /*
+        Writes MIPS assembly to output stream.
+    */
+    virtual void compile(std::ostream &assemblyOut) {
+        throw std::runtime_error("Not implemented yet by child class.\n");
+    }
 };
+AST::~AST(){
+}
