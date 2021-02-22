@@ -42,6 +42,8 @@ extern "C" int fileno(FILE *stream);
 "*"       { return T_STAR; }
 "/"       { return T_SLASH_F; }
 "%"       { return T_PERCENT; }
+"!"       { return T_BANG; }
+"~"       { return T_NOT; }
 
 [a-zA-Z]([a-zA-Z1-9_])* { yylval.STR = new std::string(yytext); return T_IDENTIFIER; }
 [0-9]+                  { yylval.INT = strtoi(yytext, 0); return T_NUMBER; }
