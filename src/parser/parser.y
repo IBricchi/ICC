@@ -56,16 +56,16 @@
 
 PROGRAM : SEQUENCE { $$ = $1; }
 
-SEQUENCE : DECLARATION SEQUENCE { $$ = CreateSequence($1, $2); }
+SEQUENCE : DECLARATION SEQUENCE { $$ = new AST_Sequence($1, $2); }
          | DECLARATION          {$$ = $1; }
 
 DECLARATION : FUN_DECLARATION { $$ = $1; }
             | VAR_DECLARATION { $$ = $1; }
             | STATEMENT       { $$ = $1; }
 
-FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK { $$ = CreateFunDeclaration("int", $2, $5); }
+FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK { $$ = new AST_FunDeclaration("int", $2, $5); }
 
-VAR_DECLARATION : T_INT ASSIGNMENT { $$ = CreateVarDeclaration($); }
+VAR_DECLARATION : T_INT ASSIGNMENT { $$ = new AST_VarDeclaration("int", $2); }
 
 STATEMENT : EXPRESSION_STMT
           | RETURN_STMT
