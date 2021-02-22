@@ -21,7 +21,7 @@ public:
         delete first;
         delete second;
     }
-}
+};
 
 class AST_FunDeclaration : AST {
 private:
@@ -42,7 +42,7 @@ public:
     ~AST_FunDeclaration(){
         delete body;
     }
-}
+};
 
 class AST_VarDeclaration : AST {
 private:
