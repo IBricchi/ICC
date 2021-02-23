@@ -58,11 +58,18 @@ public:
     /*
         Need some kind of central 'bindings' data structure that can be used to 
         get the corresponding value from a variable name.
+        Could pass this as some kind of 'context' object to the compile() call. For example,
+        database applications tend to use this a lot. Otherwise, could use the fact that
+        C++ uses abstract classes instead of simple interfaces and hence ass these as attributes
+        into the top level AST class. This would work as all classes are derived from that class
+        and hence could access its attributes.
 
         Maybe use unordered_map<string, int> where string is the variable name
-        and int is the memory address. Then can use "lw $someReg memAddress($fp)"
+        and int is the memory address. Then can use "sw $someReg memAddress($fp)"
         to allocate variables at right position relative to frame pointer.
         Double check exact location in lecture 10.
+
+        Corresponding object is AST_Variable in primitive.hpp.
     */
     AST_VarDeclaration(std::string _type, AST* _assignment);
 

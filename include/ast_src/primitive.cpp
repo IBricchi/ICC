@@ -23,6 +23,8 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
     /*
         Need to load variable from memory into 'unused' register.
         Somehow need to make this register known to caller of this method so that can be used in future assembly.
+        If using register, how do we know when a register becomes free again without doing an initial register
+        allocation?
 
         See AST_VarDeclaration declaration in structure.hpp for more context.
     */

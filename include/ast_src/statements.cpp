@@ -22,6 +22,7 @@ void AST_Return::compile(std::ostream &assemblyOut) {
         // Need to first evaluate expression (likely multiple assembly lines)
         // and then somehow put the final value into register $v0.
         // How do we find out what the final value is? Keep track of last register that we stored something in? Some sort of context?
+        // Can probably use the same idea as for loading variables into registers and then using that register in future assembly.
 
         throw std::runtime_error("Not Implemented Yet.\n");
     }
