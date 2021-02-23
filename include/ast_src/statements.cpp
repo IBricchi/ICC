@@ -3,7 +3,7 @@
 AST_Statement::~AST_Statement() {
 }
 
-AST_Return::AST_Return(AST* _expr = nullptr) :
+AST_Return::AST_Return(AST* _expr) :
     expr(_expr)
 {}
 
@@ -30,7 +30,7 @@ AST_Return::~AST_Return() {
     delete expr;
 }
 
-AST_IfStmt::AST_IfStmt(AST* _cond, AST* _then, AST* _other = nullptr) :
+AST_IfStmt::AST_IfStmt(AST* _cond, AST* _then, AST* _other) :
     cond(_cond),
     then(_then),
     other(_other)
