@@ -2,19 +2,8 @@
 
 #include "ast.hpp"
 
-/*
-    Base class for ast expressions.
-    Used for dynamic_cast functionality.
-*/
-class AST_Expression
-    : public AST
-{
-public:
-    virtual ~AST_Expression() = 0;
-};
-
 class AST_FunctionCall
-    : public AST_Expression
+    : public AST
 {
 private:
     AST* name;

@@ -1,8 +1,5 @@
 #include "statement.hpp"
 
-AST_Statement::~AST_Statement() {
-}
-
 AST_Return::AST_Return(AST* _expr) :
     expr(_expr)
 {}

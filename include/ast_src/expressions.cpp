@@ -1,4 +1,18 @@
 #include "expression.hpp"
 
-AST_Expression::~AST_Expression() {
+AST_FunctionCall::AST_FunctionCall(AST* _name) :
+    name(_name)
+{}
+
+void AST_FunctionCall::compile(std::ostream &assemblyOut, Frame &frame) {
+    /*
+        need to create new Frame object and initialise it with the current frame object
+        as the parent frame
+    */
+
+    throw std::runtime_error("Not Implemented Yet.\n");
+}
+
+AST_FunctionCall::~AST_FunctionCall() {
+    delete name;
 }

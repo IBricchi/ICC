@@ -1,8 +1,5 @@
 #include "primitive.hpp"
 
-AST_Constant::~AST_Primitive() {
-}
-
 AST_Constant::AST_Constant(AST* _value) :
     value(_value)
 {}

@@ -3,19 +3,8 @@
 #include <string>
 #include "ast.hpp"
 
-/*
-    Base class for ast structures.
-    Used for dynamic_cast functionality.
-*/
-class AST_Structure
-    : public AST
-{
-public:
-    virtual ~AST_Structure() = 0;
-};
-
 class AST_Sequence
-    : public AST_Structure
+    : public AST
 {
 private:
     AST* first;
@@ -29,8 +18,8 @@ public:
     ~AST_Sequence();
 };
 
-class AST_FunDeclaration 
-    : public AST_Structure 
+class AST_FunDeclaration
+    : public AST
 {
 private:
     std::string type;
@@ -48,8 +37,9 @@ public:
     ~AST_FunDeclaration();
 };
 
-class AST_VarDeclaration 
-    : public AST_Structure {
+class AST_VarDeclaration
+    : public AST
+{
 private:
     std::string type; // replace with Enum?
     AST* assignment;

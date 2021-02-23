@@ -2,19 +2,8 @@
 
 #include "ast.hpp"
 
-/*
-    Base class for ast primitives.
-    Used for dynamic_cast functionality.
-*/
-class AST_Primitive
-    : public AST
-{
-public:
-    virtual ~AST_Primitive() = 0;
-};
-
 class AST_Constant
-    : public AST_Primitive 
+    : public AST
 {
 private:
     AST* value;
@@ -28,7 +17,7 @@ public:
 }
 
 class AST_Variable
-    : public AST_Primitive 
+    : public AST
 {
 private:
     AST* name;

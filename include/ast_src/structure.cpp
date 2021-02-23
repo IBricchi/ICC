@@ -1,8 +1,5 @@
 #include "structure.hpp"
 
-AST_Structure::~AST_Structure() {
-}
-
 AST_Sequence::AST_Sequence(AST* _first, AST* _second) :
     first(_first),
     second(_second)
