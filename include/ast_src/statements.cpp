@@ -12,12 +12,6 @@ void AST_Return::compile(std::ostream &assemblyOut) {
         // return 0 by default
         assemblyOut << "addiu $v0, $0, $0" << endl;
     }
-    else if (dynamic_cast<AST_Constant*>(expr)) {
-        // can return directly
-        assemblyOut << "addiu $v0, $0, ";
-        expr->compile(assemblyOut);
-        assemblyOut << std::endl;
-    }
     else {
         // Need to first evaluate expression (likely multiple assembly lines)
         // and then somehow put the final value into register $v0.
