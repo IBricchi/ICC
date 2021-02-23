@@ -9,7 +9,8 @@ int main()
         // parse the AST
         AST *ast = parseAST();
 
-        std::string mipsAssembly = ast->compile();
+        // write MIPS assembly to stdout
+        ast->compile(std:cout);
 
     }
     
