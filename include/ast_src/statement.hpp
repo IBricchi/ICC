@@ -28,7 +28,7 @@ private:
 public:
     AST_Return(AST* _expr = nullptr);
 
-    void compile(std::ostream &assemblyOut) override;
+    void compile(std::ostream &assemblyOut, Frame &frame) override;
 
     ~AST_Return();
 }
@@ -48,7 +48,7 @@ private:
 public:
     AST_IfStmt(AST* _cond, AST* _then, AST* _other = nullptr);
 
-    void compile(std::ostream &assemblyOut) override;
+    void compile(std::ostream &assemblyOut, Frame &frame) override;
 
     ~AST_IfStmt();
 }

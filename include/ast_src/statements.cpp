@@ -7,7 +7,7 @@ AST_Return::AST_Return(AST* _expr) :
     expr(_expr)
 {}
 
-void AST_Return::compile(std::ostream &assemblyOut) {
+void AST_Return::compile(std::ostream &assemblyOut, Frame &frame) {
     if (expr == nullptr) {
         // return 0 by default
         assemblyOut << "addiu $v0, $0, $0" << endl;
@@ -36,7 +36,7 @@ AST_IfStmt::AST_IfStmt(AST* _cond, AST* _then, AST* _other) :
     other(_other)
 {}
 
-void AST_IfStmt::compile(std::ostream &assemblyOut) {
+void AST_IfStmt::compile(std::ostream &assemblyOut, Frame &frame) {
     throw std::runtime_error("Not Implemented Yet.\n");
 }
 

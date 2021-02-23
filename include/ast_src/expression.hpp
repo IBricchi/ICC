@@ -31,7 +31,7 @@ private:
 public:
     AST_FunctionCall(AST* _name);
 
-    void compile(std::ostream &assemblyOut) override;
+    void compile(std::ostream &assemblyOut, Frame &frame) override;
 
     ~AST_FunctionCall();
 }

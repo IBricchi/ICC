@@ -19,12 +19,11 @@ protected:
 
 public:
     virtual ~AST() = 0;
+    
     /*
         Writes MIPS assembly to output stream.
     */
-    virtual void compile(std::ostream &assemblyOut) {
-        throw std::runtime_error("Not implemented yet by child class.\n");
-    }
+    virtual void compile(std::ostream &assemblyOut, Frame &frame); 
 };
 
 /*

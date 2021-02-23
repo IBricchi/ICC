@@ -3,6 +3,10 @@
 AST::~AST() {
 }
 
+void AST::compile(std::ostream &assemblyOut, Frame &frame) {
+    throw std::runtime_error("Not implemented yet by child class.\n");
+}
+
 Frame::Frame(Frame _parentFrame) :
     parentFrame(_parentFrame)
 {}

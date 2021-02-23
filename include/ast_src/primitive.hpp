@@ -22,7 +22,7 @@ private:
 public:
     AST_Constant(AST* _value);
 
-    void compile(std::ostream &assemblyOut) override;
+    void compile(std::ostream &assemblyOut, Frame &frame) override;
 
     ~AST_Constant();
 }
@@ -36,7 +36,7 @@ private:
 public:
     AST_Variable(AST* _name);
 
-    void compile(std::ostream &assemblyOut) override;
+    void compile(std::ostream &assemblyOut, Frame &frame) override;
 
     ~AST_Variable();
 }
