@@ -1,7 +1,7 @@
 #include "expression.hpp"
 
-AST_FunctionCall::AST_FunctionCall(AST* _name) :
-    name(_name)
+AST_FunctionCall::AST_FunctionCall(string* _functionName) :
+    functionName(_functionName)
 {}
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut, Frame &frame) {

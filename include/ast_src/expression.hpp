@@ -6,7 +6,7 @@ class AST_FunctionCall
     : public AST
 {
 private:
-    AST* name;
+    string* functionName;
     /*
         Need some data structure for arguments:
 
@@ -18,7 +18,7 @@ private:
     */
 
 public:
-    AST_FunctionCall(AST* _name);
+    AST_FunctionCall(string* _functionName);
 
     void compile(std::ostream &assemblyOut, Frame &frame) override;
 
