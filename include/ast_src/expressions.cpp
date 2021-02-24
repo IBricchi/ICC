@@ -35,3 +35,26 @@ void AST_BinOp::generateFrames(Frame* _frame){
 void AST_BinOp::compile(std::ostream &assemblyOut) {
     throw std::runtime_error("Not Implemented Yet.\n");
 }
+
+AST_BinOp::~AST_BinOp(){
+    delete left;
+    delete right;
+}
+
+AST_UnOp::AST_UnOp(AST_UnOp::Type _type, AST* _operand):
+    type(_type),
+    operand(_operand)
+{}
+
+void AST_UnOp::generateFrames(Frame* _frame){
+    frame = _frame;
+    operand->generateFrames(_frame);
+}
+
+void AST_UnOp::compile(std::ostream &assemblyOut) {
+    throw std::runtime_error("Not Implemented Yet.\n");
+}
+
+AST_UnOp::~AST_UnOp(){
+    delete operand;
+}

@@ -154,10 +154,10 @@ FACTOR : UNARY T_STAR FACTOR    { $$ = new AST_BinOp(AST_BinOp::Type::STAR, $1, 
        | UNARY                  { $$ = $1; }
        ;
 
-UNARY : T_BANG UNARY
-      | T_NOT UNARY
-      | T_MINUS UNARY 
-      | T_PLUS UNARY  
+UNARY : T_BANG UNARY  { $$ = new AST_UnOp(AST_UnOp::Type::BANG, $2); }
+      | T_NOT UNARY   { $$ = new AST_UnOp(AST_UnOp::Type::NOT, $2); }
+      | T_MINUS UNARY { $$ = new AST_UnOp(AST_UnOp::Type::MINUS, $2); }
+      | T_PLUS UNARY  { $$ = new AST_UnOp(AST_UnOp::Type::PLUS, $2); }
       | CALL          { $$ = $1; }
       ;
 

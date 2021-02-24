@@ -70,3 +70,23 @@ public:
 
     ~AST_BinOp();
 };
+
+class AST_UnOp
+    : public AST
+{
+public:
+    // same reasoning as for the bin op
+    enum struct Type{
+        BANG, NOT, MINUS, PLUS
+    };
+private:
+    Type type;
+    AST* operand;
+public:
+    AST_UnOp(Type _type, AST* _operand);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
+
+    ~AST_UnOp();
+};
