@@ -1,5 +1,23 @@
 #include "expression.hpp"
 
+AST_VarAssign::AST_VarAssign(std::string& _name, AST* _expr):
+    name(_name),
+    expr(_expr)
+{}
+
+void AST_VarAssign::generateFrames(Frame* _frame){
+    frame = _frame;
+    expr->generateFrames(_frame);
+}
+
+void AST_VarAssign::compile(std::ostream &assemblyOut){
+    throw std::runtime_error("Not Implemented Yet.\n");
+}
+
+AST_VarAssign::~AST_VarAssign(){
+    delete expr;
+}
+
 template <class ...TArgs>
 AST_FunctionCall::AST_FunctionCall(std::string _functionName, TArgs... _args):
     functionName(_functionName)

@@ -2,6 +2,28 @@
 
 #include "ast.hpp"
 
+/*
+    Var assign should change the value of the variable
+    It evaluates the expression expr and assigns the value
+    to the variabel with a given name
+    We don't need to error check existance of variable name since it should always
+    Exists as provided by the specs
+*/
+class AST_VarAssign
+    : public AST
+{
+private:
+    std::string name;
+    AST* expr;
+public:
+    AST_VarAssign(std::string& _name, AST* _expr);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
+
+    ~AST_VarAssign();
+};
+
 class AST_FunctionCall
     : public AST
 {

@@ -102,7 +102,7 @@ BLOCK : T_BRACE_L T_BRACE_R          { $$ = new AST_Block(); }
 EXPRESSION : ASSIGNMENT { $$ = $1; }
            ;
 
-ASSIGNMENT : T_IDENTIFIER T_EQUAL LOGIC_OR      
+ASSIGNMENT : T_IDENTIFIER T_EQUAL LOGIC_OR { $$ = new AST_VarAssign($1, $3); }    
            | LOGIC_OR                      { $$ = $1; }
            ;
 
