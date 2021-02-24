@@ -21,9 +21,9 @@
 
 %token T_INT
 
-%token T_IDENTIFIER
+%token <STR> T_IDENTIFIER
 
-%token T_CONST_INT
+%token <INT> T_CONST_INT
 
 %token T_RETURN T_IF T_ELSE T_WHILE
 
@@ -49,6 +49,9 @@
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY CALL PRIMARY // Expressions
 
+%nonassoc NO_ELSE
+%nonassoc T_ELSE
+
 %start PROGRAM
 
 %%
@@ -70,8 +73,8 @@ DECLARATION : FUN_DECLARATION { $$ = $1; }
 FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK { $$ = new AST_FunDeclaration("int", $2, $5); }
                 ;
 
-VAR_DECLARATION : T_INT T_IDENTIFIER                               { $$ = new AST_VarDeclaration("int", $2); }
-                | T_INT T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON { $$ = new AST_VarDeclaration("int", $2, $5); }
+VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                  { $$ = new AST_VarDeclaration("int", $2); }
+                | T_INT T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON { $$ = new AST_VarDeclaration("int", $2, $4); }
                 ;
 
 STATEMENT : EXPRESSION_STMT { $$ = $1; }
@@ -85,10 +88,10 @@ EXPRESSION_STMT : EXPRESSION T_SEMI_COLON { $$ = $1; }
                 ;
 
 RETURN_STMT : T_RETURN T_SEMI_COLON            { $$ = new AST_Return(); }
-            | T_RETURN EXPRESSION T_SEMI_COLON { $$ = new AST_Return($1); }
+            | T_RETURN EXPRESSION T_SEMI_COLON { $$ = new AST_Return($2); }
             ;
 
-IF_STMT : T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT                  { $$ = new AST_IfStmt($3, $5); }
+IF_STMT : T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT    %prec NO_ELSE { $$ = new AST_IfStmt($3, $5); }
         | T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT T_ELSE STATEMENT { $$ = new AST_IfStmt($3, $5, $7); }
         ;
 
