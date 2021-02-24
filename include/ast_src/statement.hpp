@@ -17,14 +17,36 @@ private:
 public:
     AST_Return(AST* _expr = nullptr);
 
-    void compile(std::ostream &assemblyOut, Frame &frame) override;
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
 
     ~AST_Return();
-}
+};
 
 /*
     Represents both standalone if-statements and combined if-else statements
     Does not yet support if-elseif-else style statements
+    
+    Actually it does
+    if(){
+    }
+    else if(){
+    }
+    else{
+    }
+
+    can be re-written as
+
+    if(){
+    }
+    else{
+        if(){
+        }
+        else{
+        }
+    }
+
+    Except since the if-else is a single statement, the expression doesn't need curly brakets
 */
 class AST_IfStmt
     : public AST
@@ -37,7 +59,8 @@ private:
 public:
     AST_IfStmt(AST* _cond, AST* _then, AST* _other = nullptr);
 
-    void compile(std::ostream &assemblyOut, Frame &frame) override;
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
 
     ~AST_IfStmt();
 }

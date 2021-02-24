@@ -29,7 +29,9 @@ AST_FunDeclaration::AST_FunDeclaration(std::string _type, std::string _name, AST
 
 void AST_FunDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
-    body->generateFrames(new Frame(_frame));
+    // we don't need to generate a new frame here since the block statement that will be the body
+    // will handle generating the new frame
+    body->generateFrames(_frame);
 }
 
 void AST_FunDeclaration::compile(std::ostream &assemblyOut) {

@@ -4,10 +4,15 @@ AST_Return::AST_Return(AST* _expr) :
     expr(_expr)
 {}
 
-void AST_Return::compile(std::ostream &assemblyOut, Frame &frame) {
+void AST_Return::generateFrames(Frame* _frame){
+    frame = _frame;
+    expr->generateFrames(_frame);
+}
+
+void AST_Return::compile(std::ostream &assemblyOut) {
     if (expr == nullptr) {
         // return 0 by default
-        assemblyOut << "addiu $v0, $0, $0" << endl;
+        assemblyOut << "addiu $v0, $0, $0" << std::endl;
     }
     else {
         // Need to first evaluate expression (likely multiple assembly lines)
@@ -33,7 +38,16 @@ AST_IfStmt::AST_IfStmt(AST* _cond, AST* _then, AST* _other) :
     other(_other)
 {}
 
-void AST_IfStmt::compile(std::ostream &assemblyOut, Frame &frame) {
+void AST_IfStmt::generateFrames(Frame* _frame){
+    frame = _frame;
+    cond->generateFrames(_frame);
+    // here we don't need to generate a new frame since that is only required if the statement after the if
+    // is a block statement, which will itself handle the new frame generation
+    then->generateFrames(_frame);
+    other->generateFrames(_frame);
+}
+
+void AST_IfStmt::compile(std::ostream &assemblyOut) {
     throw std::runtime_error("Not Implemented Yet.\n");
 }
 
