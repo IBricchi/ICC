@@ -46,6 +46,11 @@ protected:
     std::unordered_map<std::string, int> variableBindings;
 
     /*
+        information about current memory occupied by variables
+    */
+   int memOcc = 0;
+
+    /*
         Pointer to the parent frame.
         Enables us to access variables from parent frame if they have not been defined locally.
     */
@@ -69,5 +74,5 @@ public:
         Does not check if variable already exists.
         If the variable name already exists, it will be overriden.
     */
-    void addVariable(const std::string &variableName, int memAddress);
+    void addVariable(const std::string &variableName, int byteSize);
 };

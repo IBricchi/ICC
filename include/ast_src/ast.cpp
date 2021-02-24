@@ -28,6 +28,7 @@ int Frame::getMemoryAddress(const std::string &variableName) {
     return parentFrame->getMemoryAddress(variableName);
 }
 
-void Frame::addVariable(const std::string &variableName, int memAddress) {
-    variableBindings[variableName] = memAddress;
+void Frame::addVariable(const std::string &variableName, int byteSize) {
+    variableBindings[variableName] = memOcc;
+    memOcc += byteSize;
 }

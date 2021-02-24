@@ -52,6 +52,8 @@ void AST_VarDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
     if(expr != nullptr)
         expr->generateFrames(_frame);
+    
+    _frame->addVariable(name, 4);
 }
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
