@@ -11,9 +11,10 @@ int main()
         // parse the AST
         AST *ast = parseAST();
 
+        std::cout << "Parsing Works!" << std::endl;
+
         // write MIPS assembly to stdout
         ast->compile(std::cout);
-
     }
     
     // general error catcher
