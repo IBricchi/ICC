@@ -15,15 +15,21 @@ class Frame;
 class AST
 {
 protected:
+    Frame* frame;
     AST();
 
 public:
     virtual ~AST() = 0;
     
     /*
+        Generates frames and creates context for them
+    */
+    virtual void generateFrames(Frame* _frame = nullptr);
+    
+    /*
         Writes MIPS assembly to output stream.
     */
-    virtual void compile(std::ostream &assemblyOut, Frame &frame); 
+    virtual void compile(std::ostream &assemblyOut);
 };
 
 /*
@@ -37,7 +43,7 @@ protected:
         map of variable names to memory address relative to frame pointer
         retrieve using 'lw ${destinationReg} {variableBindings[variableName]}($fp)'
     */ 
-    unordered_map<std::string, int> variableBindings;
+    std::unordered_map<std::string, int> variableBindings;
 
     /*
         Pointer to the parent frame.
@@ -46,7 +52,7 @@ protected:
     Frame *parentFrame;
 
 public:
-    Frame(Frame _parentFrame = nullptr);
+    Frame(Frame* _parentFrame = nullptr);
 
     ~Frame();
 
@@ -57,11 +63,11 @@ public:
         Expects the variable to exist in its current frame or one of its parent frame:
         Does not do error checking.
     */
-    int getMemoryAddress(const string &variableName);
+    int getMemoryAddress(const std::string &variableName);
 
     /*
         Does not check if variable already exists.
         If the variable name already exists, it will be overriden.
     */
-    void addVariable(string variableName, int memAddress);
+    void addVariable(const std::string &variableName, int memAddress);
 };

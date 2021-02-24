@@ -1,13 +1,14 @@
 #include "ast.hpp"
 
-AST::~AST() {
+void AST::generateFrames(Frame* _frame){
+    throw std::runtime_error("Note implemented yet by child class.\n");
 }
 
-void AST::compile(std::ostream &assemblyOut, Frame &frame) {
+void AST::compile(std::ostream &assemblyOut) {
     throw std::runtime_error("Not implemented yet by child class.\n");
 }
 
-Frame::Frame(Frame _parentFrame) :
+Frame::Frame(Frame* _parentFrame) :
     parentFrame(_parentFrame)
 {}
 
@@ -15,7 +16,7 @@ Frame::~Frame() {
     delete parentFrame;
 }
 
-int Frame::getMemoryAddress(const string &variableName) {
+int Frame::getMemoryAddress(const std::string &variableName) {
     // first try to find in current frame
     auto variableBinding = variableBindings.find(variableName);
     if (variableBinding != variableBindings.end()) {
@@ -27,6 +28,6 @@ int Frame::getMemoryAddress(const string &variableName) {
     return parentFrame->getMemoryAddress(variableName);
 }
 
-void Frame::addVariable(string variableName, int memAddress) {
+void Frame::addVariable(const std::string &variableName, int memAddress) {
     variableBindings[variableName] = memAddress;
 }
