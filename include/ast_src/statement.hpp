@@ -85,3 +85,24 @@ public:
 
     ~AST_WhileStmt();
 };
+
+/*
+    Block ast node is a statment that can be used to create a new scope.
+    It's required by functions, and is very sueful for if statement and loops to put togetehr
+    many instructions together
+*/
+
+class AST_Block
+    : public AST
+{
+private:
+    AST* body;
+
+public:
+    AST_Block(AST* _block = nullptr);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream& assemblyOut) override;
+
+    ~AST_Block();
+}
