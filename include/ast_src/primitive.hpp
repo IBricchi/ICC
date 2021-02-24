@@ -2,14 +2,38 @@
 
 #include "ast.hpp"
 
+/*
+    C only supports limited constants so each one will get it's own node
+*/
+class AST_ConstInt
+    : public AST
+{
+private:
+    int value;
+public:
+    AST_ConstInt(int _value);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
+    
+    // doesn't need a destructor since it holds not pointers
+};
+
+// I'm not sure what the idea of this constant is, having the value be an
+// AST node
+// I made the above cosntant for only int because I wanted to finish the parser
+// file and wasn't really sure what was going on with this one
+// the way I see it I think each constant should have it's own node type
+// c only supports some numeric types, and c style strings, you can't make a constant
+// of a custom type, so we can explicitly handle all types individually
+// otherwise I'm not sure how we would manage to compiile the values to assembly
+// I've left the class here cause I'm not sure if I just misunderstood what it was
+// meant to do
 class AST_Constant
     : public AST
 {
 private:
-    AST* value; // shouldn't this be a constant like int or something
-                // might be useful to just leave it as an int for the first part of the compiler
-                // and then as we go along implmenent it differently
-                // maybe replace it with AST_C_INT or somethign
+    AST* value;
 
 public:
     AST_Constant(AST* _value);
@@ -21,26 +45,23 @@ public:
 };
 
 /*
-    Not sure if we need this. 
-    Maybe best to replace with an "AST_Assignment" class that represents this
-    with attributes "identifier/name" and "value", both of type string.
-    This would make it easier to differentiate between declarations and assignments.
+   I made the change you suggested by adding an assignment AST node
+   This node will be created if an identifier acting as a variable is
+   detected in the parser
 
-    I agree, I made a change so that the AST_VarDeclare is different from the AST_VarAssign
-    This AST_variable should only be to reprsent a variable in an expression for example
-    Also shouldn't name be a string, not sure why it's an AST* at the moment
+   I cahnged it to use a string as the name instead of an AST node
 */
 class AST_Variable
     : public AST
 {
 private:
-    AST* name;
+    std::string name;
 
 public:
-    AST_Variable(AST* _name);
+    AST_Variable(std::string& _name);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;
 
-    ~AST_Variable();
+    // doesn't ened a destrcutor as there are no pointers
 };

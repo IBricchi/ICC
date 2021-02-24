@@ -1,5 +1,17 @@
 #include "primitive.hpp"
 
+AST_ConstInt::AST_ConstInt(int _value):
+    value(_value)
+{}
+
+void AST_ConstInt::generateFrames(Frame* _frame){
+    frame = _frame;
+}
+
+void AST_ConstInt::compile(std::ostream &assemblyOut){
+    throw std::runtime_error("Not implemented Yet.\n");
+}
+
 AST_Constant::AST_Constant(AST* _value) :
     value(_value)
 {}
@@ -17,7 +29,7 @@ AST_Constant::~AST_Constant() {
      delete value;
  }
 
-AST_Variable::AST_Variable(AST* _name) :
+AST_Variable::AST_Variable(std::string& _name) :
     name(_name)
 {}
 
@@ -33,10 +45,10 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
         allocation?
 
         See AST_VarDeclaration declaration in structure.hpp for more context.
+
+        IBricchi:
+        ---------
+        I think this problem is sovled using the frames we just implemented
     */
     throw std::runtime_error("Not Implemented Yet.\n");
-}
-
-AST_Variable::~AST_Variable() {
-    delete name;
 }

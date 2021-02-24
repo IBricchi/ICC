@@ -23,7 +23,7 @@
 
 %token T_IDENTIFIER
 
-%token T_CONST_NUM
+%token T_CONST_INT
 
 %token T_RETURN T_IF T_ELSE T_WHILE
 
@@ -165,8 +165,8 @@ CALL : T_IDENTIFIER T_BRACK_L T_BRACK_R { $$ = new AST_FunctionCall($1); }
      | PRIMARY                          { $$ = $1; }
      ;
 
-PRIMARY : T_CONST_NUM
-        | T_IDENTIFIER
+PRIMARY : T_CONST_INT                    { $$ = new AST_ConstInt($1); }
+        | T_IDENTIFIER                   { $$ = new AST_Variable($1); }
         | T_BRACK_L EXPRESSION T_BRACK_R { $$ = $2; }
         ;
 
