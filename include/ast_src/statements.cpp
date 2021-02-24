@@ -56,3 +56,19 @@ AST_IfStmt::~AST_IfStmt(){
     delete then;
     delete other;
 }
+
+AST_WhileStmt::AST_WhileStmt(AST* _cond, AST* _body):
+    cond(_cond),
+    body(_body)
+{}
+
+void AST_WhileStmt::generateFrames(Frame* _frame){
+    frame = _frame;
+    cond->generateFrames(_frame);
+    // we don't need a new frame here for the same reason we don't need one for the if statemnt
+    body->generateFrames(_frame);
+}
+
+void AST_WhileStmt::compile(std::ostream &assemblyOut){
+    throw std::runtime_error("Note Implemented Yet.\n");
+}

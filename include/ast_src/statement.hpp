@@ -64,3 +64,24 @@ public:
 
     ~AST_IfStmt();
 }
+
+/*
+    While statement
+    Typical while statement loops untill condition is false
+*/
+
+class AST_WhileStmt
+    : public AST
+{
+private:
+    AST* cond;
+    AST* body;
+
+public:
+    AST_WhileStmt(AST* _cond, AST* _body);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream& assemblyOut) override;
+
+    ~AST_WhileStmt();
+};
