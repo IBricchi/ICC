@@ -33,3 +33,40 @@ public:
 
     ~AST_FunctionCall();
 };
+
+/*
+    Binary operator acts on two inputs to produce a single output
+    This is the class for any * / % + - etc.
+*/
+
+class AST_BinOp
+    : public AST
+{
+public:
+    // the type is important to know instruction to print out in complie
+    // however we can treat everything else about the node the same since
+    // they all do exactly the same thing
+    enum struct Type{
+        LOGIC_OR,
+        LOGIC_AND,
+        BIT_OR,
+        BIT_XOR,
+        BIT_AND,
+        EQUAL_EQUAL, BANG_EQUAL,
+        LESS, LESS_EQUAL, GREATER, GREATER_EQUAL,
+        SHIFT_L, SHIFT_R,
+        PLUS, MINUS,
+        STAR, SLASH_F, PERCENT
+    };
+private:
+    Type type;
+    AST* left;
+    AST* right;
+public:
+    AST_BinOp(Type _type, AST* _left, AST* _right);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
+
+    ~AST_BinOp();
+};

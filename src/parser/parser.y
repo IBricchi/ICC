@@ -84,89 +84,90 @@ STATEMENT : EXPRESSION_STMT { $$ = $1; }
 EXPRESSION_STMT : EXPRESSION T_SEMI_COLON { $$ = $1; }
                 ;
 
-RETURN_STMT : T_RETURN T_SEMI_COLON { $$ = new AST_Return(); }
+RETURN_STMT : T_RETURN T_SEMI_COLON            { $$ = new AST_Return(); }
             | T_RETURN EXPRESSION T_SEMI_COLON { $$ = new AST_Return($1); }
             ;
 
-IF_STMT : T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT { $$ = new AST_IfStmt($3, $5); }
+IF_STMT : T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT                  { $$ = new AST_IfStmt($3, $5); }
         | T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT T_ELSE STATEMENT { $$ = new AST_IfStmt($3, $5, $7); }
         ;
 
 WHILE_STMT : T_WHILE T_BRACK_L EXPRESSION T_BRACK_R STATEMENT { $$ = new AST_WhileStmt($3, $5); }
            ;
 
-BLOCK : T_BRACE_L T_BRACE_R             { $$ = new AST_Block(); }
-      | T_BRACE_L SEQUENCE T_BRACE_R    { $$ = new AST_Block($2); }
+BLOCK : T_BRACE_L T_BRACE_R          { $$ = new AST_Block(); }
+      | T_BRACE_L SEQUENCE T_BRACE_R { $$ = new AST_Block($2); }
       ;
 
-EXPRESSION : ASSIGNMENT
+EXPRESSION : ASSIGNMENT { $$ = $1; }
            ;
 
-ASSIGNMENT : T_IDENTIFIER T_EQUAL LOGIC_OR
-           | LOGIC_OR
+ASSIGNMENT : T_IDENTIFIER T_EQUAL LOGIC_OR      
+           | LOGIC_OR                      { $$ = $1; }
            ;
 
-LOGIC_OR : LOGIC_AND T_OR_L LOGIC_OR
-         | LOGIC_AND
+LOGIC_OR : LOGIC_AND T_OR_L LOGIC_OR { $$ = new AST_BinOp(AST_BinOp::Type::LOGIC_OR, $1, $3); }
+         | LOGIC_AND                 { $$ = $1; }
          ;
 
-LOGIC_AND : BIT_OR T_AND_L LOGIC_AND
-          | BIT_OR
+LOGIC_AND : BIT_OR T_AND_L LOGIC_AND { $$ = new AST_BinOp(AST_BinOp::Type::LOGIC_AND, $1, $3); }
+          | BIT_OR                   { $$ = $1; }
           ;
 
-BIT_OR : BIT_XOR T_OR_B BIT_OR
-       | BIT_XOR
+BIT_OR : BIT_XOR T_OR_B BIT_OR { $$ = new AST_BinOp(AST_BinOp::Type::BIT_OR, $1, $3); }
+       | BIT_XOR               { $$ = $1; }
        ;
 
-BIT_XOR : BIT_AND T_XOR_B BIT_XOR
-        | BIT_AND
+BIT_XOR : BIT_AND T_XOR_B BIT_XOR { $$ = new AST_BinOp(AST_BinOp::Type::BIT_XOR, $1, $3); }
+        | BIT_AND                 { $$ = $1; }
         ;
 
-BIT_AND : EQUALITY T_AND_B BIT_AND
-        | EQUALITY
+BIT_AND : EQUALITY T_AND_B BIT_AND { $$ = new AST_BinOp(AST_BinOp::Type::BIT_AND, $1, $3); }
+        | EQUALITY                 { $$ = $1; }
         ;
 
-EQUALITY : COMPARISON T_EQUAL_EQUAL EQUALITY
-         | COMPARISON T_BANG_EQUAL EQUALITY
-         | COMPARISON
+EQUALITY : COMPARISON T_EQUAL_EQUAL EQUALITY { $$ = new AST_BinOp(AST_BinOp::Type::EQUAL_EQUAL, $1, $3); }
+         | COMPARISON T_BANG_EQUAL EQUALITY  { $$ = new AST_BinOp(AST_BinOp::Type::BANG_EQUAL, $1, $3); }
+         | COMPARISON                        { $$ = $1; }
          ;
 
-COMPARISON : BIT_SHIFT T_LESS COMPARISON
-           | BIT_SHIFT T_LESS_EQUAL COMPARISON
-           | BIT_SHIFT T_GREATER COMPARISON
-           | BIT_SHIFT T_GREATER_EQUAL COMPARISON
-           | BIT_SHIFT
+COMPARISON : BIT_SHIFT T_LESS COMPARISON          { $$ = new AST_BinOp(AST_BinOp::Type::LESS, $1, $3); }
+           | BIT_SHIFT T_LESS_EQUAL COMPARISON    { $$ = new AST_BinOp(AST_BinOp::Type::LESS_EQUAL, $1, $3); }
+           | BIT_SHIFT T_GREATER COMPARISON       { $$ = new AST_BinOp(AST_BinOp::Type::GREATER, $1, $3); }
+           | BIT_SHIFT T_GREATER_EQUAL COMPARISON { $$ = new AST_BinOp(AST_BinOp::Type::GREATER_EQUAL, $1, $3); }
+           | BIT_SHIFT                            { $$ = $1; }
            ;
 
-BIT_SHIFT : TERM T_SHIFT_L BIT_SHIFT
-          | TERM T_SHIFT_R BIT_SHIFT
-          | TERM
+BIT_SHIFT : TERM T_SHIFT_L BIT_SHIFT { $$ = new AST_BinOp(AST_BinOp::Type::SHIFT_L, $1, $3); }
+          | TERM T_SHIFT_R BIT_SHIFT { $$ = new AST_BinOp(AST_BinOp::Type::SHIFT_R, $1, $3); }
+          | TERM                     { $$ = $1; }
           ;
 
-TERM : FACTOR T_PLUS TERM
-     | FACTOR T_MINUS TERM
+TERM : FACTOR T_PLUS TERM  { $$ = new AST_BinOp(AST_BinOp::Type::PLUS, $1, $3); }
+     | FACTOR T_MINUS TERM { $$ = new AST_BinOp(AST_BinOp::Type::MINUS, $1, $3); }
+     | FACTOR              { $$ = $1; }
      ;
 
-FACTOR : UNARY T_STAR FACTOR
-       | UNARY T_SLASH_F FACTOR
-       | UNARY T_PERCENT FACTOR
-       | UNARY
+FACTOR : UNARY T_STAR FACTOR    { $$ = new AST_BinOp(AST_BinOp::Type::STAR, $1, $3); }
+       | UNARY T_SLASH_F FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::SLASH_F, $1, $3); }
+       | UNARY T_PERCENT FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::PERCENT, $1, $3); }
+       | UNARY                  { $$ = $1; }
        ;
 
 UNARY : T_BANG UNARY
       | T_NOT UNARY
-      | T_MINUS UNARY
-      | T_PLUS UNARY
-      | CALL
+      | T_MINUS UNARY 
+      | T_PLUS UNARY  
+      | CALL          { $$ = $1; }
       ;
 
-CALL : PRIMARY T_BRACK_L T_BRACK_R
-     | PRIMARY
+CALL : T_IDENTIFIER T_BRACK_L T_BRACK_R { $$ = new AST_FunctionCall($1); }
+     | PRIMARY                          { $$ = $1; }
      ;
 
 PRIMARY : T_CONST_NUM
         | T_IDENTIFIER
-        | T_BRACK_L EXPRESSION T_BRACK_R
+        | T_BRACK_L EXPRESSION T_BRACK_R { $$ = $2; }
         ;
 
 %%
