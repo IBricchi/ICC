@@ -21,9 +21,9 @@ AST_Sequence::~AST_Sequence(){
     delete second;
 }
 
-AST_FunDeclaration::AST_FunDeclaration(std::string _type, std::string _name, AST* _body) :
+AST_FunDeclaration::AST_FunDeclaration(std::string _type, std::string* _name, AST* _body) :
     type(_type),
-    name(_name),
+    name(*_name),
     body(_body)
 {}
 
@@ -42,9 +42,9 @@ AST_FunDeclaration::~AST_FunDeclaration() {
     delete body;
 }
 
-AST_VarDeclaration::AST_VarDeclaration(std::string _type, std::string _name, AST* _expr) :
+AST_VarDeclaration::AST_VarDeclaration(std::string _type, std::string* _name, AST* _expr) :
     type(_type),
-    name(_name),
+    name(*_name),
     expr(_expr)
 {}
 

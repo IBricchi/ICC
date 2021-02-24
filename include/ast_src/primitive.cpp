@@ -29,8 +29,8 @@ AST_Constant::~AST_Constant() {
      delete value;
  }
 
-AST_Variable::AST_Variable(std::string& _name) :
-    name(_name)
+AST_Variable::AST_Variable(std::string* _name) :
+    name(*_name)
 {}
 
 void AST_Variable::generateFrames(Frame* _frame){

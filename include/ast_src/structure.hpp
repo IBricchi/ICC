@@ -31,7 +31,7 @@ public:
     /*
         See AST_VarDeclaration below: Need to solve similar problem.
     */
-    AST_FunDeclaration(std::string _type, std::string _name, AST* _body);
+    AST_FunDeclaration(std::string _type, std::string* _name, AST* _body);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;
@@ -55,7 +55,7 @@ public:
     /*
         Corresponding object is AST_Variable in primitive.hpp.
     */
-    AST_VarDeclaration(std::string _type, std::string _name, AST* _expr = nullptr);
+    AST_VarDeclaration(std::string _type, std::string* _name, AST* _expr = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;

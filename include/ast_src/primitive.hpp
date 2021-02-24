@@ -58,7 +58,7 @@ private:
     std::string name;
 
 public:
-    AST_Variable(std::string& _name);
+    AST_Variable(std::string* _name);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;

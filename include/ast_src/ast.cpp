@@ -1,12 +1,14 @@
 #include "ast.hpp"
 
 void AST::generateFrames(Frame* _frame){
-    throw std::runtime_error("Note implemented yet by child class.\n");
+    throw std::runtime_error("Not implemented yet by child class.\n");
 }
 
 void AST::compile(std::ostream &assemblyOut) {
     throw std::runtime_error("Not implemented yet by child class.\n");
 }
+
+AST::~AST(){}
 
 Frame::Frame(Frame* _parentFrame) :
     parentFrame(_parentFrame)

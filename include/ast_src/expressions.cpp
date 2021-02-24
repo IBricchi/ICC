@@ -1,7 +1,7 @@
 #include "expression.hpp"
 
-AST_VarAssign::AST_VarAssign(std::string& _name, AST* _expr):
-    name(_name),
+AST_VarAssign::AST_VarAssign(std::string* _name, AST* _expr):
+    name(*_name),
     expr(_expr)
 {}
 
@@ -18,11 +18,18 @@ AST_VarAssign::~AST_VarAssign(){
     delete expr;
 }
 
-template <class ...TArgs>
-AST_FunctionCall::AST_FunctionCall(std::string _functionName, TArgs... _args):
-    functionName(_functionName)
+AST_FunctionCall::AST_FunctionCall(std::string* _functionName):
+    functionName(*_functionName)
 {
-    args = _args
+    args = {};
+    parity = 0;
+}
+
+template <class ...TArgs>
+AST_FunctionCall::AST_FunctionCall(std::string* _functionName, TArgs... _args):
+    functionName(*_functionName),
+    args{_args...}
+{
     parity = args.size();
 }
 

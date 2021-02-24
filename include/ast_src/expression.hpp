@@ -16,7 +16,7 @@ private:
     std::string name;
     AST* expr;
 public:
-    AST_VarAssign(std::string& _name, AST* _expr);
+    AST_VarAssign(std::string* _name, AST* _expr);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;
@@ -47,8 +47,10 @@ private:
     */
 
 public:
+    AST_FunctionCall(std::string* _functionName);
+
     template<class ...TArgs> 
-    AST_FunctionCall(std::string _functionName, TArgs... _params);
+    AST_FunctionCall(std::string* _functionName, TArgs... _params);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;

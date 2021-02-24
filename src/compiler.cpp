@@ -2,6 +2,8 @@
 #include <ast>
 #include <stdexcept>
 
+#include "parser/parser.tab.hpp"
+
 int main()
 {
     try {
@@ -10,7 +12,7 @@ int main()
         AST *ast = parseAST();
 
         // write MIPS assembly to stdout
-        ast->compile(std:cout);
+        ast->compile(std::cout);
 
     }
     

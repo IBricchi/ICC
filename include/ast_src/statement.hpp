@@ -63,7 +63,7 @@ public:
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_IfStmt();
-}
+};
 
 /*
     While statement
@@ -105,4 +105,4 @@ public:
     void compile(std::ostream& assemblyOut) override;
 
     ~AST_Block();
-}
+};

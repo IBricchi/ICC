@@ -16,10 +16,9 @@ class AST
 {
 protected:
     Frame* frame;
-    AST();
 
 public:
-    virtual ~AST() = 0;
+    virtual ~AST();
     
     /*
         Generates frames and creates context for them

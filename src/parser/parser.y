@@ -2,7 +2,7 @@
   #include <ast>
   #include <cassert>
 
-  extern const AST *g_root; // A way of getting the AST out
+  extern AST *g_root; // A way of getting the AST out
 
   //! This is to fix problems when generating C++
   // We are declaring the functions provided by Flex, so
@@ -14,7 +14,7 @@
 // Represents the value associated with any kind of
 // AST node.
 %union{
-  AST *NODE ;
+  AST* NODE ;
   int INT;
   std::string *STR;
 }
@@ -175,9 +175,9 @@ PRIMARY : T_CONST_INT                    { $$ = new AST_ConstInt($1); }
 
 %%
 
-const AST *g_root; // Definition of variable (to match declaration earlier)
+AST *g_root; // Definition of variable (to match declaration earlier)
 
-const AST *parseAST()
+AST *parseAST()
 {
   g_root=0;
   yyparse();
