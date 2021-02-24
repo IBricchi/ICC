@@ -44,14 +44,18 @@ class AST_VarDeclaration
 {
 private:
     std::string type; // Necessary? We don't expect errors so don't really care about types.
-    AST* assignment; // Should have attributes "identifier/name" and "value", both of type string
-    // Add "identifier" attribute of type string? That should match the "identifer" attribute of AST_Assignment.
+                      // It is necessary since as we add ne wtypes, we're going to have to manage diffrernt sized types
+                      // floats will be larger, strings will be even alrger etc.
+                      // the compiler will need to know this information
+    std::string name; // I replaced the parser from doing T_INT Asgignment to t_int t_identifer t_equal ...
+                      // That way we can treat variable definitions and assignments separately
+    AST* expr;
 
 public:
     /*
         Corresponding object is AST_Variable in primitive.hpp.
     */
-    AST_VarDeclaration(std::string _type, AST* _assignment);
+    AST_VarDeclaration(std::string _type, std::string _name, AST* _expr = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;

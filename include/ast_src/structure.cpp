@@ -40,14 +40,16 @@ AST_FunDeclaration::~AST_FunDeclaration() {
     delete body;
 }
 
-AST_VarDeclaration::AST_VarDeclaration(std::string _type, AST* _assignment) :
+AST_VarDeclaration::AST_VarDeclaration(std::string _type, std::string _name, AST* _expr) :
     type(_type),
-    assignment(_assignment)
+    name(_name),
+    expr(_expr)
 {}
 
 void AST_VarDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
-    assignment->generateFrames(_frame);
+    if(expr != nullptr)
+        expr->generateFrames(_frame);
 }
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
@@ -60,5 +62,6 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
 }
 
 AST_VarDeclaration::~AST_VarDeclaration() {
-    delete assignment; 
+    if(expr != nullptr)
+        delete expr; 
 }
