@@ -13,7 +13,8 @@ private:
 public:
     AST_Sequence(AST* _first, AST* _second);
 
-    void compile(std::ostream &assemblyOut, Frame &frame) override;
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
 
     ~AST_Sequence();
 };
@@ -32,7 +33,8 @@ public:
     */
     AST_FunDeclaration(std::string _type, std::string _name, AST* _body);
 
-    void compile(std::ostream &assemblyOut, Frame &frame) override;
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
 
     ~AST_FunDeclaration();
 };
@@ -51,7 +53,8 @@ public:
     */
     AST_VarDeclaration(std::string _type, AST* _assignment);
 
-    void compile(std::ostream &assemblyOut, Frame &frame) override;
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
 
     ~AST_VarDeclaration();
-}
+};
