@@ -16,6 +16,12 @@ public:
     ~AST_Constant();
 }
 
+/*
+    Not sure if we need this. 
+    Maybe best to replace with an "AST_Assignment" class that represents this
+    with attributes "identifier/name" and "value", both of type string.
+    This would make it easier to differentiate between declarations and assignments.
+*/
 class AST_Variable
     : public AST
 {

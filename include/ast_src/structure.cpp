@@ -38,6 +38,11 @@ AST_VarDeclaration::AST_VarDeclaration(std::string _type, AST* _assignment) :
 {}
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut, Frame &frame) {
+    /*
+        Need to add variable to current frame and assign a memory address to it.
+        Don't yet change the value stored in that memory address. This should be
+        handled by 'AST_Assignment'.
+    */
     throw std::runtime_error("Not Implemented Yet.\n");
 }
 
