@@ -12,23 +12,6 @@ void AST_ConstInt::compile(std::ostream &assemblyOut){
     throw std::runtime_error("AST_ConstInt: Not implemented Yet.\n");
 }
 
-AST_Constant::AST_Constant(AST* _value) :
-    value(_value)
-{}
-
-void AST_Constant::generateFrames(Frame* _frame){
-    frame = _frame;
-}
-
-void AST_Constant::compile(std::ostream &assemblyOut) {
-    // I don't think that will be enough for the assembly
-    assemblyOut << value;
-}
-
-AST_Constant::~AST_Constant() {
-     delete value;
- }
-
 AST_Variable::AST_Variable(std::string* _name) :
     name(*_name)
 {}
