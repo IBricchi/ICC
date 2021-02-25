@@ -93,7 +93,7 @@ void AST_Block::generateFrames(Frame* _frame){
 
 void AST_Block::compile(std::ostream &assemblyOut) {
     assemblyOut << "addiu $sp, $sp, -" << frame->getFrameSize() << std::endl;
-    assemblyOut << "sw $fp, " << frame->getFrameSize() << "($sp)" << std::endl;
+    assemblyOut << "sw $fp, " << frame->getFrameSize()-4 << "($sp)" << std::endl;
     assemblyOut << "move $fp, $sp" << std::endl;
     if (body != nullptr) {
         body->compile(assemblyOut);
