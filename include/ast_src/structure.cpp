@@ -31,15 +31,23 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
     // we don't need to generate a new frame here since the block statement that will be the body
     // will handle generating the new frame
-    body->generateFrames(_frame);
+    if (body != nullptr) {
+        body->generateFrames(_frame);
+    } 
 }
 
 void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("AST_FunDeclaration: Not Implemented Yet.\n");
+    if (body != nullptr) {
+        // create label
+        assemblyOut << name << ":" << std::endl;
+        body->compile(assemblyOut);
+    }
 }
 
 AST_FunDeclaration::~AST_FunDeclaration() {
-    delete body;
+    if (body != nullptr) {
+        delete body;
+    }
 }
 
 AST_VarDeclaration::AST_VarDeclaration(std::string _type, std::string* _name, AST* _expr) :
