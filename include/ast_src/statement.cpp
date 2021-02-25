@@ -13,19 +13,22 @@ void AST_Return::compile(std::ostream &assemblyOut) {
     if (expr == nullptr) {
         // return 0 by default
         assemblyOut << "addiu $v0, $0, $0" << std::endl;
-    }
-    else {
-        // Need to first evaluate expression (likely multiple assembly lines)
-        // and then somehow put the final value into register $v0.
-        // How do we find out what the final value is? Keep track of last register that we stored something in? Some sort of context?
-        // Can probably use the same idea as for loading variables into registers and then using that register in future assembly.
+    } else {
+        // evaluate expression
+        expr->compile(assemblyOut);
 
-        throw std::runtime_error("AST_Return: Not Implemented Yet.\n");
-    }
+        // load result of expression into register
+        assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
 
-    // Need to do stuff for ending function call.
-    // E.g. moving stack and frame pointers
-    // See lecture 10 for help
+        // return result of expression
+        assemblyOut << "move $v0, $t0" << std::endl;
+    }
+    
+    assemblyOut << "move $sp, $fp" << std::endl;
+    assemblyOut << "lw $fp, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
+    assemblyOut << "j $31" << std::endl;
+    assemblyOut << "nop" << std::endl;
 }
 
 AST_Return::~AST_Return() {
