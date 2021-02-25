@@ -74,4 +74,11 @@ public:
         If the variable name already exists, it will be overriden.
     */
     void addVariable(const std::string &variableName, int byteSize);
+
+    /*
+        Used for moving '$sp' pointer when creating new stack frame.
+
+        Stack frame must be doubleword (8 byte) aligned (MIPS ABI).
+    */
+    int getFrameSize();
 };

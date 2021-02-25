@@ -36,3 +36,10 @@ void Frame::addVariable(const std::string &variableName, int byteSize) {
     variableBindings[variableName] = memOcc;
     memOcc += byteSize;
 }
+
+int Frame::getFrameSize() {
+    // Trivial static implementation
+    
+    // Ensure that value is doubleword aligned
+    return (memOcc % 8 == 0) ? (memOcc + 25*8) : (memOcc + 25*8 + 4);
+}
