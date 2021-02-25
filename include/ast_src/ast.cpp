@@ -20,7 +20,7 @@ Frame::~Frame() {
     delete parentFrame;
 }
 
-int Frame::getMemoryAddress(const std::string &variableName) {
+int Frame::getMemoryAddress(const std::string &variableName) const {
     // first try to find in current frame
     auto variableBinding = variableBindings.find(variableName);
     if (variableBinding != variableBindings.end()) {
@@ -37,9 +37,13 @@ void Frame::addVariable(const std::string &variableName, int byteSize) {
     memOcc += byteSize;
 }
 
-int Frame::getFrameSize() {
+int Frame::getFrameSize() const {
     // Trivial static implementation
-    
+
     // Ensure that value is doubleword aligned
     return (memOcc % 8 == 0) ? (memOcc + 25*8) : (memOcc + 25*8 + 4);
+}
+
+int Frame::getMemOcc() const {
+    return memOcc;
 }

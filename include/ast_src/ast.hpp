@@ -37,17 +37,15 @@ public:
 */
 class Frame
 {
-protected:
+private:
     /* 
         map of variable names to memory address relative to frame pointer
         retrieve using 'lw ${destinationReg} {variableBindings[variableName]}($fp)'
     */ 
     std::unordered_map<std::string, int> variableBindings;
 
-    /*
-        information about current memory occupied by variables
-    */
-   int memOcc = 0;
+    // information about current memory occupied by variables
+    int memOcc = 0;
 
     /*
         Pointer to the parent frame.
@@ -56,6 +54,12 @@ protected:
     Frame *parentFrame;
 
 public:
+    /* 
+        Memory address where the last result is stored relative to the frame pointer.
+        For array, this points to beginning of the array.
+    */
+    int lastResultMemAddress;
+
     Frame(Frame* _parentFrame = nullptr);
 
     ~Frame();
@@ -67,7 +71,7 @@ public:
         Expects the variable to exist in its current frame or one of its parent frame:
         Does not do error checking.
     */
-    int getMemoryAddress(const std::string &variableName);
+    int getMemoryAddress(const std::string &variableName) const;
 
     /*
         Does not check if variable already exists.
@@ -80,5 +84,7 @@ public:
 
         Stack frame must be doubleword (8 byte) aligned (MIPS ABI).
     */
-    int getFrameSize();
+    int getFrameSize() const;
+
+    int getMemOcc() const;
 };
