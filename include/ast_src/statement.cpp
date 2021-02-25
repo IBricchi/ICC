@@ -20,7 +20,7 @@ void AST_Return::compile(std::ostream &assemblyOut) {
         // How do we find out what the final value is? Keep track of last register that we stored something in? Some sort of context?
         // Can probably use the same idea as for loading variables into registers and then using that register in future assembly.
 
-        throw std::runtime_error("Not Implemented Yet.\n");
+        throw std::runtime_error("AST_Return: Not Implemented Yet.\n");
     }
 
     // Need to do stuff for ending function call.
@@ -48,7 +48,7 @@ void AST_IfStmt::generateFrames(Frame* _frame){
 }
 
 void AST_IfStmt::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("Not Implemented Yet.\n");
+    throw std::runtime_error("AST_IfStmt: Not Implemented Yet.\n");
 }
 
 AST_IfStmt::~AST_IfStmt(){
@@ -70,7 +70,7 @@ void AST_WhileStmt::generateFrames(Frame* _frame){
 }
 
 void AST_WhileStmt::compile(std::ostream &assemblyOut){
-    throw std::runtime_error("Note Implemented Yet.\n");
+    throw std::runtime_error("AST_WhileStmt: Note Implemented Yet.\n");
 }
 
 AST_WhileStmt::~AST_WhileStmt(){
@@ -88,8 +88,13 @@ void AST_Block::generateFrames(Frame* _frame){
     body->generateFrames(frame);
 }
 
-void AST_Block::compile(std::ostream &assemblyOut){
-    throw std::runtime_error("Note Implemented Yet.\n");
+void AST_Block::compile(std::ostream &assemblyOut) {
+    assemblyOut << "addiu $sp, $sp, -" << frame->getFrameSize() << std::endl;
+    assemblyOut << "sw $fp, " << frame->getFrameSize() << "($sp)" << std::endl;
+    assemblyOut << "move $fp, $sp" << std::endl;
+    if (body != nullptr) {
+        body->compile(assemblyOut);
+    }
 }
 
 AST_Block::~AST_Block(){

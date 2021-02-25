@@ -99,7 +99,7 @@ private:
     AST* body;
 
 public:
-    AST_Block(AST* _block = nullptr);
+    AST_Block(AST* _body = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream& assemblyOut) override;
