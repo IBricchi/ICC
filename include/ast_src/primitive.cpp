@@ -9,7 +9,13 @@ void AST_ConstInt::generateFrames(Frame* _frame){
 }
 
 void AST_ConstInt::compile(std::ostream &assemblyOut){
-    throw std::runtime_error("AST_ConstInt: Not implemented Yet.\n");
+    // load constant into register
+    assemblyOut << "addiu $t0, $0, " << value << std::endl;
+
+    // store constant in memory
+    int relativeMemAddress = frame->getFrameSize() - frame->getMemOcc() - 5*4;
+    frame->lastResultMemAddress = relativeMemAddress;
+    assemblyOut << "sw $t0, " << relativeMemAddress << "($sp)" << std::endl;
 }
 
 AST_Variable::AST_Variable(std::string* _name) :
