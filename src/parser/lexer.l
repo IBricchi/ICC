@@ -22,6 +22,8 @@ extern "C" int fileno(FILE *stream);
 ";"       { return T_SEMI_COLON; }
 "{"       { return T_BRACE_L; }
 "}"       { return T_BRACE_R; }
+"("       { return T_BRACK_L; }
+")"       { return T_BRACK_R; }
 
 "="       { return T_EQUAL; }
 "||"      { return T_OR_L; }
