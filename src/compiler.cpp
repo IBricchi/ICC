@@ -10,16 +10,20 @@ int main()
 
         // parse the AST
         AST *ast = parseAST();
-
-        std::cout << "Parsing Works!" << std::endl;
+        std::cerr << "Parsing Works!" << std::endl;
 
         // write MIPS assembly to stdout
         ast->compile(std::cout);
+        std::cerr << "Compiling Works!" << std::endl;
     }
     
-    // general error catcher
+    // general exception handler
     catch(std::exception &e) {
         std::cerr << e.what() << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    catch(...) {
+        std::cerr << "UNKNOWN ERROR" << std::endl;
         exit(EXIT_FAILURE);
     }
 }
