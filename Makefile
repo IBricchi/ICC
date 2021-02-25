@@ -22,7 +22,7 @@ $(AST_BIN):
 
 
 # compile compiler
-bin/compiler : src/compiler.cpp $(AST_BIN) include/ast parser
+bin/compiler : src/compiler.cpp $(AST_BIN) include/ast parser src/parser/parser.tab.o src/parser/lexer.yy.o
 	mkdir -p bin
 	g++ $(CPPFLAGS) -o bin/compiler src/compiler.cpp $(AST_BIN) src/parser/parser.tab.o src/parser/lexer.yy.o
 
