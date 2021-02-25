@@ -8,7 +8,9 @@ void AST::compile(std::ostream &assemblyOut) {
     throw std::runtime_error("Not implemented yet by child class.\n");
 }
 
-AST::~AST(){}
+AST::~AST() {
+    delete frame;
+}
 
 Frame::Frame(Frame* _parentFrame) :
     parentFrame(_parentFrame)
