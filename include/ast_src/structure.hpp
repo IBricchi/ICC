@@ -29,9 +29,9 @@ private:
 
 public:
     /*
-        See AST_VarDeclaration below: Need to solve similar problem.
+        Function body is optional and can be provided in a function definition later on.
     */
-    AST_FunDeclaration(std::string _type, std::string* _name, AST* _body);
+    AST_FunDeclaration(std::string _type, std::string* _name, AST* _body = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;
