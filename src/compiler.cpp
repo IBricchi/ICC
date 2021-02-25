@@ -4,6 +4,20 @@
 
 #include "parser/parser.tab.hpp"
 
+void printAssemblyHeader(std::ostream &assemblyOut) {
+    assemblyOut << ".section .mdebug.abi32" << std::endl;
+    assemblyOut << ".previous" << std::endl;
+    assemblyOut << ".nan	legacy" << std::endl;
+    assemblyOut << ".module	fp=32" << std::endl;
+    assemblyOut << ".module	oddspreg" << std::endl;
+    assemblyOut << ".abicalls" << std::endl;
+    assemblyOut << ".text" << std::endl;
+}
+
+void printAssemblyFooter(std::ostream &assemblyOut) {
+    assemblyOut << ".ident	\"GCC: (Ubuntu 5.4.0-6ubuntu1~16.04.9) 5.4.0 20160609\"" << std::endl;
+}
+
 int main()
 {
     try {
@@ -20,7 +34,9 @@ int main()
         std::cerr << "Frame Generation Works!" << std::endl;
 
         // write MIPS assembly to stdout
+        printAssemblyHeader(std::cout);
         ast->compile(std::cout);
+        printAssemblyFooter(std::cout);
         std::cerr << "Compiling Works!" << std::endl;
     }
     
