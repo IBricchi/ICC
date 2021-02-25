@@ -2,3 +2,4 @@
 *.tab.hpp
 *.yy.cpp
 *.output
+*.o
