@@ -38,9 +38,32 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
 
 void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
     if (body != nullptr) {
+        // function header
+        assemblyOut << ".align  2" << std::endl;
+        assemblyOut << ".global " << name << std::endl;
+        assemblyOut << ".set	nomips16" << std::endl;
+        assemblyOut << ".set	nomicromips" << std::endl;
+        assemblyOut << ".ent    " << name << std::endl;
+        assemblyOut << ".type   " << name << ", @function" << std::endl;
+
         // create label
         assemblyOut << name << ":" << std::endl;
+
+        // function header 2
+        assemblyOut << ".frame	$fp, " << frame->getFrameSize() << " , $31" << std::endl;
+        assemblyOut << ".mask	0x40000000,-4" << std::endl;
+        assemblyOut << ".fmask	0x00000000,0" << std::endl;
+        assemblyOut << ".set	noreorder" << std::endl;
+        assemblyOut << ".set	nomacro" << std::endl;
+
+        // body
         body->compile(assemblyOut);
+
+        // function footer
+        assemblyOut << ".set	macro" << std::endl;
+        assemblyOut << ".set	reorder" << std::endl;
+        assemblyOut << ".end    " << name << std::endl;
+        assemblyOut << ".size	" << name << ", .-" << name << std::endl;
     }
 }
 
