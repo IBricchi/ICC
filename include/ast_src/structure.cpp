@@ -35,7 +35,7 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
 }
 
 void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("Not Implemented Yet.\n");
+    throw std::runtime_error("AST_FunDeclaration: Not Implemented Yet.\n");
 }
 
 AST_FunDeclaration::~AST_FunDeclaration() {
@@ -62,7 +62,7 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
         Don't yet change the value stored in that memory address. This should be
         handled by 'AST_Assignment'.
     */
-    throw std::runtime_error("Not Implemented Yet.\n");
+    throw std::runtime_error("AST_VarDeclaration: Not Implemented Yet.\n");
 }
 
 AST_VarDeclaration::~AST_VarDeclaration() {

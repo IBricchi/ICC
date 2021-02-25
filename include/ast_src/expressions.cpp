@@ -11,7 +11,7 @@ void AST_VarAssign::generateFrames(Frame* _frame){
 }
 
 void AST_VarAssign::compile(std::ostream &assemblyOut){
-    throw std::runtime_error("Not Implemented Yet.\n");
+    throw std::runtime_error("AST_VarAssign: Not Implemented Yet.\n");
 }
 
 AST_VarAssign::~AST_VarAssign(){
@@ -38,7 +38,7 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
 }
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("Not Implemented Yet.\n");
+    throw std::runtime_error("AST_FunctionCall: Not Implemented Yet.\n");
 }
 
 AST_FunctionCall::~AST_FunctionCall() {
@@ -58,7 +58,7 @@ void AST_BinOp::generateFrames(Frame* _frame){
 }
 
 void AST_BinOp::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("Not Implemented Yet.\n");
+    throw std::runtime_error("AST_BinOp: Not Implemented Yet.\n");
 }
 
 AST_BinOp::~AST_BinOp(){
@@ -77,7 +77,7 @@ void AST_UnOp::generateFrames(Frame* _frame){
 }
 
 void AST_UnOp::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("Not Implemented Yet.\n");
+    throw std::runtime_error("AST_UnOp: Not Implemented Yet.\n");
 }
 
 AST_UnOp::~AST_UnOp(){

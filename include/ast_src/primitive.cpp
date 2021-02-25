@@ -9,7 +9,7 @@ void AST_ConstInt::generateFrames(Frame* _frame){
 }
 
 void AST_ConstInt::compile(std::ostream &assemblyOut){
-    throw std::runtime_error("Not implemented Yet.\n");
+    throw std::runtime_error("AST_ConstInt: Not implemented Yet.\n");
 }
 
 AST_Constant::AST_Constant(AST* _value) :
@@ -50,5 +50,5 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
         ---------
         I think this problem is sovled using the frames we just implemented
     */
-    throw std::runtime_error("Not Implemented Yet.\n");
+    throw std::runtime_error("AST_Variable: Not Implemented Yet.\n");
 }
