@@ -9,6 +9,7 @@ TEST_DIRECTORY="compiler_tests"
 COMPILER="./bin/c_compiler"
 BIN="./bin"
 
+make clean
 make
 printf "\n\n"
 
