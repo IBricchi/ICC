@@ -30,6 +30,9 @@ if [[ "$TESTCASE" != "all" ]] ; then
     fi
     printf "\n"
 
+    # Generating example reference assembly file
+    mips-linux-gnu-gcc -S -mfp32 -o ${BIN}/${OUT_NAME}_ref.s ${TESTCASE}
+
     mips-linux-gnu-gcc -mfp32 -o ${BIN}/out.o -c ${BIN}/${OUT_NAME}.s
     RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
