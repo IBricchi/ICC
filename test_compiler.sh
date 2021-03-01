@@ -21,12 +21,12 @@ if [[ "$TESTCASE" != "all" ]] ; then
     set +e
 
     ${COMPILER} -S ${TESTCASE} -o ${BIN}/${OUT_NAME}.s
-    printf "\n"
     RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
         tput setaf 1; echo "  ${TESTCASE} FAIL    # compiler"; tput sgr0
         exit
     fi
+    printf "\n"
 
     mips-linux-gnu-gcc -mfp32 -o ${BIN}/out.o -c ${BIN}/${OUT_NAME}.s
     RESULT=$?
