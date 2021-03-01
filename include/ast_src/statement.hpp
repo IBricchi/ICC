@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast.hpp"
+#include "expression.hpp"
 
 /*
     Function return statement.

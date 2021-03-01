@@ -71,7 +71,7 @@ DECLARATION : FUN_DECLARATION { $$ = $1; }
             ;
 
 FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK { $$ = new AST_FunDeclaration("int", $2, $5); }
-                | T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R { $$ = new AST_FunDeclaration("int", $2); }
+                | T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON { $$ = new AST_FunDeclaration("int", $2); }
                 ;
 
 VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                  { $$ = new AST_VarDeclaration("int", $2); }

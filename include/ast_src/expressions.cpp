@@ -38,11 +38,21 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
 }
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("AST_FunctionCall: Not Implemented Yet.\n");
+    for (AST* arg : args) {
+        // ...
+        throw std::runtime_error("AST_FunctionCall: Not Implemented For Arguments Yet.\n");
+    }
+
+    assemblyOut << "jal " << functionName << std::endl;
+    assemblyOut << "nop" << std::endl;
 }
 
 AST_FunctionCall::~AST_FunctionCall() {
-    // delete name;
+    for (AST* arg : args) {
+        if (arg != nullptr) {
+            delete arg;
+        }
+    }
 }
 
 AST_BinOp::AST_BinOp(AST_BinOp::Type _type, AST* _left, AST* _right):

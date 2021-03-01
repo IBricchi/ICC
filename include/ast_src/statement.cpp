@@ -17,15 +17,20 @@ void AST_Return::compile(std::ostream &assemblyOut) {
         // evaluate expression
         expr->compile(assemblyOut);
 
-        // load result of expression into register
-        assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+        // functions might be defined in external 'driver' file and hence don't load their return value into 'lastResultMemAddress'
+        // functions load result directly into $v0
+        if (!dynamic_cast<AST_FunctionCall*>(expr)) {
+            // load result of expression into register
+            assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
 
-        // return result of expression
-        assemblyOut << "move $v0, $t0" << std::endl;
+            // return result of expression
+            assemblyOut << "move $v0, $t0" << std::endl;
+        }
     }
     
     assemblyOut << "move $sp, $fp" << std::endl;
-    assemblyOut << "lw $fp, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
+    assemblyOut << "lw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
+    assemblyOut << "lw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
     assemblyOut << "j $31" << std::endl;
     assemblyOut << "nop" << std::endl;
@@ -93,7 +98,8 @@ void AST_Block::generateFrames(Frame* _frame){
 
 void AST_Block::compile(std::ostream &assemblyOut) {
     assemblyOut << "addiu $sp, $sp, -" << frame->getFrameSize() << std::endl;
-    assemblyOut << "sw $fp, " << frame->getFrameSize()-4 << "($sp)" << std::endl;
+    assemblyOut << "sw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
+    assemblyOut << "sw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
     assemblyOut << "move $fp, $sp" << std::endl;
     if (body != nullptr) {
         body->compile(assemblyOut);
