@@ -81,7 +81,27 @@ void AST_BinOp::generateFrames(Frame* _frame){
 }
 
 void AST_BinOp::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("AST_BinOp: Not Implemented Yet.\n");
+    left->compile(assemblyOut);
+    // load result of left expression into register
+    assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+
+    right->compile(assemblyOut);
+    // load result of right expression into register
+    assemblyOut << "lw $t1, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+
+    switch (type) {
+        case (Type::PLUS):
+            assemblyOut << "add $t0, $t0, $t1" << std::endl;
+            break;
+        default:
+            throw std::runtime_error("AST_BinOp: Not Implemented Yet.\n");
+            break;
+    }
+
+    // store result in memory
+    int relativeMemAddress = frame->getFrameSize() - frame->getMemOcc() - 5*4;
+    frame->lastResultMemAddress = relativeMemAddress;
+    assemblyOut << "sw $t0, " << relativeMemAddress << "($sp)" << std::endl;
 }
 
 AST_BinOp::~AST_BinOp(){
