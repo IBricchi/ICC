@@ -4,47 +4,87 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <map>
+#include <unordered_map>
+#include <stdexcept>
 
-struct AST;
+class Frame;
 
-struct AST
+/*
+    Base class for all ast nodes
+*/
+class AST
 {
-    enum struct TYPE{
-        // constants
-        C_STR, C_INT, C_FLOAT
-    } type;
-    
-    std::string value;
+protected:
+    Frame* frame;
 
-    std::vector<AST*> branches;
+public:
+    virtual ~AST();
     
-    template<typename val_type>
-    AST(TYPE _type, val_type _value, const std::vector<AST*> &_branches)
-        : type(_type)
-        , value(_value)
-        , branches(_branches)
-    {}
+    /*
+        Generates frames and creates context for them
+    */
+    virtual void generateFrames(Frame* _frame = nullptr);
     
-    template<typename val_type>
-    AST(TYPE _type, std::string _value)
-        : type(_type)
-        , value(_value)
-    {}
-    
-    template<class ...TArgs>
-    AST(TYPE _type, TArgs ...args)
-        : type(_type)
-        , branches{args...}
-    {}
+    /*
+        Writes MIPS assembly to output stream.
+    */
+    virtual void compile(std::ostream &assemblyOut);
+};
 
-    ~AST(){
-        delete value;
+/*
+    Class that contains frame information.
+    A new Frame object is created for each frame.
+*/
+class Frame
+{
+private:
+    /* 
+        map of variable names to memory address relative to frame pointer
+        retrieve using 'lw ${destinationReg} {variableBindings[variableName]}($fp)'
+    */ 
+    std::unordered_map<std::string, int> variableBindings;
 
-        // delete all nodes
-        for(AST* node : branches)
-        {
-            delete node;
-        }
-    }
+    // information about current memory occupied by variables
+    int memOcc = 0;
+
+    /*
+        Pointer to the parent frame.
+        Enables us to access variables from parent frame if they have not been defined locally.
+    */
+    Frame *parentFrame;
+
+public:
+    /* 
+        Memory address where the last result is stored relative to the frame pointer.
+        For array, this points to beginning of the array.
+    */
+    int lastResultMemAddress;
+
+    Frame(Frame* _parentFrame = nullptr);
+
+    ~Frame();
+
+    /*
+        First tries to find variable in current frame.
+        If it does not exist in the current frame, it tries to find it in the parent frame
+        and so on.
+        Expects the variable to exist in its current frame or one of its parent frame:
+        Does not do error checking.
+    */
+    int getMemoryAddress(const std::string &variableName) const;
+
+    /*
+        Does not check if variable already exists.
+        If the variable name already exists, it will be overriden.
+    */
+    void addVariable(const std::string &variableName, int byteSize);
+
+    /*
+        Used for moving '$sp' pointer when creating new stack frame.
+
+        Stack frame must be doubleword (8 byte) aligned (MIPS ABI).
+    */
+    int getFrameSize() const;
+
+    int getMemOcc() const;
 };

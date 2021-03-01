@@ -1,3 +1,7 @@
 #!/bin/bash
+set -e
+
 echo "Compiling to MIPS..."
-cat $2 | ./bin/compiler 2> /dev/null 1> $4
+cat $2 | ./bin/compiler 2> bin/log.txt 1> $4
+
+echo "Compiling finished!"

@@ -1,1 +1,5 @@
-parser.tab.hpp
+*.tab.cpp
+*.tab.hpp
+*.yy.cpp
+*.output
+*.o
