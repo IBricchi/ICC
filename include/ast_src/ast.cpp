@@ -41,7 +41,15 @@ int Frame::getFrameSize() const {
     // Trivial static implementation
 
     // Ensure that value is doubleword aligned
-    return (memOcc % 8 == 0) ? (memOcc + 25*8) : (memOcc + 25*8 + 4);
+    //return (memOcc % 8 == 0) ? (memOcc + 25*8) : (memOcc + 25*8 + 4);
+
+    /*
+        Trivial solution => Allocate more space than ever needed (very inefficient)
+
+        Avoids the need of keeping track of initial frame size for use in ASTReturn (popping frame of stack)
+            => assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
+    */
+    return 25*8;
 }
 
 int Frame::getMemOcc() const {

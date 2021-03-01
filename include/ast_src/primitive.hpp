@@ -38,5 +38,5 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;
 
-    // doesn't ened a destrcutor as there are no pointers
+    // doesn't need a destructor as there are no pointers
 };
