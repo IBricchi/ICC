@@ -8,6 +8,7 @@ TESTCASE="${1:-all}"
 TEST_DIRECTORY="compiler_tests"
 COMPILER="./bin/c_compiler"
 BIN="./bin"
+ERROR_LOG_FILE="./bin/log.txt"
 
 make clean
 make
@@ -24,6 +25,7 @@ if [[ "$TESTCASE" != "all" ]] ; then
     RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
         tput setaf 1; echo "  ${TESTCASE} FAIL    # compiler"; tput sgr0
+        cat ${ERROR_LOG_FILE}
         exit
     fi
     printf "\n"
@@ -32,6 +34,7 @@ if [[ "$TESTCASE" != "all" ]] ; then
     RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
         tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc 1"; tput sgr0
+        cat ${ERROR_LOG_FILE}
         exit
     fi
 
@@ -39,6 +42,7 @@ if [[ "$TESTCASE" != "all" ]] ; then
      RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
         tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc 2"; tput sgr0
+        cat ${ERROR_LOG_FILE}
         exit
     fi
     
@@ -46,6 +50,7 @@ if [[ "$TESTCASE" != "all" ]] ; then
     RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
         tput setaf 1; echo "  ${TESTCASE} FAIL    # qemu"; tput sgr0
+        cat ${ERROR_LOG_FILE}
         exit
     fi
     
