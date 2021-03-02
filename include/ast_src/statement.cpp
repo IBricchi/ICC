@@ -52,7 +52,30 @@ void AST_IfStmt::generateFrames(Frame* _frame){
 }
 
 void AST_IfStmt::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("AST_IfStmt: Not Implemented Yet.\n");
+    cond->compile(assemblyOut);
+    // load result of cond expression into register
+    // use $t6 as lower $t registers might be used in other compile functions called on right
+    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+   
+    std::string elseLabel = generateUniqueLabel("elseLabel");
+    std::string endLabel = generateUniqueLabel("endLabel");
+
+    // branch if condition is false
+    assemblyOut << "beq $t6, $0, " << elseLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+
+    // compile then
+    then->compile(assemblyOut);
+    assemblyOut << "j " << endLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+
+    assemblyOut << elseLabel << ":" << std::endl;
+    if (other != nullptr) {
+        // compile other
+        then->compile(assemblyOut);
+    }
+
+    assemblyOut << endLabel << ":" << std::endl;
 }
 
 AST_IfStmt::~AST_IfStmt(){
