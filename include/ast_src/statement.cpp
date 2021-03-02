@@ -52,7 +52,10 @@ void AST_IfStmt::generateFrames(Frame* _frame){
     // here we don't need to generate a new frame since that is only required if the statement after the if
     // is a block statement, which will itself handle the new frame generation
     then->generateFrames(_frame);
-    other->generateFrames(_frame);
+
+    if (other != nullptr) {
+        other->generateFrames(_frame);
+    }
 }
 
 void AST_IfStmt::compile(std::ostream &assemblyOut) {
@@ -62,7 +65,9 @@ void AST_IfStmt::compile(std::ostream &assemblyOut) {
 AST_IfStmt::~AST_IfStmt(){
     delete cond;
     delete then;
-    delete other;
+    if (other != nullptr) {
+        delete other;
+    } 
 }
 
 AST_WhileStmt::AST_WhileStmt(AST* _cond, AST* _body):
