@@ -27,13 +27,6 @@ void AST_Return::compile(std::ostream &assemblyOut) {
             assemblyOut << "move $v0, $t0" << std::endl;
         }
     }
-    
-    assemblyOut << "move $sp, $fp" << std::endl;
-    assemblyOut << "lw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
-    assemblyOut << "lw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
-    assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
-    assemblyOut << "j $31" << std::endl;
-    assemblyOut << "nop" << std::endl;
 }
 
 AST_Return::~AST_Return() {
@@ -106,9 +99,17 @@ void AST_Block::compile(std::ostream &assemblyOut) {
     assemblyOut << "sw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
     assemblyOut << "sw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
     assemblyOut << "move $fp, $sp" << std::endl;
+    
     if (body != nullptr) {
         body->compile(assemblyOut);
     }
+
+    assemblyOut << "move $sp, $fp" << std::endl;
+    assemblyOut << "lw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
+    assemblyOut << "lw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
+    assemblyOut << "j $31" << std::endl;
+    assemblyOut << "nop" << std::endl;
 }
 
 AST_Block::~AST_Block(){
