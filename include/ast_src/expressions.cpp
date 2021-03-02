@@ -93,7 +93,6 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     switch (type) {
         case Type::LOGIC_OR:
         {
-            // check if first value is true
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string falseLabel = generateUniqueLabel("falseLabel");
             std::string endLabel = generateUniqueLabel("end");
@@ -103,6 +102,33 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << "bne $t1, $0, " << trueLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << falseLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "j " << endLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << trueLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+
+            assemblyOut << endLabel << ":" << std::endl;
+            break;
+        }
+        case Type::LOGIC_AND:
+        {
+            std::string trueLabel = generateUniqueLabel("trueLabel");
+            std::string falseLabel = generateUniqueLabel("falseLabel");
+            std::string endLabel = generateUniqueLabel("end");
+
+            assemblyOut << "beq $t6, $0, " << falseLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << "beq $t1, $0, " << falseLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            // both are true
+            assemblyOut << "j " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << falseLabel << ":" << std::endl;
