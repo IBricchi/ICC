@@ -175,6 +175,24 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << endLabel << ":" << std::endl;
             break;
         }
+        case Type::BANG_EQUAL:
+        {
+            std::string trueLabel = generateUniqueLabel("trueLabel");
+            std::string endLabel = generateUniqueLabel("end");
+
+            assemblyOut << "bne $t6, $t1, " << trueLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "j " << endLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << trueLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+
+            assemblyOut << endLabel << ":" << std::endl;
+            break;
+        }
         case Type::PLUS:
         {
             assemblyOut << "add $t3, $t6, $t1" << std::endl;
