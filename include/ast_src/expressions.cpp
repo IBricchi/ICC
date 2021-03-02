@@ -279,6 +279,14 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "mflo $t3" << std::endl;
             break;
         }
+        case Type::PERCENT:
+        {
+            assemblyOut << "div $t6, $t1" << std::endl;
+
+            // only care about remainder
+            assemblyOut << "mfhi $t3" << std::endl;
+            break;
+        }
         default:
         {
             throw std::runtime_error("AST_BinOp: Not Implemented Yet.\n");
