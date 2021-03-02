@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <stdexcept>
 
+#include "util.hpp"
+
 class Frame;
 
 /*
@@ -55,7 +57,7 @@ private:
 
 public:
     /* 
-        Memory address where the last result is stored relative to the frame pointer.
+        Memory address where the last result is stored relative to the stack pointer.
         For array, this points to beginning of the array.
     */
     int lastResultMemAddress;

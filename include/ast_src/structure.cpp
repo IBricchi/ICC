@@ -93,7 +93,7 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
         Don't yet change the value stored in that memory address. This should be
         handled by 'AST_Assignment'.
     */
-    throw std::runtime_error("AST_VarDeclaration: Not Implemented Yet.\n");
+    frame->addVariable(name, getTypeByteSize(type));
 }
 
 AST_VarDeclaration::~AST_VarDeclaration() {

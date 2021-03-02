@@ -11,6 +11,7 @@ void printAssemblyHeader(std::ostream &assemblyOut) {
     assemblyOut << ".module	fp=32" << std::endl;
     assemblyOut << ".module	oddspreg" << std::endl;
     assemblyOut << ".abicalls" << std::endl;
+    assemblyOut << ".option pic0" << std::endl;
     assemblyOut << ".text" << std::endl;
 }
 

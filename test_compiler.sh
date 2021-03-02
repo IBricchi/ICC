@@ -17,7 +17,7 @@ printf "\n\n"
 # A specific testcase was specified
 if [[ "$TESTCASE" != "all" ]] ; then
     OUT_NAME="$(basename $TESTCASE | cut -f 1 -d '.')"
-    DRIVER_FILE="$(echo $TESTCASE | sed 's/.c/_driver.c/')"
+    DRIVER_FILE="$(echo $TESTCASE | sed 's/\.c/_driver\.c/')"
 
     set +e
 
@@ -29,6 +29,9 @@ if [[ "$TESTCASE" != "all" ]] ; then
         exit
     fi
     printf "\n"
+
+    # Generating example reference assembly file
+    mips-linux-gnu-gcc -S -mfp32 -o ${BIN}/${OUT_NAME}_ref.s ${TESTCASE}
 
     mips-linux-gnu-gcc -mfp32 -o ${BIN}/out.o -c ${BIN}/${OUT_NAME}.s
     RESULT=$?
@@ -68,7 +71,7 @@ for TEST_SUBDIRECTORY in ${TEST_SUBDIRECTORIES} ; do
 
     DRIVER_FILES="${TEST_SUBDIRECTORY}*_driver.c"
     for DRIVER_FILE in ${DRIVER_FILES} ; do
-        TESTCASE="$(echo $DRIVER_FILE | sed 's/_driver//')"
+        TESTCASE="$(echo $DRIVER_FILE | sed 's/\.c/_driver\.c/')"
         OUT_NAME="$(basename $TESTCASE | cut -f 1 -d '.')"
 
         set +e

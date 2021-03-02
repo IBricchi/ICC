@@ -2,8 +2,8 @@
 CPPFLAGS += -std=c++17 -W -Wall -g -Wno-unused-parameter
 CPPFLAGS += -I include
 
-AST_BIN += include/bin/ast.o include/bin/expression.o include/bin/primitive.o
-AST_BIN += include/bin/statement.o include/bin/structure.o
+AST_BIN += include/bin/ast.o include/bin/util.o include/bin/expression.o
+AST_BIN += include/bin/primitive.o include/bin/statement.o include/bin/structure.o
 
 # moves wrapper to form c_compiler
 bin/c_compiler : bin/compiler src/wrapper.sh
@@ -12,6 +12,7 @@ bin/c_compiler : bin/compiler src/wrapper.sh
 
 # compile ast into objects
 include/bin/ast.o: include/ast_src/ast.cpp include/ast_src/ast.hpp
+include/bin/util.o: include/ast_src/util.cpp include/ast_src/util.hpp
 include/bin/expression.o: include/ast_src/expressions.cpp include/ast_src/expression.hpp
 include/bin/primitive.o: include/ast_src/primitive.cpp include/ast_src/primitive.hpp
 include/bin/statement.o: include/ast_src/statement.cpp include/ast_src/statement.hpp

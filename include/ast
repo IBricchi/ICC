@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast_src/ast.hpp"
+#include "ast_src/util.hpp"
 #include "ast_src/primitive.hpp"
 #include "ast_src/expression.hpp"
 #include "ast_src/statement.hpp"
