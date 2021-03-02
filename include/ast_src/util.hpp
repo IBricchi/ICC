@@ -4,4 +4,7 @@
 
 // General utility functions
 
-int getTypeByteSize(std::string type);
+int getTypeByteSize(const std::string &type);
+
+extern int uniqueLabelCount;
+std::string generateUniqueLabel(const std::string &labelName);

@@ -83,25 +83,75 @@ void AST_BinOp::generateFrames(Frame* _frame){
 void AST_BinOp::compile(std::ostream &assemblyOut) {
     left->compile(assemblyOut);
     // load result of left expression into register
-    assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+    // use $t6 as lower $t registers might be used in other compile functions called on right
+    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
 
     right->compile(assemblyOut);
     // load result of right expression into register
     assemblyOut << "lw $t1, " << frame->lastResultMemAddress << "($sp)" << std::endl;
 
     switch (type) {
-        case (Type::PLUS):
-            assemblyOut << "add $t0, $t0, $t1" << std::endl;
+        case Type::LOGIC_OR:
+        {
+            // check if first value is true
+            std::string trueLabel = generateUniqueLabel("trueLabel");
+            std::string falseLabel = generateUniqueLabel("falseLabel");
+            std::string endLabel = generateUniqueLabel("end");
+
+            // evaluate first expression first => short-circuit evaluation
+            assemblyOut << "bne $t6, $0, " << trueLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << "bne $t1, $0, " << trueLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << falseLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "j " << endLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << trueLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+
+            assemblyOut << endLabel << ":" << std::endl;
             break;
+        }
+        case Type::BIT_OR:
+        {
+            assemblyOut << "or $t3, $t6, $t1" << std::endl;
+            break;
+        }
+        case Type::BIT_XOR:
+        {
+            assemblyOut << "xor $t3, $t6, $t1" << std::endl;
+            break;
+        }
+        case Type::BIT_AND:
+        {
+            assemblyOut << "and $t3, $t6, $t1" << std::endl;
+            break;
+        }
+        case Type::PLUS:
+        {
+            assemblyOut << "add $t3, $t6, $t1" << std::endl;
+            break;
+        }
+        case Type::MINUS:
+        {
+            assemblyOut << "sub $t3, $t6, $t1" << std::endl;
+            break;
+        }
         default:
+        {
             throw std::runtime_error("AST_BinOp: Not Implemented Yet.\n");
             break;
+        }
     }
 
     // store result in memory
     int relativeMemAddress = frame->getFrameSize() - frame->getMemOcc() - 5*4;
     frame->lastResultMemAddress = relativeMemAddress;
-    assemblyOut << "sw $t0, " << relativeMemAddress << "($sp)" << std::endl;
+    assemblyOut << "sw $t3, " << relativeMemAddress << "($sp)" << std::endl;
 }
 
 AST_BinOp::~AST_BinOp(){
