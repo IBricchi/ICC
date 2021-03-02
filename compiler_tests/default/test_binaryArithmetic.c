@@ -9,5 +9,5 @@ int a()
 
 int b()
 {
-    return 5 && 1;
+    return (14 % 3) == 2;
 }

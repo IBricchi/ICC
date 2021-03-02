@@ -27,13 +27,6 @@ void AST_Return::compile(std::ostream &assemblyOut) {
             assemblyOut << "move $v0, $t0" << std::endl;
         }
     }
-    
-    assemblyOut << "move $sp, $fp" << std::endl;
-    assemblyOut << "lw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
-    assemblyOut << "lw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
-    assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
-    assemblyOut << "j $31" << std::endl;
-    assemblyOut << "nop" << std::endl;
 }
 
 AST_Return::~AST_Return() {
@@ -52,17 +45,45 @@ void AST_IfStmt::generateFrames(Frame* _frame){
     // here we don't need to generate a new frame since that is only required if the statement after the if
     // is a block statement, which will itself handle the new frame generation
     then->generateFrames(_frame);
-    other->generateFrames(_frame);
+
+    if (other != nullptr) {
+        other->generateFrames(_frame);
+    }
 }
 
 void AST_IfStmt::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("AST_IfStmt: Not Implemented Yet.\n");
+    cond->compile(assemblyOut);
+    // load result of cond expression into register
+    // use $t6 as lower $t registers might be used in other compile functions called on right
+    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+   
+    std::string elseLabel = generateUniqueLabel("elseLabel");
+    std::string endLabel = generateUniqueLabel("endLabel");
+
+    // branch if condition is false
+    assemblyOut << "beq $t6, $0, " << elseLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+
+    // compile then
+    then->compile(assemblyOut);
+    assemblyOut << "j " << endLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+
+    assemblyOut << elseLabel << ":" << std::endl;
+    if (other != nullptr) {
+        // compile other
+        then->compile(assemblyOut);
+    }
+
+    assemblyOut << endLabel << ":" << std::endl;
 }
 
 AST_IfStmt::~AST_IfStmt(){
     delete cond;
     delete then;
-    delete other;
+    if (other != nullptr) {
+        delete other;
+    } 
 }
 
 AST_WhileStmt::AST_WhileStmt(AST* _cond, AST* _body):
@@ -97,13 +118,32 @@ void AST_Block::generateFrames(Frame* _frame){
 }
 
 void AST_Block::compile(std::ostream &assemblyOut) {
+    // header
+    assemblyOut << ".frame	$fp, " << frame->getFrameSize() << " , $31" << std::endl;
+    assemblyOut << ".mask	0x40000000,-4" << std::endl;
+    assemblyOut << ".fmask	0x00000000,0" << std::endl;
+    assemblyOut << ".set	noreorder" << std::endl;
+    assemblyOut << ".set	nomacro" << std::endl;
+
     assemblyOut << "addiu $sp, $sp, -" << frame->getFrameSize() << std::endl;
     assemblyOut << "sw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
     assemblyOut << "sw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
     assemblyOut << "move $fp, $sp" << std::endl;
+    
     if (body != nullptr) {
         body->compile(assemblyOut);
     }
+
+    assemblyOut << "move $sp, $fp" << std::endl;
+    assemblyOut << "lw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
+    assemblyOut << "lw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
+    assemblyOut << "j $31" << std::endl;
+    assemblyOut << "nop" << std::endl;
+
+    // footer
+    assemblyOut << ".set	macro" << std::endl;
+    assemblyOut << ".set	reorder" << std::endl;
 }
 
 AST_Block::~AST_Block(){

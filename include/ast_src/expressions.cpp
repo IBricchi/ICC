@@ -93,7 +93,6 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     switch (type) {
         case Type::LOGIC_OR:
         {
-            // check if first value is true
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string falseLabel = generateUniqueLabel("falseLabel");
             std::string endLabel = generateUniqueLabel("end");
@@ -103,6 +102,33 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << "bne $t1, $0, " << trueLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << falseLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "j " << endLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << trueLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+
+            assemblyOut << endLabel << ":" << std::endl;
+            break;
+        }
+        case Type::LOGIC_AND:
+        {
+            std::string trueLabel = generateUniqueLabel("trueLabel");
+            std::string falseLabel = generateUniqueLabel("falseLabel");
+            std::string endLabel = generateUniqueLabel("end");
+
+            assemblyOut << "beq $t6, $0, " << falseLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << "beq $t1, $0, " << falseLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            // both are true
+            assemblyOut << "j " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << falseLabel << ":" << std::endl;
@@ -131,6 +157,102 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "and $t3, $t6, $t1" << std::endl;
             break;
         }
+        case Type::EQUAL_EQUAL:
+        {
+            std::string trueLabel = generateUniqueLabel("trueLabel");
+            std::string endLabel = generateUniqueLabel("end");
+
+            assemblyOut << "beq $t6, $t1, " << trueLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "j " << endLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << trueLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+
+            assemblyOut << endLabel << ":" << std::endl;
+            break;
+        }
+        case Type::BANG_EQUAL:
+        {
+            std::string trueLabel = generateUniqueLabel("trueLabel");
+            std::string endLabel = generateUniqueLabel("end");
+
+            assemblyOut << "bne $t6, $t1, " << trueLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "j " << endLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << trueLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+
+            assemblyOut << endLabel << ":" << std::endl;
+            break;
+        }
+        case Type::LESS:
+        {
+            assemblyOut << "slt $t3, $t6, $t1" << std::endl;
+            break;
+        }
+        case Type::LESS_EQUAL:
+        {   
+            // less_equal if not greater
+            std::string trueLabel = generateUniqueLabel("trueLabel");
+            std::string endLabel = generateUniqueLabel("end");
+            
+            assemblyOut << "slt $t3, $t1, $t6" << std::endl;
+            assemblyOut << "beq $t3, $0, " << trueLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "j " << endLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << trueLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+
+            assemblyOut << endLabel << ":" << std::endl;
+            break;
+        }
+        case Type::GREATER:
+        {
+            assemblyOut << "slt $t3, $t1, $t6" << std::endl;
+            break;
+        }
+        case Type::GREATER_EQUAL:
+        {   
+            // greater_equal if not less
+            std::string trueLabel = generateUniqueLabel("trueLabel");
+            std::string endLabel = generateUniqueLabel("end");
+            
+            assemblyOut << "slt $t3, $t6, $t1" << std::endl;
+            assemblyOut << "beq $t3, $0, " << trueLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "j " << endLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            assemblyOut << trueLabel << ":" << std::endl;
+            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+
+            assemblyOut << endLabel << ":" << std::endl;
+            break;
+        }
+        case Type::SHIFT_L:
+        {
+            assemblyOut << "sll $t3, $t6, $t1" << std::endl;
+            break;
+        }
+        case Type::SHIFT_R:
+        {
+            assemblyOut << "srl $t3, $t6, $t1" << std::endl;
+            break;
+        }
         case Type::PLUS:
         {
             assemblyOut << "add $t3, $t6, $t1" << std::endl;
@@ -139,6 +261,30 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         case Type::MINUS:
         {
             assemblyOut << "sub $t3, $t6, $t1" << std::endl;
+            break;
+        }
+        case Type::STAR:
+        {
+            assemblyOut << "mult $t6, $t1" << std::endl;
+
+            // only care about 32 least significant bits
+            assemblyOut << "mflo $t3" << std::endl;
+            break;
+        }
+        case Type::SLASH_F:
+        {
+            assemblyOut << "div $t6, $t1" << std::endl;
+
+            // only care about quotient for fixed point division (get remainder using 'mfhi')
+            assemblyOut << "mflo $t3" << std::endl;
+            break;
+        }
+        case Type::PERCENT:
+        {
+            assemblyOut << "div $t6, $t1" << std::endl;
+
+            // only care about remainder
+            assemblyOut << "mfhi $t3" << std::endl;
             break;
         }
         default:
