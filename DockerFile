@@ -1,11 +1,19 @@
 FROM ubuntu:xenial
 
-RUN apt-get update
+RUN apt-get update --fix-missing
 
 RUN apt-get -y install g++ gdb make dos2unix git \
         bison flex \
         g++-mips-linux-gnu gdb-multiarch \
-        qemu
+        qemu curl
+
+# Download url is: https://update.code.visualstudio.com/commit:${commit_id}/server-linux-x64/stable
+RUN curl -sSL "https://update.code.visualstudio.com/commit:622cb03f7e070a9670c94bae1a45d78d7181fbd4/server-linux-x64/stable" -o /tmp/vscode-server-linux-x64.tar.gz
+RUN mkdir -p ~/.vscode-server/bin/622cb03f7e070a9670c94bae1a45d78d7181fbd4
+RUN echo ~/.vscode-server/bin/622cb03f7e070a9670c94bae1a45d78d7181fbd4
+# assume that you upload vscode-server-linux-x64.tar.gz to /tmp dir
+RUN tar zxvf /tmp/vscode-server-linux-x64.tar.gz -C ~/.vscode-server/bin/622cb03f7e070a9670c94bae1a45d78d7181fbd4 --strip 1
+RUN touch ~/.vscode-server/bin/622cb03f7e070a9670c94bae1a45d78d7181fbd4/0
 
 # For makfile to work
 RUN apt-get -y install ntp
