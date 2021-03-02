@@ -263,6 +263,22 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "sub $t3, $t6, $t1" << std::endl;
             break;
         }
+        case Type::STAR:
+        {
+            assemblyOut << "mult $t6, $t1" << std::endl;
+
+            // only care about 32 least significant bits
+            assemblyOut << "mflo $t3" << std::endl;
+            break;
+        }
+        case Type::SLASH_F:
+        {
+            assemblyOut << "div $t6, $t1" << std::endl;
+
+            // only care about quotient for fixed point division (get remainder using 'mfhi')
+            assemblyOut << "mflo $t3" << std::endl;
+            break;
+        }
         default:
         {
             throw std::runtime_error("AST_BinOp: Not Implemented Yet.\n");
