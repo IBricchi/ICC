@@ -243,6 +243,16 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << endLabel << ":" << std::endl;
             break;
         }
+        case Type::SHIFT_L:
+        {
+            assemblyOut << "sll $t3, $t6, $t1" << std::endl;
+            break;
+        }
+        case Type::SHIFT_R:
+        {
+            assemblyOut << "srl $t3, $t6, $t1" << std::endl;
+            break;
+        }
         case Type::PLUS:
         {
             assemblyOut << "add $t3, $t6, $t1" << std::endl;
