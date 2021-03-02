@@ -10,7 +10,9 @@ COMPILER="./bin/c_compiler"
 BIN="./bin"
 ERROR_LOG_FILE="./bin/log.txt"
 
-make clean
+# Clean bin/ for easier manual file inspection
+rm -f bin/*
+
 make
 printf "\n\n"
 
@@ -21,6 +23,15 @@ if [[ "$TESTCASE" != "all" ]] ; then
 
     set +e
 
+    # Generating example reference assembly file
+    mips-linux-gnu-gcc -S -mfp32 -o ${BIN}/${OUT_NAME}_ref.s ${TESTCASE}
+    RESULT=$?
+    if [[ "${RESULT}" -ne 0 ]] ; then
+        tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc: reference generation"; tput sgr0
+        cat ${ERROR_LOG_FILE}
+        exit
+    fi
+
     ${COMPILER} -S ${TESTCASE} -o ${BIN}/${OUT_NAME}.s
     RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
@@ -30,21 +41,18 @@ if [[ "$TESTCASE" != "all" ]] ; then
     fi
     printf "\n"
 
-    # Generating example reference assembly file
-    mips-linux-gnu-gcc -S -mfp32 -o ${BIN}/${OUT_NAME}_ref.s ${TESTCASE}
-
     mips-linux-gnu-gcc -mfp32 -o ${BIN}/out.o -c ${BIN}/${OUT_NAME}.s
     RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
-        tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc 1"; tput sgr0
+        tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc: assembling"; tput sgr0
         cat ${ERROR_LOG_FILE}
         exit
     fi
 
     mips-linux-gnu-gcc -mfp32 -static -o ${BIN}/out ${BIN}/out.o ${DRIVER_FILE}
-     RESULT=$?
+    RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
-        tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc 2"; tput sgr0
+        tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc: linking"; tput sgr0
         cat ${ERROR_LOG_FILE}
         exit
     fi
@@ -85,13 +93,13 @@ for TEST_SUBDIRECTORY in ${TEST_SUBDIRECTORIES} ; do
         mips-linux-gnu-gcc -mfp32 -o ${BIN}/out.o -c ${BIN}/${OUT_NAME}.s
         RESULT=$?
         if [[ "${RESULT}" -ne 0 ]] ; then
-            tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc 1"; tput sgr0
+            tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc: assembling"; tput sgr0
         fi
 
         mips-linux-gnu-gcc -mfp32 -static -o ${BIN}/out ${BIN}/out.o ${DRIVER_FILE}
         RESULT=$?
         if [[ "${RESULT}" -ne 0 ]] ; then
-            tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc 2"; tput sgr0
+            tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc: linking"; tput sgr0
         fi
         
         qemu-mips ${BIN}/out
