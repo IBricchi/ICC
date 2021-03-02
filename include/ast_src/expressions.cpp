@@ -193,6 +193,16 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << endLabel << ":" << std::endl;
             break;
         }
+        case Type::LESS:
+        {
+            assemblyOut << "slt $t3, $t6, $t1" << std::endl;
+            break;
+        }
+        case Type::GREATER:
+        {
+            assemblyOut << "slt $t3, $t1, $t6" << std::endl;
+            break;
+        }
         case Type::PLUS:
         {
             assemblyOut << "add $t3, $t6, $t1" << std::endl;
