@@ -88,12 +88,22 @@ void AST_VarDeclaration::generateFrames(Frame* _frame){
 }
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
-    /*
-        Need to add variable to current frame and assign a memory address to it.
-        Don't yet change the value stored in that memory address. This should be
-        handled by 'AST_Assignment'.
-    */
-    frame->addVariable(name, getTypeByteSize(type));
+    if (expr != nullptr) {
+        expr->compile(assemblyOut);
+
+        // functions might be defined in external 'driver' file and hence don't load their return value into 'lastResultMemAddress'
+        // functions load result directly into $v0
+        if (!dynamic_cast<AST_FunctionCall*>(expr)) {
+            // load result of expression into register
+            assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+        } else {
+            // load function call result into register
+            assemblyOut << "move $t0, $v0" << std::endl;
+        }
+
+        // store register data into variable's memory address
+        assemblyOut << "sw $t0, " << frame->getMemoryAddress(name) << "($sp)" << std::endl;
+    }
 }
 
 AST_VarDeclaration::~AST_VarDeclaration() {
