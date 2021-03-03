@@ -47,7 +47,9 @@ private:
     std::unordered_map<std::string, int> variableBindings;
 
     // information about current memory occupied by variables
-    int memOcc = 0;
+    // starts at a constant due to needing a minimum ammount of space in memeory
+    // for each frame
+    int memOcc = 16;
 
     /*
         Pointer to the parent frame.

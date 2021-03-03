@@ -10,6 +10,10 @@ void AST_Return::generateFrames(Frame* _frame){
 }
 
 void AST_Return::compile(std::ostream &assemblyOut) {
+    std::string retLab = generateUniqueLabel("return");
+    assemblyOut << std::endl << "# start " << retLab << std::endl;
+
+
     if (expr == nullptr) {
         // return 0 by default
         assemblyOut << "addiu $v0, $0, $0" << std::endl;
@@ -27,6 +31,8 @@ void AST_Return::compile(std::ostream &assemblyOut) {
             assemblyOut << "move $v0, $t0" << std::endl;
         }
     }
+
+    assemblyOut << "# end " << retLab << std::endl << std::endl;
 }
 
 AST_Return::~AST_Return() {
@@ -119,7 +125,7 @@ void AST_Block::generateFrames(Frame* _frame){
 
 void AST_Block::compile(std::ostream &assemblyOut) {
     std::string blockname = generateUniqueLabel("block");
-    assemblyOut << std::endl << "# start block statement " << blockname << std::endl;
+    assemblyOut << std::endl << "# start " << blockname << std::endl;
     // header
     // assemblyOut << ".frame	$fp, " << frame->getFrameSize() << " , $31" << std::endl;
     // assemblyOut << ".mask	0x40000000,-4" << std::endl;
@@ -145,7 +151,7 @@ void AST_Block::compile(std::ostream &assemblyOut) {
     // assemblyOut << ".set	macro" << std::endl;
     // assemblyOut << ".set	reorder" << std::endl;
 
-    assemblyOut << "# end block statement " << blockname << std::endl;
+    assemblyOut << "# end " << blockname << std::endl << std::endl;
 }
 
 AST_Block::~AST_Block(){

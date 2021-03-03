@@ -50,8 +50,9 @@ int Frame::getFrameSize() const {
             => assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
     */
 
+    return memOcc;
     // return 25*8;
-    return (memOcc % 8 == 0) ? (memOcc + 8) : (memOcc + 12);
+    // return (memOcc % 8 == 0) ? (memOcc + 8) : (memOcc + 12);
 }
 
 int Frame::getMemOcc() const {
