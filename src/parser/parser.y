@@ -52,6 +52,9 @@
 %nonassoc NO_ELSE
 %nonassoc T_ELSE
 
+%nonassoc VAR_DEC
+%nonassoc VAR_ASS
+
 %start PROGRAM
 
 %%
@@ -71,11 +74,11 @@ DECLARATION : FUN_DECLARATION { $$ = $1; }
             ;
 
 FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK { $$ = new AST_FunDeclaration("int", $2, $5); }
-                | T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON { $$ = new AST_FunDeclaration("int", $2); }
+                | T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R { $$ = new AST_FunDeclaration("int", $2); }
                 ;
 
-VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                  { $$ = new AST_VarDeclaration("int", $2); }
-                | T_INT T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON { $$ = new AST_VarDeclaration("int", $2, $4); }
+VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                                { $$ = new AST_VarDeclaration("int", $2); }
+                | T_INT T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON %prec VAR_DEC { $$ = new AST_VarDeclaration("int", $2, $4); }
                 ;
 
 STATEMENT : EXPRESSION_STMT { $$ = $1; }
@@ -106,8 +109,8 @@ BLOCK : T_BRACE_L T_BRACE_R          { $$ = new AST_Block(); }
 EXPRESSION : ASSIGNMENT { $$ = $1; }
            ;
 
-ASSIGNMENT : T_IDENTIFIER T_EQUAL LOGIC_OR { $$ = new AST_VarAssign($1, $3); }    
-           | LOGIC_OR                      { $$ = $1; }
+ASSIGNMENT : T_IDENTIFIER T_EQUAL LOGIC_OR %prec VAR_ASS { $$ = new AST_VarAssign($1, $3); }    
+           | LOGIC_OR                                    { $$ = $1; }
            ;
 
 LOGIC_OR : LOGIC_AND T_OR_L LOGIC_OR { $$ = new AST_BinOp(AST_BinOp::Type::LOGIC_OR, $1, $3); }
