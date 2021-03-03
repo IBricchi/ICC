@@ -72,7 +72,7 @@ void AST_IfStmt::compile(std::ostream &assemblyOut) {
     assemblyOut << elseLabel << ":" << std::endl;
     if (other != nullptr) {
         // compile other
-        then->compile(assemblyOut);
+        other->compile(assemblyOut);
     }
 
     assemblyOut << endLabel << ":" << std::endl;
