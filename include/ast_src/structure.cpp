@@ -94,9 +94,10 @@ void AST_VarDeclaration::generateFrames(Frame* _frame){
 }
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
-    if(expr != nullptr){
+    if (expr != nullptr) {
         assemblyOut << std::endl << "#start var dec with definition " << name << std::endl;
-        expr->compile(assemblyOut);
+
+      expr->compile(assemblyOut);
 
         // functions might be defined in external 'driver' file and hence don't load their return value into 'lastResultMemAddress'
         // functions load result directly into $v0

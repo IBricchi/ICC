@@ -45,3 +45,29 @@ int Frame::getFrameSize() const {
 int Frame::getMemOcc() const {
     return memOcc;
 }
+
+int Frame::setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName) {
+    startLoopLabelName = _startLoopLabelName;
+    endLoopLabelName = _endLoopLabelName;
+}
+
+std::string Frame::getStartLoopLabelName() const {
+    // first try to find in current frame
+    if (startLoopLabelName != "") {
+        return startLoopLabelName;
+    }
+    
+    // variable does not exist in current frame
+    // try to find in parent frame
+    return parentFrame->getStartLoopLabelName();
+}
+std::string Frame::getEndLoopLabelName() const {    
+    // first try to find in current frame
+    if (endLoopLabelName != "") {
+        return endLoopLabelName;
+    }
+    
+    // variable does not exist in current frame
+    // try to find in parent frame
+    return parentFrame->getEndLoopLabelName();
+}

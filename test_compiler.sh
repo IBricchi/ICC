@@ -10,8 +10,8 @@ COMPILER="./bin/c_compiler"
 BIN="./bin"
 ERROR_LOG_FILE="./bin/log.txt"
 
-# Clean bin/ for easier manual file inspection
-rm -f bin/*
+# Needed as make appears to miss some small changes, resulting in incorrect results
+make clean
 
 make
 printf "\n\n"

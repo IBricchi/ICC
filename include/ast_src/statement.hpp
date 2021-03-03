@@ -24,31 +24,22 @@ public:
     ~AST_Return();
 };
 
-/*
-    Represents both standalone if-statements and combined if-else statements
-    Does not yet support if-elseif-else style statements
-    
-    Actually it does
-    if(){
-    }
-    else if(){
-    }
-    else{
-    }
+class AST_Break
+    : public AST
+{
+public:
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
+};
 
-    can be re-written as
+class AST_Continue
+    : public AST
+{
+public:
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
+};
 
-    if(){
-    }
-    else{
-        if(){
-        }
-        else{
-        }
-    }
-
-    Except since the if-else is a single statement, the expression doesn't need curly brakets
-*/
 class AST_IfStmt
     : public AST
 {

@@ -39,6 +39,28 @@ AST_Return::~AST_Return() {
     delete expr;
 }
 
+void AST_Break::generateFrames(Frame* _frame) {
+    frame = _frame;
+}
+
+void AST_Break::compile(std::ostream &assemblyOut) {
+    std::string endLoopLabel = frame->getEndLoopLabelName();
+
+    assemblyOut << "j " << endLoopLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+}
+
+void AST_Continue::generateFrames(Frame* _frame) {
+    frame = _frame;
+}
+
+void AST_Continue::compile(std::ostream &assemblyOut) {
+    std::string startLoopLabel = frame->getStartLoopLabelName();
+
+    assemblyOut << "j " << startLoopLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+}
+
 AST_IfStmt::AST_IfStmt(AST* _cond, AST* _then, AST* _other) :
     cond(_cond),
     then(_then),
@@ -78,7 +100,7 @@ void AST_IfStmt::compile(std::ostream &assemblyOut) {
     assemblyOut << elseLabel << ":" << std::endl;
     if (other != nullptr) {
         // compile other
-        then->compile(assemblyOut);
+        other->compile(assemblyOut);
     }
 
     assemblyOut << endLabel << ":" << std::endl;
@@ -105,7 +127,29 @@ void AST_WhileStmt::generateFrames(Frame* _frame){
 }
 
 void AST_WhileStmt::compile(std::ostream &assemblyOut){
-    throw std::runtime_error("AST_WhileStmt: Note Implemented Yet.\n");
+    std::string startLoopLabel = generateUniqueLabel("startLoop");
+    std::string endLoopLabel = generateUniqueLabel("endLoop");
+
+    frame->setLoopLabelNames(startLoopLabel, endLoopLabel);
+
+    assemblyOut << startLoopLabel << ":" << std::endl;
+
+    // load result of condition into register
+    cond->compile(assemblyOut);
+    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+
+    // branch if condition is false
+    assemblyOut << "beq $t6, $0, " << endLoopLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+
+    // compile body
+    body->compile(assemblyOut);
+    assemblyOut << "j " << startLoopLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+
+    assemblyOut << endLoopLabel << ":" << std::endl;
+
+    frame->setLoopLabelNames("", "");
 }
 
 AST_WhileStmt::~AST_WhileStmt(){

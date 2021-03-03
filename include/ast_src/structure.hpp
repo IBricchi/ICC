@@ -2,6 +2,7 @@
 
 #include <string>
 #include "ast.hpp"
+#include "expression.hpp"
 
 class AST_Sequence
     : public AST
