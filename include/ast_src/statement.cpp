@@ -20,16 +20,11 @@ void AST_Return::compile(std::ostream &assemblyOut) {
     } else {
         // evaluate expression
         expr->compile(assemblyOut);
-
-        // functions might be defined in external 'driver' file and hence don't load their return value into 'lastResultMemAddress'
-        // functions load result directly into $v0
-        if (!dynamic_cast<AST_FunctionCall*>(expr)) {
-            // load result of expression into register
-            assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
-
-            // return result of expression
-            assemblyOut << "move $v0, $t0" << std::endl;
-        }
+        
+        // set return register to value on top of stack
+        assemblyOut << "lw $v0, 8($sp)" << std::endl;;
+        // no need to shift stack pointer since return will end a scope anyway
+        // TODO! loop out of scopes untill you reach function scope
     }
 
     assemblyOut << "# end " << retLab << std::endl << std::endl;
@@ -99,7 +94,8 @@ void AST_IfStmt::compile(std::ostream &assemblyOut) {
     cond->compile(assemblyOut);
     // load result of cond expression into register
     // use $t6 as lower $t registers might be used in other compile functions called on right
-    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+    assemblyOut << "lw $t6, 8($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
    
     std::string elseLabel = generateUniqueLabel("elseLabel");
     std::string endLabel = generateUniqueLabel("endLabel");
@@ -164,7 +160,8 @@ void AST_WhileStmt::compile(std::ostream &assemblyOut){
 
     // load result of condition into register
     cond->compile(assemblyOut);
-    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+    assemblyOut << "lw $t6, 8($sp)" << std::endl;
+    assemblyOut << "adiu $sp, $sp, 4" << std::endl;
 
     // branch if condition is false
     assemblyOut << "beq $t6, $0, " << endLoopLabel << std::endl;
@@ -213,12 +210,13 @@ void AST_Block::compile(std::ostream &assemblyOut) {
 
     // increase size of current frame by required ammount for storing previous state data
     // currently storing only $31, and $fp
-    assemblyOut << "addiu $sp, $sp, -" << frame->getFrameSize() << std::endl;
-    assemblyOut << "sw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
-    assemblyOut << "sw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -" << frame->getStoreSize() << std::endl;
+    assemblyOut << "sw $31, 8($sp)" << std::endl;
+    assemblyOut << "sw $fp, 12($sp)" << std::endl;
     assemblyOut << "move $fp, $sp" << std::endl;
-    
-    // TODO! change so local variables exis in current frame
+
+    // move stack pointer down to allocate space for temporary variables in frame
+    assemblyOut << "addiu $sp, $sp, -" << frame->getVarSize() << std::endl;
 
     if (body != nullptr) {
         body->compile(assemblyOut);
@@ -226,9 +224,9 @@ void AST_Block::compile(std::ostream &assemblyOut) {
 
     // move fp back to start of frame and re-instate previous frame
     assemblyOut << "move $sp, $fp" << std::endl;
-    assemblyOut << "lw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
-    assemblyOut << "lw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
-    assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
+    assemblyOut << "lw $31, 8($sp)" << std::endl;
+    assemblyOut << "lw $fp, 12($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
 
     // footer
     // assemblyOut << ".set	macro" << std::endl;

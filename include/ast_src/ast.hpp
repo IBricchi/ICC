@@ -45,6 +45,10 @@ private:
     */ 
     std::unordered_map<std::string, int> variableBindings;
 
+    // information about how much memory is needed to preserve previous stack
+    // currently only stores state of $fp and $31
+    int storeSize = 16;
+    
     // information about current memory occupied by variables
     int memOcc = 0;
 
@@ -66,12 +70,6 @@ private:
     Frame *parentFrame;
 
 public:
-    /* 
-        Memory address where the last result is stored relative to the stack pointer.
-        For array, this points to beginning of the array.
-    */
-    int lastResultMemAddress;
-
     Frame(Frame* _parentFrame = nullptr);
 
     ~Frame();
@@ -93,12 +91,17 @@ public:
 
     /*
         Used for moving '$sp' pointer when creating new stack frame.
+        Is how much memory is required to preserve previous frames state.
 
         Stack frame must be doubleword (8 byte) aligned (MIPS ABI).
     */
-    int getFrameSize() const;
+    int getStoreSize() const;
 
-    int getMemOcc() const;
+    /*
+        Used to set stack pointer in a new frame.
+        Is how much memory is required to contain all local variables
+    */
+    int getVarSize() const;
 
     int setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName);
 

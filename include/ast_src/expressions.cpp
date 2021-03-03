@@ -14,18 +14,12 @@ void AST_VarAssign::compile(std::ostream &assemblyOut){
     assemblyOut << std::endl << "# start var definition " << name << std::endl;
     expr->compile(assemblyOut);
 
-    // functions might be defined in external 'driver' file and hence don't load their return value into 'lastResultMemAddress'
-    // functions load result directly into $v0
-    if (!dynamic_cast<AST_FunctionCall*>(expr)) {
-        // load result of expression into register
-        assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
-    } else {
-        // load function call result into register
-        assemblyOut << "move $t0, $v0" << std::endl;
-    }
+    // load top of stack into register t0
+    assemblyOut << "lw $t0, 8($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
     // store register data into variable's memory address
-    assemblyOut << "sw $t0, " << frame->getMemoryAddress(name) << "($sp)" << std::endl;
+    assemblyOut << "sw $t0, -" << frame->getMemoryAddress(name) << "($fp)" << std::endl;
     
     assemblyOut << "# end var definition " << name << std::endl << std::endl;
 }
@@ -62,6 +56,9 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
 
     assemblyOut << "jal " << functionName << std::endl;
     assemblyOut << "nop" << std::endl;
+    
+    assemblyOut << "sw $v0, 0($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
     assemblyOut << "# end function call " << functionName << std::endl << std::endl;
 }
@@ -92,11 +89,11 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     left->compile(assemblyOut);
     // load result of left expression into register
     // use $t6 as lower $t registers might be used in other compile functions called on right
-    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+    assemblyOut << "lw $t6, 8($sp)" << std::endl;
 
     right->compile(assemblyOut);
     // load result of right expression into register
-    assemblyOut << "lw $t1, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+    assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
     switch (type) {
         case Type::LOGIC_OR:
@@ -321,10 +318,9 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     }
 
     // store result in memory
-    int relativeMemAddress = frame->getFrameSize() - frame->getMemOcc() - 5*4;
-    frame->lastResultMemAddress = relativeMemAddress;
-    assemblyOut << "sw $t3, " << relativeMemAddress << "($sp)" << std::endl;
-    
+    assemblyOut << "sw $t3, 16($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+
     assemblyOut << "# end " << binLabel << std::endl << std::endl; 
 }
 

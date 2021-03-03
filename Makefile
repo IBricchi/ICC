@@ -39,7 +39,7 @@ src/parser/lexer.yy.cpp : src/parser/lexer.l src/parser/parser.tab.hpp
 	g++ $(CPPFLAGS) -o src/parser/lexer.yy.o -c src/parser/lexer.yy.cpp
 
 touch :
-	find . -exec touch {} \;
+	find . -type f | xargs touch
 
 clean :
 	rm -f src/*.o
