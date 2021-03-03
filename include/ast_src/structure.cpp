@@ -61,6 +61,7 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         // body
         body->compile(assemblyOut);
         
+        // jump back to wherever function was called from
         assemblyOut << "j $31" << std::endl;
         assemblyOut << "nop" << std::endl;
 
