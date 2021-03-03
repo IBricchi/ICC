@@ -11,6 +11,9 @@
   void yyerror(const char *);
 }
 
+// debugging
+%define parse.error verbose
+
 // Represents the value associated with any kind of
 // AST node.
 %union{
@@ -73,8 +76,8 @@ DECLARATION : FUN_DECLARATION { $$ = $1; }
             | STATEMENT       { $$ = $1; }
             ;
 
-FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK { $$ = new AST_FunDeclaration("int", $2, $5); }
-                | T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R { $$ = new AST_FunDeclaration("int", $2); }
+FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON { $$ = new AST_FunDeclaration("int", $2); }
+                | T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK { $$ = new AST_FunDeclaration("int", $2, $5); }
                 ;
 
 VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                                { $$ = new AST_VarDeclaration("int", $2); }
