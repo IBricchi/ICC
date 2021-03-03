@@ -49,7 +49,9 @@ int Frame::getFrameSize() const {
         Avoids the need of keeping track of initial frame size for use in ASTReturn (popping frame of stack)
             => assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
     */
-    return 25*8;
+
+    // return 25*8;
+    return (memOcc % 8 == 0) ? (memOcc + 8) : (memOcc + 12);
 }
 
 int Frame::getMemOcc() const {

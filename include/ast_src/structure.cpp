@@ -37,6 +37,7 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
 }
 
 void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
+    assemblyOut << std::endl << "# start function declaration for "<< name << std::endl;
     if (body != nullptr) {
         // function header
         assemblyOut << ".align  2" << std::endl;
@@ -58,6 +59,9 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
 
         // body
         body->compile(assemblyOut);
+        
+        assemblyOut << "j $31" << std::endl;
+        assemblyOut << "nop" << std::endl;
 
         // function footer
         assemblyOut << ".set	macro" << std::endl;
@@ -65,6 +69,7 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         assemblyOut << ".end    " << name << std::endl;
         assemblyOut << ".size	" << name << ", .-" << name << std::endl;
     }
+    assemblyOut << "# end function declaration for " << name << std::endl;
 }
 
 AST_FunDeclaration::~AST_FunDeclaration() {
@@ -88,12 +93,7 @@ void AST_VarDeclaration::generateFrames(Frame* _frame){
 }
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
-    /*
-        Need to add variable to current frame and assign a memory address to it.
-        Don't yet change the value stored in that memory address. This should be
-        handled by 'AST_Assignment'.
-    */
-    frame->addVariable(name, getTypeByteSize(type));
+    
 }
 
 AST_VarDeclaration::~AST_VarDeclaration() {
