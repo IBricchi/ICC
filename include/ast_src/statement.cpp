@@ -99,7 +99,25 @@ void AST_WhileStmt::generateFrames(Frame* _frame){
 }
 
 void AST_WhileStmt::compile(std::ostream &assemblyOut){
-    throw std::runtime_error("AST_WhileStmt: Note Implemented Yet.\n");
+    std::string startLoopLabel = generateUniqueLabel("startLoop");
+    std::string endLoopLabel = generateUniqueLabel("endLoop");
+
+    assemblyOut << startLoopLabel << ":" << std::endl;
+
+    // load result of condition into register
+    cond->compile(assemblyOut);
+    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+
+    // branch if condition is false
+    assemblyOut << "beq $t6, $0, " << endLoopLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+
+    // compile body
+    body->compile(assemblyOut);
+    assemblyOut << "j " << startLoopLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+
+    assemblyOut << endLoopLabel << ":" << std::endl;
 }
 
 AST_WhileStmt::~AST_WhileStmt(){
