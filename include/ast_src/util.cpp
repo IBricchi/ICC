@@ -8,7 +8,7 @@ int getTypeByteSize(const std::string &type) {
     throw std::runtime_error("getTypeByteSize: Not Implemented Yet.\n");
 }
 
-int uniqueLabelCount = 0;
 std::string generateUniqueLabel(const std::string &labelName) {
+    static int uniqueLabelCount = 0;
     return labelName + std::to_string(uniqueLabelCount++);
 }

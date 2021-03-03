@@ -34,22 +34,12 @@ int Frame::getMemoryAddress(const std::string &variableName) const {
 
 void Frame::addVariable(const std::string &variableName, int byteSize) {
     variableBindings[variableName] = memOcc;
-    memOcc += byteSize;
+    memOcc += byteSize + byteSize % 8;
 }
 
 int Frame::getFrameSize() const {
-    // Trivial static implementation
-
-    // Ensure that value is doubleword aligned
-    //return (memOcc % 8 == 0) ? (memOcc + 25*8) : (memOcc + 25*8 + 4);
-
-    /*
-        Trivial solution => Allocate more space than ever needed (very inefficient)
-
-        Avoids the need of keeping track of initial frame size for use in ASTReturn (popping frame of stack)
-            => assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
-    */
-    return 25*8;
+    // adds offset for 2 bytes of memory related to storing previous frames information
+    return memOcc + 16;
 }
 
 int Frame::getMemOcc() const {

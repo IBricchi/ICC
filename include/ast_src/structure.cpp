@@ -1,4 +1,5 @@
 #include "structure.hpp"
+#include "expression.hpp"
 
 AST_Sequence::AST_Sequence(AST* _first, AST* _second) :
     first(_first),
@@ -37,6 +38,7 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
 }
 
 void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
+    assemblyOut << std::endl << "# start function declaration for "<< name << std::endl;
     if (body != nullptr) {
         // function header
         assemblyOut << ".align  2" << std::endl;
@@ -58,6 +60,9 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
 
         // body
         body->compile(assemblyOut);
+        
+        assemblyOut << "j $31" << std::endl;
+        assemblyOut << "nop" << std::endl;
 
         // function footer
         assemblyOut << ".set	macro" << std::endl;
@@ -65,6 +70,7 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         assemblyOut << ".end    " << name << std::endl;
         assemblyOut << ".size	" << name << ", .-" << name << std::endl;
     }
+    assemblyOut << "# end function declaration for " << name << std::endl << std::endl;
 }
 
 AST_FunDeclaration::~AST_FunDeclaration() {
@@ -89,7 +95,9 @@ void AST_VarDeclaration::generateFrames(Frame* _frame){
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
     if (expr != nullptr) {
-        expr->compile(assemblyOut);
+        assemblyOut << std::endl << "#start var dec with definition " << name << std::endl;
+
+      expr->compile(assemblyOut);
 
         // functions might be defined in external 'driver' file and hence don't load their return value into 'lastResultMemAddress'
         // functions load result directly into $v0
@@ -103,6 +111,8 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
 
         // store register data into variable's memory address
         assemblyOut << "sw $t0, " << frame->getMemoryAddress(name) << "($sp)" << std::endl;
+        
+        assemblyOut << "#end var dec with definition " << name << std::endl << std::endl;
     }
 }
 

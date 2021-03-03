@@ -10,6 +10,10 @@ void AST_Return::generateFrames(Frame* _frame){
 }
 
 void AST_Return::compile(std::ostream &assemblyOut) {
+    std::string retLab = generateUniqueLabel("return");
+    assemblyOut << std::endl << "# start " << retLab << std::endl;
+
+
     if (expr == nullptr) {
         // return 0 by default
         assemblyOut << "addiu $v0, $0, $0" << std::endl;
@@ -27,6 +31,8 @@ void AST_Return::compile(std::ostream &assemblyOut) {
             assemblyOut << "move $v0, $t0" << std::endl;
         }
     }
+
+    assemblyOut << "# end " << retLab << std::endl << std::endl;
 }
 
 AST_Return::~AST_Return() {
@@ -162,12 +168,14 @@ void AST_Block::generateFrames(Frame* _frame){
 }
 
 void AST_Block::compile(std::ostream &assemblyOut) {
+    std::string blockname = generateUniqueLabel("block");
+    assemblyOut << std::endl << "# start " << blockname << std::endl;
     // header
-    assemblyOut << ".frame	$fp, " << frame->getFrameSize() << " , $31" << std::endl;
-    assemblyOut << ".mask	0x40000000,-4" << std::endl;
-    assemblyOut << ".fmask	0x00000000,0" << std::endl;
-    assemblyOut << ".set	noreorder" << std::endl;
-    assemblyOut << ".set	nomacro" << std::endl;
+    // assemblyOut << ".frame	$fp, " << frame->getFrameSize() << " , $31" << std::endl;
+    // assemblyOut << ".mask	0x40000000,-4" << std::endl;
+    // assemblyOut << ".fmask	0x00000000,0" << std::endl;
+    // assemblyOut << ".set	noreorder" << std::endl;
+    // assemblyOut << ".set	nomacro" << std::endl;
 
     assemblyOut << "addiu $sp, $sp, -" << frame->getFrameSize() << std::endl;
     assemblyOut << "sw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
@@ -182,12 +190,12 @@ void AST_Block::compile(std::ostream &assemblyOut) {
     assemblyOut << "lw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
     assemblyOut << "lw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
-    assemblyOut << "j $31" << std::endl;
-    assemblyOut << "nop" << std::endl;
 
     // footer
-    assemblyOut << ".set	macro" << std::endl;
-    assemblyOut << ".set	reorder" << std::endl;
+    // assemblyOut << ".set	macro" << std::endl;
+    // assemblyOut << ".set	reorder" << std::endl;
+
+    assemblyOut << "# end " << blockname << std::endl << std::endl;
 }
 
 AST_Block::~AST_Block(){

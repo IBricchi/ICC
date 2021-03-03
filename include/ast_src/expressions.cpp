@@ -11,6 +11,7 @@ void AST_VarAssign::generateFrames(Frame* _frame){
 }
 
 void AST_VarAssign::compile(std::ostream &assemblyOut){
+    assemblyOut << std::endl << "# start var definition " << name << std::endl;
     expr->compile(assemblyOut);
 
     // functions might be defined in external 'driver' file and hence don't load their return value into 'lastResultMemAddress'
@@ -25,6 +26,8 @@ void AST_VarAssign::compile(std::ostream &assemblyOut){
 
     // store register data into variable's memory address
     assemblyOut << "sw $t0, " << frame->getMemoryAddress(name) << "($sp)" << std::endl;
+    
+    assemblyOut << "# end var definition " << name << std::endl << std::endl;
 }
 
 AST_VarAssign::~AST_VarAssign(){
@@ -51,6 +54,7 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
 }
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
+    assemblyOut << std::endl << "# start function call " << functionName << std::endl;
     for (AST* arg : args) {
         // ...
         throw std::runtime_error("AST_FunctionCall: Not Implemented For Arguments Yet.\n");
@@ -58,6 +62,8 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
 
     assemblyOut << "jal " << functionName << std::endl;
     assemblyOut << "nop" << std::endl;
+
+    assemblyOut << "# end function call " << functionName << std::endl << std::endl;
 }
 
 AST_FunctionCall::~AST_FunctionCall() {
@@ -81,6 +87,8 @@ void AST_BinOp::generateFrames(Frame* _frame){
 }
 
 void AST_BinOp::compile(std::ostream &assemblyOut) {
+    std::string binLabel = generateUniqueLabel("binOp");
+    assemblyOut << std::endl << "# start " << binLabel << std::endl; 
     left->compile(assemblyOut);
     // load result of left expression into register
     // use $t6 as lower $t registers might be used in other compile functions called on right
@@ -93,6 +101,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     switch (type) {
         case Type::LOGIC_OR:
         {
+            assemblyOut << "# " << binLabel << " is &&" << std::endl;
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string falseLabel = generateUniqueLabel("falseLabel");
             std::string endLabel = generateUniqueLabel("end");
@@ -117,6 +126,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::LOGIC_AND:
         {
+            assemblyOut << "# " << binLabel << " is ||" << std::endl;
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string falseLabel = generateUniqueLabel("falseLabel");
             std::string endLabel = generateUniqueLabel("end");
@@ -144,21 +154,25 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::BIT_OR:
         {
+            assemblyOut << "# " << binLabel << " is |" << std::endl;
             assemblyOut << "or $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::BIT_XOR:
         {
+            assemblyOut << "# " << binLabel << " is ^" << std::endl;
             assemblyOut << "xor $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::BIT_AND:
         {
+            assemblyOut << "# " << binLabel << " is &" << std::endl;
             assemblyOut << "and $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::EQUAL_EQUAL:
         {
+            assemblyOut << "# " << binLabel << " is ==" << std::endl;
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
 
@@ -177,6 +191,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::BANG_EQUAL:
         {
+            assemblyOut << "# " << binLabel << " is !=" << std::endl;
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
 
@@ -195,11 +210,13 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::LESS:
         {
+            assemblyOut << "# " << binLabel << " is <" << std::endl;
             assemblyOut << "slt $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::LESS_EQUAL:
         {   
+            assemblyOut << "# " << binLabel << " is <=" << std::endl;
             // less_equal if not greater
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
@@ -220,11 +237,13 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::GREATER:
         {
+            assemblyOut << "# " << binLabel << " is >" << std::endl;
             assemblyOut << "slt $t3, $t1, $t6" << std::endl;
             break;
         }
         case Type::GREATER_EQUAL:
         {   
+            assemblyOut << "# " << binLabel << " is >=" << std::endl;
             // greater_equal if not less
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
@@ -245,26 +264,31 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::SHIFT_L:
         {
+            assemblyOut << "# " << binLabel << " is <<" << std::endl;
             assemblyOut << "sll $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::SHIFT_R:
         {
+            assemblyOut << "# " << binLabel << " is >>" << std::endl;
             assemblyOut << "srl $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::PLUS:
         {
+            assemblyOut << "# " << binLabel << " is +" << std::endl;
             assemblyOut << "add $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::MINUS:
         {
+            assemblyOut << "# " << binLabel << " is -" << std::endl;
             assemblyOut << "sub $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::STAR:
         {
+            assemblyOut << "# " << binLabel << " is *" << std::endl;
             assemblyOut << "mult $t6, $t1" << std::endl;
 
             // only care about 32 least significant bits
@@ -273,6 +297,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::SLASH_F:
         {
+            assemblyOut << "# " << binLabel << " is /" << std::endl;
             assemblyOut << "div $t6, $t1" << std::endl;
 
             // only care about quotient for fixed point division (get remainder using 'mfhi')
@@ -281,6 +306,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::PERCENT:
         {
+            assemblyOut << "# " << binLabel << " is %" << std::endl;
             assemblyOut << "div $t6, $t1" << std::endl;
 
             // only care about remainder
@@ -298,6 +324,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     int relativeMemAddress = frame->getFrameSize() - frame->getMemOcc() - 5*4;
     frame->lastResultMemAddress = relativeMemAddress;
     assemblyOut << "sw $t3, " << relativeMemAddress << "($sp)" << std::endl;
+    
+    assemblyOut << "# end " << binLabel << std::endl << std::endl; 
 }
 
 AST_BinOp::~AST_BinOp(){
