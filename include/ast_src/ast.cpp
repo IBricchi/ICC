@@ -45,9 +45,19 @@ int Frame::getVarSize() const {
     return memOcc;
 }
 
-int Frame::setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName) {
+void Frame::setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName) {
     startLoopLabelName = _startLoopLabelName;
     endLoopLabelName = _endLoopLabelName;
+}
+
+int Frame::getDistanceToFun(){
+    int i = 0;
+    Frame* frame = this;
+    while(!frame->isFun){
+        i++;
+        frame = frame->parentFrame;
+    }
+    return i;
 }
 
 std::string Frame::getStartLoopLabelName() const {

@@ -27,6 +27,21 @@ void AST_Return::compile(std::ostream &assemblyOut) {
         // TODO! loop out of scopes untill you reach function scope
     }
 
+    // skip through frames between current frame and function frame
+    for(int i = 0; i < frame->getDistanceToFun(); i++){
+        assemblyOut << "lw $fp, 12($fp)" << std::endl;
+    }
+
+    // exit last frame properly
+    assemblyOut << "move $sp, $fp" << std::endl;
+    assemblyOut << "lw $31, 8($sp)" << std::endl;
+    assemblyOut << "lw $fp, 12($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
+    
+    // jump back to wherever you called the function from
+    assemblyOut << "jr $31" << std::endl;
+    assemblyOut << "nop" << std::endl;
+
     assemblyOut << "# end " << retLab << std::endl << std::endl;
 }
 
@@ -161,7 +176,7 @@ void AST_WhileStmt::compile(std::ostream &assemblyOut){
     // load result of condition into register
     cond->compile(assemblyOut);
     assemblyOut << "lw $t6, 8($sp)" << std::endl;
-    assemblyOut << "adiu $sp, $sp, 4" << std::endl;
+    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
     // branch if condition is false
     assemblyOut << "beq $t6, $0, " << endLoopLabel << std::endl;

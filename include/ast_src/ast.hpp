@@ -103,7 +103,20 @@ public:
     */
     int getVarSize() const;
 
-    int setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName);
+    void setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName);
+
+    /*
+        Used for 'return'
+
+        Functions set this flag to true, so when a return statement is called,
+        it can calculate exactly how many frames are between it and the function
+        it is returning a value for
+
+        Expects there to be a function
+        Does not do error checking
+    */
+    bool isFun = false;
+    int getDistanceToFun();
 
     /*
         First checks current frame, then parent frame.

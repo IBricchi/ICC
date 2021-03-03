@@ -34,6 +34,7 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
     // will handle generating the new frame
     if (body != nullptr) {
         body->generateFrames(_frame);
+        body->frame->isFun = true;
     } 
 }
 
@@ -51,6 +52,9 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         // create label
         assemblyOut << name << ":" << std::endl;
 
+        // move stack pointer down to allocate space for temporary variables in frame
+        assemblyOut << "addiu $sp, $sp, -" << frame->getVarSize() << std::endl;
+
         // function header 2
         assemblyOut << ".frame	$fp, " << frame->getStoreSize() << " , $31" << std::endl;
         assemblyOut << ".mask	0x40000000,-4" << std::endl;
@@ -61,7 +65,8 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         // body
         body->compile(assemblyOut);
         
-        // jump back to wherever function was called from
+        // jump back to wherever function was called from (this is only in place in case of void functions)
+        // normally return statement will handle jumping
         assemblyOut << "j $31" << std::endl;
         assemblyOut << "nop" << std::endl;
 
