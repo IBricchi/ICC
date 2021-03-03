@@ -86,14 +86,11 @@ void AST_BinOp::generateFrames(Frame* _frame){
 void AST_BinOp::compile(std::ostream &assemblyOut) {
     std::string binLabel = generateUniqueLabel("binOp");
     assemblyOut << std::endl << "# start " << binLabel << std::endl; 
-    left->compile(assemblyOut);
+    
     // load result of left expression into register
     // use $t6 as lower $t registers might be used in other compile functions called on right
+    left->compile(assemblyOut);
     assemblyOut << "lw $t6, 8($sp)" << std::endl;
-
-    right->compile(assemblyOut);
-    // load result of right expression into register
-    assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
     switch (type) {
         case Type::LOGIC_OR:
@@ -106,6 +103,10 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // evaluate first expression first => short-circuit evaluation
             assemblyOut << "bne $t6, $0, " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
+            
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "bne $t1, $0, " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
@@ -130,6 +131,10 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
 
             assemblyOut << "beq $t6, $0, " << falseLabel << std::endl;
             assemblyOut << "nop" << std::endl;
+            
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "beq $t1, $0, " << falseLabel << std::endl;
             assemblyOut << "nop" << std::endl;
@@ -151,24 +156,41 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::BIT_OR:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is |" << std::endl;
             assemblyOut << "or $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::BIT_XOR:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+            
             assemblyOut << "# " << binLabel << " is ^" << std::endl;
             assemblyOut << "xor $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::BIT_AND:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+            
+            
             assemblyOut << "# " << binLabel << " is &" << std::endl;
             assemblyOut << "and $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::EQUAL_EQUAL:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+                        
             assemblyOut << "# " << binLabel << " is ==" << std::endl;
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
@@ -188,6 +210,10 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::BANG_EQUAL:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+                        
             assemblyOut << "# " << binLabel << " is !=" << std::endl;
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
@@ -207,12 +233,20 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::LESS:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is <" << std::endl;
             assemblyOut << "slt $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::LESS_EQUAL:
-        {   
+        {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is <=" << std::endl;
             // less_equal if not greater
             std::string trueLabel = generateUniqueLabel("trueLabel");
@@ -234,12 +268,20 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::GREATER:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is >" << std::endl;
             assemblyOut << "slt $t3, $t1, $t6" << std::endl;
             break;
         }
         case Type::GREATER_EQUAL:
-        {   
+        {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is >=" << std::endl;
             // greater_equal if not less
             std::string trueLabel = generateUniqueLabel("trueLabel");
@@ -261,30 +303,50 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::SHIFT_L:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is <<" << std::endl;
             assemblyOut << "sll $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::SHIFT_R:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is >>" << std::endl;
             assemblyOut << "srl $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::PLUS:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is +" << std::endl;
             assemblyOut << "add $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::MINUS:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is -" << std::endl;
             assemblyOut << "sub $t3, $t6, $t1" << std::endl;
             break;
         }
         case Type::STAR:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is *" << std::endl;
             assemblyOut << "mult $t6, $t1" << std::endl;
 
@@ -294,6 +356,10 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::SLASH_F:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is /" << std::endl;
             assemblyOut << "div $t6, $t1" << std::endl;
 
@@ -303,6 +369,10 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
         case Type::PERCENT:
         {
+            // load result of right expression into register
+            right->compile(assemblyOut);
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
             assemblyOut << "# " << binLabel << " is %" << std::endl;
             assemblyOut << "div $t6, $t1" << std::endl;
 
