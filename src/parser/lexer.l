@@ -42,6 +42,7 @@ extern "C" int fileno(FILE *stream);
 "+"       { return T_PLUS; }
 "-"       { return T_MINUS; }
 "*"       { return T_STAR; }
+"//".*    { /* DO NOTHING */ }
 "/"       { return T_SLASH_F; }
 "%"       { return T_PERCENT; }
 "!"       { return T_BANG; }
