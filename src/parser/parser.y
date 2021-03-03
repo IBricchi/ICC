@@ -25,7 +25,7 @@
 
 %token <INT> T_CONST_INT
 
-%token T_RETURN T_IF T_ELSE T_WHILE
+%token T_RETURN T_IF T_ELSE T_WHILE T_BREAK T_CONTINUE
 
 %token T_COMMA T_SEMI_COLON
 %token T_BRACK_L T_BRACK_R
@@ -45,7 +45,7 @@
 %token T_BANG T_NOT
 
 %type <NODE> PROGRAM SEQUENCE DECLARATION FUN_DECLARATION VAR_DECLARATION // Structures
-%type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT IF_STMT WHILE_STMT BLOCK // Statements
+%type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT IF_STMT WHILE_STMT BLOCK // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY CALL PRIMARY // Expressions
 
@@ -83,6 +83,8 @@ VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                               
 
 STATEMENT : EXPRESSION_STMT { $$ = $1; }
           | RETURN_STMT     { $$ = $1; }
+          | BREAK_STMT      { $$ = $1; }
+          | CONTINUE_STMT   { $$ = $1; }
           | IF_STMT         { $$ = $1; }
           | WHILE_STMT      { $$ = $1; }
           | BLOCK           { $$ = $1; }
@@ -94,6 +96,12 @@ EXPRESSION_STMT : EXPRESSION T_SEMI_COLON { $$ = $1; }
 RETURN_STMT : T_RETURN T_SEMI_COLON            { $$ = new AST_Return(); }
             | T_RETURN EXPRESSION T_SEMI_COLON { $$ = new AST_Return($2); }
             ;
+
+BREAK_STMT : T_BREAK T_SEMI_COLON { $$ = new AST_Break(); }
+           ;
+
+CONTINUE_STMT : T_CONTINUE T_SEMI_COLON { $$ = new AST_Continue(); }
+              ;
 
 IF_STMT : T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT    %prec NO_ELSE { $$ = new AST_IfStmt($3, $5); }
         | T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT T_ELSE STATEMENT { $$ = new AST_IfStmt($3, $5, $7); }

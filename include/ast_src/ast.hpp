@@ -16,10 +16,9 @@ class Frame;
 */
 class AST
 {
-protected:
+public:
     Frame* frame;
 
-public:
     virtual ~AST();
     
     /*
@@ -48,6 +47,17 @@ private:
 
     // information about current memory occupied by variables
     int memOcc = 0;
+
+    /* 
+        Used for 'break' and 'continue'.
+
+        Enough for them to be strings as should never have more than one active loop
+        in one frame (Every block created as new frame).
+
+        Must set these to "" after a loop is finished!
+    */
+    std::string startLoopLabelName;
+    std::string endLoopLabelName;
 
     /*
         Pointer to the parent frame.
@@ -89,4 +99,13 @@ public:
     int getFrameSize() const;
 
     int getMemOcc() const;
+
+    int setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName);
+
+    /*
+        First checks current frame, then parent frame.
+        Does not do error checking.
+    */
+    std::string getStartLoopLabelName() const;
+    std::string getEndLoopLabelName() const;
 };

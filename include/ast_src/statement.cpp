@@ -33,6 +33,28 @@ AST_Return::~AST_Return() {
     delete expr;
 }
 
+void AST_Break::generateFrames(Frame* _frame) {
+    frame = _frame;
+}
+
+void AST_Break::compile(std::ostream &assemblyOut) {
+    std::string endLoopLabel = frame->getEndLoopLabelName();
+
+    assemblyOut << "j " << endLoopLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+}
+
+void AST_Continue::generateFrames(Frame* _frame) {
+    frame = _frame;
+}
+
+void AST_Continue::compile(std::ostream &assemblyOut) {
+    std::string startLoopLabel = frame->getStartLoopLabelName();
+
+    assemblyOut << "j " << startLoopLabel << std::endl;
+    assemblyOut << "nop" << std::endl;
+}
+
 AST_IfStmt::AST_IfStmt(AST* _cond, AST* _then, AST* _other) :
     cond(_cond),
     then(_then),
@@ -102,6 +124,8 @@ void AST_WhileStmt::compile(std::ostream &assemblyOut){
     std::string startLoopLabel = generateUniqueLabel("startLoop");
     std::string endLoopLabel = generateUniqueLabel("endLoop");
 
+    frame->setLoopLabelNames(startLoopLabel, endLoopLabel);
+
     assemblyOut << startLoopLabel << ":" << std::endl;
 
     // load result of condition into register
@@ -118,6 +142,8 @@ void AST_WhileStmt::compile(std::ostream &assemblyOut){
     assemblyOut << "nop" << std::endl;
 
     assemblyOut << endLoopLabel << ":" << std::endl;
+
+    frame->setLoopLabelNames("", "");
 }
 
 AST_WhileStmt::~AST_WhileStmt(){

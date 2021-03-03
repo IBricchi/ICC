@@ -11,12 +11,14 @@ extern "C" int fileno(FILE *stream);
 
 %%
 
-"int"     { return T_INT; }
+"int"      { return T_INT; }
 
-"return"  { return T_RETURN; }
-"if"      { return T_IF; }
-"else"    { return T_ELSE; }
-"while"   { return T_WHILE; }
+"return"   { return T_RETURN; }
+"if"       { return T_IF; }
+"else"     { return T_ELSE; }
+"while"    { return T_WHILE; }
+"break"    { return T_BREAK; }
+"continue" { return T_CONTINUE; }
 
 ","       { return T_COMMA; }
 ";"       { return T_SEMI_COLON; }
