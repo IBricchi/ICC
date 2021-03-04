@@ -210,7 +210,9 @@ AST_Block::AST_Block(AST* _body):
 void AST_Block::generateFrames(Frame* _frame){
     // here we creat a new frame since blocks generate new scopes
     frame = new Frame(_frame);
-    body->generateFrames(frame);
+    if(body != nullptr){
+        body->generateFrames(frame);
+    }
 }
 
 void AST_Block::compile(std::ostream &assemblyOut) {

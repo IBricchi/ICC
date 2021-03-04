@@ -13,5 +13,5 @@ int f()
         int x = 20;
     }
 
-    return x == 10;
+    return x;
 }

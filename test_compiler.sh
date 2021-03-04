@@ -60,7 +60,7 @@ if [[ "$TESTCASE" != "all" ]] ; then
     qemu-mips ${BIN}/out
     RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
-        tput setaf 1; echo "  ${TESTCASE} FAIL    # qemu"; tput sgr0
+        tput setaf 1; echo "  ${TESTCASE} FAIL    # qemu returned ${RESULT}"; tput sgr0
         cat ${ERROR_LOG_FILE}
         exit
     fi
