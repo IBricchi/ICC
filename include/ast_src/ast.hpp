@@ -81,7 +81,8 @@ public:
         Expects the variable to exist in its current frame or one of its parent frame:
         Does not do error checking.
     */
-    int getMemoryAddress(const std::string &variableName) const;
+    int getVarPos(const std::string& variableName) const;
+    std::pair<int, int> getVarAddress(const std::string &variableName);
 
     /*
         Does not check if variable already exists.
