@@ -24,16 +24,24 @@ Frame::~Frame() {
     delete parentFrame;
 }
 
-int Frame::getMemoryAddress(const std::string &variableName) const {
-    // first try to find in current frame
+int Frame::getVarPos(const std::string &variableName) const{
     auto variableBinding = variableBindings.find(variableName);
     if (variableBinding != variableBindings.end()) {
         return variableBinding->second;
     }
-    
-    // variable does not exist in current frame
-    // try to find in parent frame
-    return parentFrame->getMemoryAddress(variableName);
+    return -1;
+}
+
+std::pair<int, int> Frame::getVarAddress(const std::string &variableName) {
+    int depth = 0;
+    Frame* frame = this;
+    int pos = frame->getVarPos(variableName);
+    while(pos == -1){
+        depth++;
+        frame = this->parentFrame;
+        pos = frame->getVarPos(variableName);
+    }
+    return {depth, pos};
 }
 
 void Frame::addVariable(const std::string &variableName, int byteSize) {

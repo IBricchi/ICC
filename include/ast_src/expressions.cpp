@@ -12,14 +12,23 @@ void AST_VarAssign::generateFrames(Frame* _frame){
 
 void AST_VarAssign::compile(std::ostream &assemblyOut){
     assemblyOut << std::endl << "# start var definition " << name << std::endl;
+
+    std::pair<int, int> varAddress = frame->getVarAddress(name);
+
     expr->compile(assemblyOut);
 
     // load top of stack into register t0
     assemblyOut << "lw $t0, 8($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
+    // coppy frame pointer to t1 and recurse back expected number of frames
+    assemblyOut << "move $t1, $fp" << std::endl;
+    for(int i = 0; i < varAddress.first; i++){
+        assemblyOut << "lw $t1, 12($t1)" << std::endl;
+    }
+
     // store register data into variable's memory address
-    assemblyOut << "sw $t0, -" << frame->getMemoryAddress(name) << "($fp)" << std::endl;
+    assemblyOut << "sw $t0, -" << varAddress.second << "($t1)" << std::endl;
     
     assemblyOut << "# end var definition " << name << std::endl << std::endl;
 }
