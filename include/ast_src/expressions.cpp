@@ -90,7 +90,6 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     // load result of left expression into register
     // use $t6 as lower $t registers might be used in other compile functions called on right
     left->compile(assemblyOut);
-    assemblyOut << "lw $t6, 8($sp)" << std::endl;
 
     switch (type) {
         case Type::LOGIC_OR:
@@ -101,6 +100,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             std::string endLabel = generateUniqueLabel("end");
 
             // evaluate first expression first => short-circuit evaluation
+            assemblyOut << "lw $t6, 8($sp)" << std::endl;
             assemblyOut << "bne $t6, $0, " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
             
@@ -158,6 +158,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is |" << std::endl;
@@ -168,6 +170,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
             
             assemblyOut << "# " << binLabel << " is ^" << std::endl;
@@ -178,6 +182,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
             
             
@@ -189,6 +195,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
                         
             assemblyOut << "# " << binLabel << " is ==" << std::endl;
@@ -212,6 +220,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
                         
             assemblyOut << "# " << binLabel << " is !=" << std::endl;
@@ -235,6 +245,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is <" << std::endl;
@@ -245,6 +257,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is <=" << std::endl;
@@ -270,6 +284,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is >" << std::endl;
@@ -280,6 +296,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is >=" << std::endl;
@@ -305,6 +323,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is <<" << std::endl;
@@ -315,6 +335,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is >>" << std::endl;
@@ -325,6 +347,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is +" << std::endl;
@@ -335,6 +359,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is -" << std::endl;
@@ -345,6 +371,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is *" << std::endl;
@@ -358,6 +386,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is /" << std::endl;
@@ -371,6 +401,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         {
             // load result of right expression into register
             right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t6, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is %" << std::endl;
