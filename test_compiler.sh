@@ -61,6 +61,7 @@ if [[ "$TESTCASE" != "all" ]] ; then
     RESULT=$?
     if [[ "${RESULT}" -ne 0 ]] ; then
         tput setaf 1; echo "  ${TESTCASE} FAIL    # qemu"; tput sgr0
+        echo "      Retuned result: ${RESULT}" 
         cat ${ERROR_LOG_FILE}
         exit
     fi
