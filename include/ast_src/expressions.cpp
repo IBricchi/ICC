@@ -442,7 +442,109 @@ void AST_UnOp::generateFrames(Frame* _frame){
 }
 
 void AST_UnOp::compile(std::ostream &assemblyOut) {
-    throw std::runtime_error("AST_UnOp: Not Implemented Yet.\n");
+    std::string unLabel = generateUniqueLabel("unOp");
+    assemblyOut << std::endl << "# start " << unLabel << std::endl;
+
+    operand->compile(assemblyOut);
+    assemblyOut << "lw $t0, 8($sp)" << std::endl;
+
+    switch (type) {
+        case Type::BANG:
+        {
+            // if 0, set to 1 else, set to 0
+            assemblyOut << "# " << unLabel << " is !" << std::endl;
+
+            std::string currentlyFalseLabel = generateUniqueLabel("currentlyFalseLabel");
+            std::string endLabel = generateUniqueLabel("end");
+
+            assemblyOut << "beq $t0, $0, " << currentlyFalseLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            // currently true
+            assemblyOut << "addiu $t1, $0, 0" << std::endl;
+            assemblyOut << "j " << endLabel << std::endl;
+            assemblyOut << "nop" << std::endl;
+
+            // currently false
+            assemblyOut << currentlyFalseLabel <<  ":" << std::endl;
+            assemblyOut << "addiu $t1, $0, 1" << std::endl;
+            
+            assemblyOut << endLabel << ":" << std::endl;
+            break;
+        }
+        case Type::NOT:
+        {
+            assemblyOut << "# " << unLabel << " is ~" << std::endl;
+
+            assemblyOut << "nor $t1, $t0, $t0" << std::endl;
+            break;
+        }
+        case Type::MINUS:
+        {
+            assemblyOut << "# " << unLabel << " is -" << std::endl;
+
+            assemblyOut << "subu $t1, $0, $t0" << std::endl;
+            break;
+        }
+        case Type::PRE_INCREMENT:
+        {
+            assemblyOut << "# " << unLabel << " is pre ++" << std::endl;
+
+            assemblyOut << "addiu $t1, $t0, 1" << std::endl;
+
+            // update variable
+            operand->updateVariable(assemblyOut, frame, "t1");
+            break;
+        }
+        case Type::PRE_DECREMENT:
+        {
+            assemblyOut << "# " << unLabel << " is pre --" << std::endl;
+
+            assemblyOut << "addiu $t1, $t0, -1" << std::endl;
+
+            // update variable
+            operand->updateVariable(assemblyOut, frame, "t1");
+            break;
+        }
+        case Type::POST_INCREMENT:
+        {
+            assemblyOut << "# " << unLabel << " is post ++" << std::endl;
+
+            // push onto operand stack
+            assemblyOut << "sw $t0, 8($sp)" << std::endl;
+
+            assemblyOut << "addiu $t1, $t0, 1" << std::endl;
+
+            // update variable
+            operand->updateVariable(assemblyOut, frame, "t1");
+            break;
+        }
+        case Type::POST_DECREMENT:
+        {
+            assemblyOut << "# " << unLabel << " is post --" << std::endl;
+            
+            // push onto operand stack
+            assemblyOut << "sw $t0, 8($sp)" << std::endl;
+
+            assemblyOut << "addiu $t1, $t0, -1" << std::endl;
+
+            // update variable
+            operand->updateVariable(assemblyOut, frame, "t1");
+            break;
+        }
+        default:
+        {
+            throw std::runtime_error("AST_BinOp: Not Implemented Yet.\n");
+            break;
+        }
+    }
+
+    // push onto operand stack
+    if (type != Type::POST_DECREMENT && type != Type::POST_INCREMENT) {
+        assemblyOut << "sw $t1, 8($sp)" << std::endl;
+    }
+
+    assemblyOut << "# end " << unLabel << std::endl << std::endl; 
 }
 
 AST_UnOp::~AST_UnOp(){

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast.hpp"
+#include "primitive.hpp"
 
 /*
     Var assign should change the value of the variable
@@ -80,7 +81,8 @@ public:
         LESS, LESS_EQUAL, GREATER, GREATER_EQUAL,
         SHIFT_L, SHIFT_R,
         PLUS, MINUS,
-        STAR, SLASH_F, PERCENT
+        STAR, SLASH_F, PERCENT,
+        EXP // NOT YET IMPLEMENTED
     };
 private:
     Type type;
@@ -101,7 +103,9 @@ class AST_UnOp
 public:
     // same reasoning as for the bin op
     enum struct Type{
-        BANG, NOT, MINUS, PLUS
+        BANG, NOT, MINUS, PLUS,
+        PRE_INCREMENT, PRE_DECREMENT,
+        POST_INCREMENT, POST_DECREMENT
     };
 private:
     Type type;
