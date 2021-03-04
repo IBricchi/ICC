@@ -38,6 +38,9 @@ src/parser/lexer.yy.cpp : src/parser/lexer.l src/parser/parser.tab.hpp
 	flex -o src/parser/lexer.yy.cpp src/parser/lexer.l
 	g++ $(CPPFLAGS) -o src/parser/lexer.yy.o -c src/parser/lexer.yy.cpp
 
+clean-bin:
+	rm -f bin/*
+
 clean :
 	rm -f src/*.o
 	rm -f bin/*
