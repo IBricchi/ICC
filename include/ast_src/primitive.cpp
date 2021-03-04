@@ -14,10 +14,9 @@ void AST_ConstInt::compile(std::ostream &assemblyOut){
     // load constant into register
     assemblyOut << "addiu $t0, $0, " << value << std::endl;
 
-    // store constant in memory
-    int relativeMemAddress = frame->getFrameSize() - frame->getMemOcc() - 5*4;
-    frame->lastResultMemAddress = relativeMemAddress;
-    assemblyOut << "sw $t0, " << relativeMemAddress << "($sp)" << std::endl;
+    // store constant to top of stack
+    assemblyOut << "sw $t0, 0($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
     assemblyOut << "# end const int " << value << std::endl << std::endl;
 }
@@ -34,12 +33,11 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start variable read " << name << std::endl;
 
     // load variable value into register
-    assemblyOut << "lw $t0, " << frame->getMemoryAddress(name) << "($sp)" << std::endl;
+    assemblyOut << "lw $t0, -" << frame->getMemoryAddress(name) << "($fp)" << std::endl;
 
     // store value in memory
-    int relativeMemAddress = frame->getFrameSize() - frame->getMemOcc() - 5*4;
-    frame->lastResultMemAddress = relativeMemAddress;
-    assemblyOut << "sw $t0, " << relativeMemAddress << "($sp)" << std::endl;
+    assemblyOut << "sw $t0, 0($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
     assemblyOut << "# end variable read " << name << std::endl << std::endl;
 }

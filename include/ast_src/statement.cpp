@@ -20,17 +20,27 @@ void AST_Return::compile(std::ostream &assemblyOut) {
     } else {
         // evaluate expression
         expr->compile(assemblyOut);
-
-        // functions might be defined in external 'driver' file and hence don't load their return value into 'lastResultMemAddress'
-        // functions load result directly into $v0
-        if (!dynamic_cast<AST_FunctionCall*>(expr)) {
-            // load result of expression into register
-            assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
-
-            // return result of expression
-            assemblyOut << "move $v0, $t0" << std::endl;
-        }
+        
+        // set return register to value on top of stack
+        assemblyOut << "lw $v0, 8($sp)" << std::endl;;
+        // no need to shift stack pointer since return will end a scope anyway
+        // TODO! loop out of scopes untill you reach function scope
     }
+
+    // skip through frames between current frame and function frame
+    for(int i = 0; i < frame->getDistanceToFun(); i++){
+        assemblyOut << "lw $fp, 12($fp)" << std::endl;
+    }
+
+    // exit last frame properly
+    assemblyOut << "move $sp, $fp" << std::endl;
+    assemblyOut << "lw $31, 8($sp)" << std::endl;
+    assemblyOut << "lw $fp, 12($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
+    
+    // jump back to wherever you called the function from
+    assemblyOut << "jr $31" << std::endl;
+    assemblyOut << "nop" << std::endl;
 
     assemblyOut << "# end " << retLab << std::endl << std::endl;
 }
@@ -44,10 +54,16 @@ void AST_Break::generateFrames(Frame* _frame) {
 }
 
 void AST_Break::compile(std::ostream &assemblyOut) {
+    std::string returnLab = generateUniqueLabel("return");
+    assemblyOut << std::endl << "# start " << returnLab << std::endl;
+
     std::string endLoopLabel = frame->getEndLoopLabelName();
 
+    // jumps to the end of a loop
     assemblyOut << "j " << endLoopLabel << std::endl;
     assemblyOut << "nop" << std::endl;
+
+    assemblyOut << "# end " << returnLab << std::endl << std::endl;
 }
 
 void AST_Continue::generateFrames(Frame* _frame) {
@@ -55,10 +71,16 @@ void AST_Continue::generateFrames(Frame* _frame) {
 }
 
 void AST_Continue::compile(std::ostream &assemblyOut) {
+    std::string continueLab = generateUniqueLabel("continue");
+    assemblyOut << std::endl << "# start " << continueLab << std::endl;
+
     std::string startLoopLabel = frame->getStartLoopLabelName();
 
+    // jumps to the begining of a loop
     assemblyOut << "j " << startLoopLabel << std::endl;
     assemblyOut << "nop" << std::endl;
+
+    assemblyOut << "# end " << continueLab << std::endl << std::endl;
 }
 
 AST_IfStmt::AST_IfStmt(AST* _cond, AST* _then, AST* _other) :
@@ -80,10 +102,15 @@ void AST_IfStmt::generateFrames(Frame* _frame){
 }
 
 void AST_IfStmt::compile(std::ostream &assemblyOut) {
+    std::string ifLab = generateUniqueLabel("if");
+    assemblyOut << std::endl << "# start " << ifLab << std::endl;
+
+    // compile condition code
     cond->compile(assemblyOut);
     // load result of cond expression into register
     // use $t6 as lower $t registers might be used in other compile functions called on right
-    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+    assemblyOut << "lw $t6, 8($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
    
     std::string elseLabel = generateUniqueLabel("elseLabel");
     std::string endLabel = generateUniqueLabel("endLabel");
@@ -94,16 +121,22 @@ void AST_IfStmt::compile(std::ostream &assemblyOut) {
 
     // compile then
     then->compile(assemblyOut);
+
+    // always jump to end after going through if branch
     assemblyOut << "j " << endLabel << std::endl;
     assemblyOut << "nop" << std::endl;
 
+    // set else label position
     assemblyOut << elseLabel << ":" << std::endl;
     if (other != nullptr) {
         // compile other
         other->compile(assemblyOut);
     }
 
+    // set end label position
     assemblyOut << endLabel << ":" << std::endl;
+    
+    assemblyOut << "# end " << ifLab << std::endl << std::endl;
 }
 
 AST_IfStmt::~AST_IfStmt(){
@@ -127,16 +160,23 @@ void AST_WhileStmt::generateFrames(Frame* _frame){
 }
 
 void AST_WhileStmt::compile(std::ostream &assemblyOut){
+    std::string whileLab = generateUniqueLabel("while");
+    assemblyOut << std::endl << "# start " << whileLab << std::endl; 
+
     std::string startLoopLabel = generateUniqueLabel("startLoop");
     std::string endLoopLabel = generateUniqueLabel("endLoop");
 
+    // setup labels for looping in the current frame
+    // needed for continue and break statements
     frame->setLoopLabelNames(startLoopLabel, endLoopLabel);
 
+    // set start of loop label position
     assemblyOut << startLoopLabel << ":" << std::endl;
 
     // load result of condition into register
     cond->compile(assemblyOut);
-    assemblyOut << "lw $t6, " << frame->lastResultMemAddress << "($sp)" << std::endl;
+    assemblyOut << "lw $t6, 8($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
     // branch if condition is false
     assemblyOut << "beq $t6, $0, " << endLoopLabel << std::endl;
@@ -144,12 +184,18 @@ void AST_WhileStmt::compile(std::ostream &assemblyOut){
 
     // compile body
     body->compile(assemblyOut);
+    
+    // always jump back to start of loop
     assemblyOut << "j " << startLoopLabel << std::endl;
     assemblyOut << "nop" << std::endl;
 
+    // set end of loop label position
     assemblyOut << endLoopLabel << ":" << std::endl;
 
+    // remove loop labels from 
     frame->setLoopLabelNames("", "");
+
+    assemblyOut << "# end " << whileLab << std::endl << std::endl;
 }
 
 AST_WhileStmt::~AST_WhileStmt(){
@@ -177,19 +223,25 @@ void AST_Block::compile(std::ostream &assemblyOut) {
     // assemblyOut << ".set	noreorder" << std::endl;
     // assemblyOut << ".set	nomacro" << std::endl;
 
-    assemblyOut << "addiu $sp, $sp, -" << frame->getFrameSize() << std::endl;
-    assemblyOut << "sw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
-    assemblyOut << "sw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
+    // increase size of current frame by required ammount for storing previous state data
+    // currently storing only $31, and $fp
+    assemblyOut << "addiu $sp, $sp, -" << frame->getStoreSize() << std::endl;
+    assemblyOut << "sw $31, 8($sp)" << std::endl;
+    assemblyOut << "sw $fp, 12($sp)" << std::endl;
     assemblyOut << "move $fp, $sp" << std::endl;
-    
+
+    // move stack pointer down to allocate space for temporary variables in frame
+    assemblyOut << "addiu $sp, $sp, -" << frame->getVarSize() << std::endl;
+
     if (body != nullptr) {
         body->compile(assemblyOut);
     }
 
+    // move fp back to start of frame and re-instate previous frame
     assemblyOut << "move $sp, $fp" << std::endl;
-    assemblyOut << "lw $31, " << frame->getFrameSize() - 4 << "($sp)" << std::endl;
-    assemblyOut << "lw $fp, " << frame->getFrameSize() - 8 << "($sp)" << std::endl;
-    assemblyOut << "addiu $sp, $sp, " << frame->getFrameSize() << std::endl;
+    assemblyOut << "lw $31, 8($sp)" << std::endl;
+    assemblyOut << "lw $fp, 12($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
 
     // footer
     // assemblyOut << ".set	macro" << std::endl;

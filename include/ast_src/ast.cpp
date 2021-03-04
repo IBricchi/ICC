@@ -34,21 +34,30 @@ int Frame::getMemoryAddress(const std::string &variableName) const {
 
 void Frame::addVariable(const std::string &variableName, int byteSize) {
     variableBindings[variableName] = memOcc;
-    memOcc += byteSize + byteSize % 8;
+    memOcc += byteSize * 4;
 }
 
-int Frame::getFrameSize() const {
-    // adds offset for 2 bytes of memory related to storing previous frames information
-    return memOcc + 16;
+int Frame::getStoreSize() const {
+    return storeSize;
 }
 
-int Frame::getMemOcc() const {
+int Frame::getVarSize() const {
     return memOcc;
 }
 
-int Frame::setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName) {
+void Frame::setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName) {
     startLoopLabelName = _startLoopLabelName;
     endLoopLabelName = _endLoopLabelName;
+}
+
+int Frame::getDistanceToFun(){
+    int i = 0;
+    Frame* frame = this;
+    while(!frame->isFun){
+        i++;
+        frame = frame->parentFrame;
+    }
+    return i;
 }
 
 std::string Frame::getStartLoopLabelName() const {

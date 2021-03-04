@@ -34,6 +34,7 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
     // will handle generating the new frame
     if (body != nullptr) {
         body->generateFrames(_frame);
+        body->frame->isFun = true;
     } 
 }
 
@@ -51,8 +52,11 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         // create label
         assemblyOut << name << ":" << std::endl;
 
+        // move stack pointer down to allocate space for temporary variables in frame
+        assemblyOut << "addiu $sp, $sp, -" << frame->getVarSize() << std::endl;
+
         // function header 2
-        assemblyOut << ".frame	$fp, " << frame->getFrameSize() << " , $31" << std::endl;
+        assemblyOut << ".frame	$fp, " << frame->getStoreSize() << " , $31" << std::endl;
         assemblyOut << ".mask	0x40000000,-4" << std::endl;
         assemblyOut << ".fmask	0x00000000,0" << std::endl;
         assemblyOut << ".set	noreorder" << std::endl;
@@ -61,6 +65,8 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         // body
         body->compile(assemblyOut);
         
+        // jump back to wherever function was called from (this is only in place in case of void functions)
+        // normally return statement will handle jumping
         assemblyOut << "j $31" << std::endl;
         assemblyOut << "nop" << std::endl;
 
@@ -97,17 +103,11 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
     if (expr != nullptr) {
         assemblyOut << std::endl << "#start var dec with definition " << name << std::endl;
 
-      expr->compile(assemblyOut);
+        expr->compile(assemblyOut);
 
-        // functions might be defined in external 'driver' file and hence don't load their return value into 'lastResultMemAddress'
-        // functions load result directly into $v0
-        if (!dynamic_cast<AST_FunctionCall*>(expr)) {
-            // load result of expression into register
-            assemblyOut << "lw $t0, " << frame->lastResultMemAddress << "($sp)" << std::endl;
-        } else {
-            // load function call result into register
-            assemblyOut << "move $t0, $v0" << std::endl;
-        }
+        // load top of stack into register t0
+        assemblyOut << "lw $t0, 8($sp)" << std::endl;
+        assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
         // store register data into variable's memory address
         assemblyOut << "sw $t0, " << frame->getMemoryAddress(name) << "($sp)" << std::endl;
