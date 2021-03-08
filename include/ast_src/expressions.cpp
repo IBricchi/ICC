@@ -35,7 +35,7 @@ AST_FunctionCall::AST_FunctionCall(std::string* _functionName, std::vector<AST*>
     args(_args)
 {
     parity = 0;
-    if(_args == nullptr) parity = _args->size();
+    if(_args != nullptr) parity = _args->size();
 }
 
 void AST_FunctionCall::generateFrames(Frame* _frame){
@@ -44,10 +44,11 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start function call " << functionName << std::endl;
-    for (AST* arg : *args) {
-        // ...
-        throw std::runtime_error("AST_FunctionCall: Not Implemented For Arguments Yet.\n");
-    }
+    if(args != nullptr)
+        for (AST* arg : *args) {
+            // ...
+            throw std::runtime_error("AST_FunctionCall: Not Implemented For Arguments Yet.\n");
+        }
 
     assemblyOut << "jal " << functionName << std::endl;
     assemblyOut << "nop" << std::endl;

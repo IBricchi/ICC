@@ -27,6 +27,7 @@ private:
     std::string type;
     std::string name;
     AST* body;
+    int parity;
     std::vector<std::pair<std::string, std::string>>* params;
 
 public:

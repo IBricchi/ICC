@@ -28,7 +28,10 @@ AST_FunDeclaration::AST_FunDeclaration(std::string _type, std::string* _name, AS
     body(_body),
     params(_params)
 
-{}
+{
+    parity = 0;
+    if(_params != nullptr) parity = _params->size();
+}
 
 void AST_FunDeclaration::generateFrames(Frame* _frame){
     frame = _frame;

@@ -244,8 +244,9 @@ AST *g_root; // Definition of variable (to match declaration earlier)
 
 AST *parseAST()
 {
-  yydebug = 1;
-  g_root=0;
-  yyparse();
-  return g_root;
+    // for debugging
+    /* yydebug = 1; */
+    g_root=0;
+    yyparse();
+    return g_root;
 }
