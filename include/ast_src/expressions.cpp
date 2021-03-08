@@ -30,19 +30,12 @@ AST_VarAssign::~AST_VarAssign(){
     delete expr;
 }
 
-AST_FunctionCall::AST_FunctionCall(std::string* _functionName):
-    functionName(*_functionName)
-{
-    args = {};
-    parity = 0;
-}
-
-template <class ...TArgs>
-AST_FunctionCall::AST_FunctionCall(std::string* _functionName, TArgs... _args):
+AST_FunctionCall::AST_FunctionCall(std::string* _functionName, std::vector<AST*>* _args):
     functionName(*_functionName),
-    args{_args...}
+    args(_args)
 {
-    parity = args.size();
+    parity = 0;
+    if(_args == nullptr) parity = _args->size();
 }
 
 void AST_FunctionCall::generateFrames(Frame* _frame){
@@ -51,7 +44,7 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start function call " << functionName << std::endl;
-    for (AST* arg : args) {
+    for (AST* arg : *args) {
         // ...
         throw std::runtime_error("AST_FunctionCall: Not Implemented For Arguments Yet.\n");
     }
@@ -66,10 +59,13 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
 }
 
 AST_FunctionCall::~AST_FunctionCall() {
-    for (AST* arg : args) {
-        if (arg != nullptr) {
-            delete arg;
+    if(args != nullptr){
+        for (AST* arg : *args) {
+            if (arg != nullptr) {
+                delete arg;
+            }
         }
+        delete args;
     }
 }
 

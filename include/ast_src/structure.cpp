@@ -85,6 +85,9 @@ AST_FunDeclaration::~AST_FunDeclaration() {
     if (body != nullptr) {
         delete body;
     }
+    if (params != nullptr){
+        delete params;
+    }
 }
 
 AST_VarDeclaration::AST_VarDeclaration(std::string _type, std::string* _name, AST* _expr) :

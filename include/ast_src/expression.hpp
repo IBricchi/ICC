@@ -30,7 +30,7 @@ class AST_FunctionCall
 {
 private:
     std::string functionName;
-    std::vector<AST*> args;
+    std::vector<AST*>* args;
     int parity; // number of arguments
     /*
         Need some data structure for arguments:
@@ -48,10 +48,7 @@ private:
     */
 
 public:
-    AST_FunctionCall(std::string* _functionName);
-
-    template<class ...TArgs> 
-    AST_FunctionCall(std::string* _functionName, TArgs... _params);
+    AST_FunctionCall(std::string* _functionName, std::vector<AST*>* _args = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;
