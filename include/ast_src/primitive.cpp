@@ -49,3 +49,12 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
 
     assemblyOut << "# end variable read " << name << std::endl << std::endl;
 }
+
+void AST_Variable::updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) {
+    assemblyOut << std::endl << "# start var update " << name << std::endl;
+
+    // store register data into variable's memory address
+    assemblyOut << "sw $" << reg << ", -" << currentFrame->getMemoryAddress(name) << "($fp)" << std::endl;
+    
+    assemblyOut << "# end var update " << name << std::endl << std::endl;
+}

@@ -17,6 +17,7 @@ extern "C" int fileno(FILE *stream);
 "if"       { return T_IF; }
 "else"     { return T_ELSE; }
 "while"    { return T_WHILE; }
+"for"      { return T_FOR; }
 "break"    { return T_BREAK; }
 "continue" { return T_CONTINUE; }
 
@@ -41,7 +42,9 @@ extern "C" int fileno(FILE *stream);
 ">="      { return T_GREATER_EQUAL; }
 "<<"      { return T_SHIFT_L; }
 ">>"      { return T_SHIFT_R; }
+"++"      { return T_PLUSPLUS; }
 "+"       { return T_PLUS; }
+"--"      { return T_MINUSMINUS; }
 "-"       { return T_MINUS; }
 "*"       { return T_STAR; }
 "//".*    { /* DO NOTHING */ }

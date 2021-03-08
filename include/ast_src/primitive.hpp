@@ -38,5 +38,10 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;
 
-    // doesn't need a destructor as there are no pointers
+    /*
+        reg is the register that contains the new value.
+        It should not contian $.
+        Example: If register is $v0, then reg = "v0".
+    */
+    void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) override;
 };

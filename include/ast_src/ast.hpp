@@ -30,6 +30,9 @@ public:
         Writes MIPS assembly to output stream.
     */
     virtual void compile(std::ostream &assemblyOut);
+
+    // overriden by AST_Variable
+    virtual void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg);
 };
 
 /*
