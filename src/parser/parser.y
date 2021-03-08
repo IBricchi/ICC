@@ -20,6 +20,8 @@
   AST* NODE ;
   int INT;
   std::string *STR;
+  std::vector<std::pair<std::string,std::string>> *FDP; // function declaration parameters
+  std::vector<AST*> *FCP; // function call parameters;
 }
 
 %token T_INT
@@ -52,6 +54,8 @@
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY CALL PRIMARY // Expressions
 
+%type <FDP> FUN_DEC_PARAMS // helper for fun declaration
+
 %nonassoc NO_ELSE
 %nonassoc T_ELSE
 
@@ -76,9 +80,26 @@ DECLARATION : FUN_DECLARATION { $$ = $1; }
             | STATEMENT       { $$ = $1; }
             ;
 
-FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON { $$ = new AST_FunDeclaration("int", $2); }
-                | T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK { $$ = new AST_FunDeclaration("int", $2, $5); }
+FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON                                   { $$ = new AST_FunDeclaration("int", $2); }
+                | T_INT T_IDENTIFIER T_BRACK_L T_INT T_IDENTIFIER T_BRACK_R T_SEMI_COLON                { $$ = new AST_FunDeclaration("int", $2, nullptr, new std::vector<std::pair<std::string,std::string>>({{"int", *$5}})); }
+                | T_INT T_IDENTIFIER T_BRACK_L T_INT T_IDENTIFIER FUN_DEC_PARAMS T_BRACK_R T_SEMI_COLON {
+                                $6->push_back({"int", *$5});
+                                $$ = new AST_FunDeclaration("int", $2, nullptr, $6);
+                        }                            
+                | T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK                                          { $$ = new AST_FunDeclaration("int", $2, $5); }
+                | T_INT T_IDENTIFIER T_BRACK_L T_INT T_IDENTIFIER T_BRACK_R BLOCK                       { $$ = new AST_FunDeclaration("int", $2, $7, new std::vector<std::pair<std::string,std::string>>({{"int", *$5}})); }
+                | T_INT T_IDENTIFIER T_BRACK_L T_INT T_IDENTIFIER FUN_DEC_PARAMS T_BRACK_R BLOCK        {
+                                $6->push_back({"int", *$5});
+                                $$ = new AST_FunDeclaration("int", $2, $8, $6);
+                        }
                 ;
+
+FUN_DEC_PARAMS : T_COMMA T_INT T_IDENTIFIER                     { $$ = new std::vector<std::pair<std::string,std::string>>({{"int", *$3}}); }
+               | T_COMMA T_INT T_IDENTIFIER FUN_DEC_PARAMS      {
+                                $4->push_back({"int", *$3});
+                                $$ = $4;
+                        }
+               ;
 
 VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                                { $$ = new AST_VarDeclaration("int", $2); }
                 | T_INT T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON %prec VAR_DEC { $$ = new AST_VarDeclaration("int", $2, $4); }

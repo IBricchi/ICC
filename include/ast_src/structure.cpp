@@ -22,10 +22,12 @@ AST_Sequence::~AST_Sequence(){
     delete second;
 }
 
-AST_FunDeclaration::AST_FunDeclaration(std::string _type, std::string* _name, AST* _body) :
+AST_FunDeclaration::AST_FunDeclaration(std::string _type, std::string* _name, AST* _body, std::vector<std::pair<std::string,std::string>>* _params) :
     type(_type),
     name(*_name),
-    body(_body)
+    body(_body),
+    params(_params)
+
 {}
 
 void AST_FunDeclaration::generateFrames(Frame* _frame){

@@ -27,12 +27,13 @@ private:
     std::string type;
     std::string name;
     AST* body;
+    std::vector<std::pair<std::string, std::string>>* params;
 
 public:
     /*
         Function body is optional and can be provided in a function definition later on.
     */
-    AST_FunDeclaration(std::string _type, std::string* _name, AST* _body = nullptr);
+    AST_FunDeclaration(std::string _type, std::string* _name, AST* _body = nullptr, std::vector<std::pair<std::string,std::string>>* _params = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;
