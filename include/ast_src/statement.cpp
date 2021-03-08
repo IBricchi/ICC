@@ -203,6 +203,47 @@ AST_WhileStmt::~AST_WhileStmt(){
     delete body;
 }
 
+AST_SwitchStmt::AST_SwitchStmt(AST* _value, AST* _body):
+    value(_value),
+    body(_body)
+{}
+
+void AST_SwitchStmt::generateFrames(Frame* _frame){
+    frame = _frame;
+    value->generateFrames(_frame);
+    body->generateFrames(_frame);
+}
+
+void AST_SwitchStmt::compile(std::ostream &assemblyOut){
+    throw std::runtime_error("AST_Switch::compile: Not yet implemented");
+}
+
+AST_SwitchStmt::~AST_SwitchStmt(){
+    delete value;
+    delete body;
+}
+
+AST_CaseStmt::AST_CaseStmt(AST* _body, AST* _label):
+    body(_body),
+    label(_label)
+{}
+
+void AST_CaseStmt::generateFrames(Frame* _frame){
+    frame = _frame;
+    label->generateFrames(_frame);
+    body->generateFrames(_frame);
+}
+
+void AST_CaseStmt::compile(std::ostream &assemblyOut){
+    // default case if label = nullptr
+    throw std::runtime_error("AST_CaseStmt::compile: Not yet implemented");
+}
+
+AST_CaseStmt::~AST_CaseStmt(){
+    delete label;
+    delete body;
+}
+
 AST_Block::AST_Block(AST* _body):
     body(_body)
 {}

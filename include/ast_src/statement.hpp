@@ -78,6 +78,39 @@ public:
     ~AST_WhileStmt();
 };
 
+class AST_SwitchStmt
+    : public AST
+{
+private:
+    AST* value;
+    AST* body;
+
+public:
+    AST_SwitchStmt(AST* _value, AST* _body);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream& assemblyOut) override;
+
+    ~AST_SwitchStmt();
+};
+
+// default case if label = nullptr
+class AST_CaseStmt
+    : public AST
+{
+private:
+    AST* label;
+    AST* body;
+
+public:
+    AST_CaseStmt(AST* _body, AST* _label = nullptr);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream& assemblyOut) override;
+
+    ~AST_CaseStmt();
+};
+
 /*
     Block ast node is a statment that can be used to create a new scope.
     It's required by functions, and is very sueful for if statement and loops to put togetehr

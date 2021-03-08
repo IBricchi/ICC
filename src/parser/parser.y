@@ -31,9 +31,9 @@
 
 %token <INT> T_CONST_INT
 
-%token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_BREAK T_CONTINUE
+%token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK T_CONTINUE T_CASE T_DEFAULT
 
-%token T_COMMA T_SEMI_COLON
+%token T_COMMA T_SEMI_COLON T_COLON
 %token T_BRACK_L T_BRACK_R
 %token T_BRACE_L T_BRACE_R
 
@@ -55,7 +55,8 @@
 %token T_BANG T_NOT
 
 %type <NODE> PROGRAM SEQUENCE DECLARATION FUN_DECLARATION VAR_DECLARATION // Structures
-%type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT IF_STMT WHILE_STMT FOR_STMT BLOCK // Statements
+%type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT // Statements
+%type <NODE> IF_STMT WHILE_STMT FOR_STMT SWITCH_STMT CASE_STMT BLOCK // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY CALL PRIMARY // Expressions
 
@@ -118,6 +119,8 @@ STATEMENT : EXPRESSION_STMT { $$ = $1; }
           | IF_STMT         { $$ = $1; }
           | WHILE_STMT      { $$ = $1; }
           | FOR_STMT        { $$ = $1; }
+          | SWITCH_STMT     { $$ = $1; }
+          | CASE_STMT       { $$ = $1; }
           | BLOCK           { $$ = $1; }
           ;
 
@@ -151,6 +154,13 @@ FOR_STMT : T_FOR T_BRACK_L EXPRESSION_STMT EXPRESSION_STMT EXPRESSION T_BRACK_R 
                         $$ = new AST_Sequence($3, whileStmt);
                 }
          ;
+
+SWITCH_STMT : T_SWITCH T_BRACE_L EXPRESSION T_BRACK_R STATEMENT { $$ = new AST_SwitchStmt($3, $5); }
+            ;
+
+CASE_STMT : T_CASE PRIMARY T_COLON STATEMENT { $$ = new AST_CaseStmt($4, $2); }
+          | T_DEFAULT T_COLON STATEMENT { $$ = new AST_CaseStmt($3); }
+          ;
 
 BLOCK : T_BRACE_L T_BRACE_R          { $$ = new AST_Block(); }
       | T_BRACE_L SEQUENCE T_BRACE_R { $$ = new AST_Block($2); }
