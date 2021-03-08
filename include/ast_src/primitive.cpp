@@ -32,16 +32,7 @@ void AST_Variable::generateFrames(Frame* _frame){
 void AST_Variable::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start variable read " << name << std::endl;
 
-    std::pair<int, int> varAddress = frame->getVarAddress(name);
-
-    // coppy frame pointer to t1 and recurse back expected number of frames
-    assemblyOut << "move $t1, $fp" << std::endl;
-    for(int i = 0; i < varAddress.first; i++){
-        assemblyOut << "lw $t1, 12($t1)" << std::endl;
-    }
-
-    // load variable value into register
-    assemblyOut << "lw $t0, -" << varAddress.second << "($t1)" << std::endl;
+    varToReg(assemblyOut, frame, "$t0", name);
 
     // store value in memory
     assemblyOut << "sw $t0, 0($sp)" << std::endl;
@@ -53,8 +44,7 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
 void AST_Variable::updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) {
     assemblyOut << std::endl << "# start var update " << name << std::endl;
 
-    // store register data into variable's memory address
-    assemblyOut << "sw $" << reg << ", -" << currentFrame->getMemoryAddress(name) << "($fp)" << std::endl;
+    regToVar(assemblyOut, currentFrame, reg, name);
     
     assemblyOut << "# end var update " << name << std::endl << std::endl;
 }

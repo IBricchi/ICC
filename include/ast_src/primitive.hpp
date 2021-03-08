@@ -40,8 +40,9 @@ public:
 
     /*
         reg is the register that contains the new value.
-        It should not contian $.
-        Example: If register is $v0, then reg = "v0".
+        It should contian $.
+        Example: If register is $v0, then reg = "$v0".
+        - I made the change so it was compatible with the helper function for saving and reading variables
     */
     void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) override;
 };
