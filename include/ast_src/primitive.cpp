@@ -53,8 +53,16 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
 void AST_Variable::updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) {
     assemblyOut << std::endl << "# start var update " << name << std::endl;
 
+    std::pair<int, int> varAddress = frame->getVarAddress(name);
+
+    // coppy frame pointer to t8 and recurse back expected number of frames
+    assemblyOut << "move $t8, $fp" << std::endl;
+    for(int i = 0; i < varAddress.first; i++){
+        assemblyOut << "lw $t8, 12($t8)" << std::endl;
+    }
+
     // store register data into variable's memory address
-    assemblyOut << "sw $" << reg << ", -" << currentFrame->getMemoryAddress(name) << "($fp)" << std::endl;
+    assemblyOut << "sw $" << reg << ", -" << varAddress.second << "($t8)" << std::endl;
     
     assemblyOut << "# end var update " << name << std::endl << std::endl;
 }
