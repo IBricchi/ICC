@@ -9,6 +9,8 @@ extern "C" int fileno(FILE *stream);
 
 %}
 
+%option yylineno
+
 %%
 
 "int"      { return T_INT; }
@@ -66,6 +68,6 @@ extern "C" int fileno(FILE *stream);
 
 void yyerror (char const *s)
 {
-  fprintf (stderr, "Parse error : %s\n", s);
+  fprintf(stderr,"Parse error | Line: %d\n%s\n", yylineno, s);
   exit(1);
 }
