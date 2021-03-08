@@ -47,11 +47,13 @@ extern "C" int fileno(FILE *stream);
 "--"      { return T_MINUSMINUS; }
 "-"       { return T_MINUS; }
 "*"       { return T_STAR; }
-"//".*    { /* DO NOTHING */ }
 "/"       { return T_SLASH_F; }
 "%"       { return T_PERCENT; }
 "!"       { return T_BANG; }
 "~"       { return T_NOT; }
+
+"//".*                     { /* DO NOTHING (COMMENT) */ }
+"\/\*(\*(?!\/)|[^*])*\*\/" { /* DO NOTHING (COMMENT) */ }
 
 [a-zA-Z]([a-zA-Z1-9_])* { yylval.STR = new std::string(yytext); return T_IDENTIFIER; }
 [0-9]+                  { yylval.INT = strtol(yytext, 0, 10); return T_CONST_INT; }
