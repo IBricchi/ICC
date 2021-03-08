@@ -13,43 +13,29 @@ void AST_VarAssign::generateFrames(Frame* _frame){
 void AST_VarAssign::compile(std::ostream &assemblyOut){
     assemblyOut << std::endl << "# start var definition " << name << std::endl;
 
-    std::pair<int, int> varAddress = frame->getVarAddress(name);
-
     expr->compile(assemblyOut);
 
     // load top of stack into register t0
     assemblyOut << "lw $t0, 8($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
-    // coppy frame pointer to t1 and recurse back expected number of frames
-    assemblyOut << "move $t1, $fp" << std::endl;
-    for(int i = 0; i < varAddress.first; i++){
-        assemblyOut << "lw $t1, 12($t1)" << std::endl;
-    }
-
-    // store register data into variable's memory address
-    assemblyOut << "sw $t0, -" << varAddress.second << "($t1)" << std::endl;
-    
-    assemblyOut << "# end var definition " << name << std::endl << std::endl;
+    // save register to var in mem
+    regToVar(assemblyOut, frame, "$t0", name);
 }
+
+// void regToVar(std::ostream &assemblyOut, Frame *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
+// void regToVar(std::ostream &assemblyOut, <error-type> *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
 
 AST_VarAssign::~AST_VarAssign(){
     delete expr;
 }
 
-AST_FunctionCall::AST_FunctionCall(std::string* _functionName):
-    functionName(*_functionName)
-{
-    args = {};
-    parity = 0;
-}
-
-template <class ...TArgs>
-AST_FunctionCall::AST_FunctionCall(std::string* _functionName, TArgs... _args):
+AST_FunctionCall::AST_FunctionCall(std::string* _functionName, std::vector<AST*>* _args):
     functionName(*_functionName),
-    args{_args...}
+    args(_args)
 {
-    parity = args.size();
+    parity = 0;
+    if(_args != nullptr) parity = _args->size();
 }
 
 void AST_FunctionCall::generateFrames(Frame* _frame){
@@ -58,10 +44,11 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start function call " << functionName << std::endl;
-    for (AST* arg : args) {
-        // ...
-        throw std::runtime_error("AST_FunctionCall: Not Implemented For Arguments Yet.\n");
-    }
+    if(args != nullptr)
+        for (AST* arg : *args) {
+            // ...
+            throw std::runtime_error("AST_FunctionCall: Not Implemented For Arguments Yet.\n");
+        }
 
     assemblyOut << "jal " << functionName << std::endl;
     assemblyOut << "nop" << std::endl;
@@ -73,10 +60,13 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
 }
 
 AST_FunctionCall::~AST_FunctionCall() {
-    for (AST* arg : args) {
-        if (arg != nullptr) {
-            delete arg;
+    if(args != nullptr){
+        for (AST* arg : *args) {
+            if (arg != nullptr) {
+                delete arg;
+            }
         }
+        delete args;
     }
 }
 
@@ -96,8 +86,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     std::string binLabel = generateUniqueLabel("binOp");
     assemblyOut << std::endl << "# start " << binLabel << std::endl; 
     
-    // load result of left expression into register
-    // use $t6 as lower $t registers might be used in other compile functions called on right
+    // compile left expression
     left->compile(assemblyOut);
 
     switch (type) {
@@ -109,8 +98,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             std::string endLabel = generateUniqueLabel("end");
 
             // evaluate first expression first => short-circuit evaluation
-            assemblyOut << "lw $t6, 8($sp)" << std::endl;
-            assemblyOut << "bne $t6, $0, " << trueLabel << std::endl;
+            assemblyOut << "lw $t0, 8($sp)" << std::endl;
+            assemblyOut << "bne $t0, $0, " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
             
             // load result of right expression into register
@@ -121,12 +110,12 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << falseLabel << ":" << std::endl;
-            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "addiu $t2, $0, 0" << std::endl;
             assemblyOut << "j " << endLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << trueLabel << ":" << std::endl;
-            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+            assemblyOut << "addiu $t2, $0, 1" << std::endl;
 
             assemblyOut << endLabel << ":" << std::endl;
             break;
@@ -138,28 +127,26 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             std::string falseLabel = generateUniqueLabel("falseLabel");
             std::string endLabel = generateUniqueLabel("end");
 
-            assemblyOut << "beq $t6, $0, " << falseLabel << std::endl;
+            // evaluate first expression first => short-circuit evaluation
+            assemblyOut << "lw $t0, 8($sp)" << std::endl;
+            assemblyOut << "beq $t0, $0, " << falseLabel << std::endl;
             assemblyOut << "nop" << std::endl;
             
             // load result of right expression into register
             right->compile(assemblyOut);
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
-
+            
             assemblyOut << "beq $t1, $0, " << falseLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
-            // both are true
-            assemblyOut << "j " << trueLabel << std::endl;
-            assemblyOut << "nop" << std::endl;
-
-            assemblyOut << falseLabel << ":" << std::endl;
-            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << trueLabel << ":" << std::endl;
+            assemblyOut << "addiu $t2, $0, 1" << std::endl;
             assemblyOut << "j " << endLabel << std::endl;
             assemblyOut << "nop" << std::endl;
-
-            assemblyOut << trueLabel << ":" << std::endl;
-            assemblyOut << "addiu $t3, $0, 1" << std::endl;
-
+            
+            assemblyOut << falseLabel << ":" << std::endl;
+            assemblyOut << "addiu $t2, $0, 0" << std::endl;
+        
             assemblyOut << endLabel << ":" << std::endl;
             break;
         }
@@ -168,11 +155,11 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is |" << std::endl;
-            assemblyOut << "or $t3, $t6, $t1" << std::endl;
+            assemblyOut << "or $t2, $t0, $t1" << std::endl;
             break;
         }
         case Type::BIT_XOR:
@@ -180,11 +167,11 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
             
             assemblyOut << "# " << binLabel << " is ^" << std::endl;
-            assemblyOut << "xor $t3, $t6, $t1" << std::endl;
+            assemblyOut << "xor $t2, $t0, $t1" << std::endl;
             break;
         }
         case Type::BIT_AND:
@@ -192,12 +179,12 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
             
             
             assemblyOut << "# " << binLabel << " is &" << std::endl;
-            assemblyOut << "and $t3, $t6, $t1" << std::endl;
+            assemblyOut << "and $t2, $t0, $t1" << std::endl;
             break;
         }
         case Type::EQUAL_EQUAL:
@@ -205,22 +192,22 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
                         
             assemblyOut << "# " << binLabel << " is ==" << std::endl;
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
 
-            assemblyOut << "beq $t6, $t1, " << trueLabel << std::endl;
+            assemblyOut << "beq $t0, $t1, " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
-            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "addiu $t2, $0, 0" << std::endl;
             assemblyOut << "j " << endLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << trueLabel << ":" << std::endl;
-            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+            assemblyOut << "addiu $t2, $0, 1" << std::endl;
 
             assemblyOut << endLabel << ":" << std::endl;
             break;
@@ -230,22 +217,22 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
                         
             assemblyOut << "# " << binLabel << " is !=" << std::endl;
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
 
-            assemblyOut << "bne $t6, $t1, " << trueLabel << std::endl;
+            assemblyOut << "bne $t0, $t1, " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
-            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "addiu $t2, $0, 0" << std::endl;
             assemblyOut << "j " << endLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << trueLabel << ":" << std::endl;
-            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+            assemblyOut << "addiu $t2, $0, 1" << std::endl;
 
             assemblyOut << endLabel << ":" << std::endl;
             break;
@@ -255,11 +242,11 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is <" << std::endl;
-            assemblyOut << "slt $t3, $t6, $t1" << std::endl;
+            assemblyOut << "slt $t2, $t0, $t1" << std::endl;
             break;
         }
         case Type::LESS_EQUAL:
@@ -267,7 +254,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is <=" << std::endl;
@@ -275,16 +262,16 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
             
-            assemblyOut << "slt $t3, $t1, $t6" << std::endl;
-            assemblyOut << "beq $t3, $0, " << trueLabel << std::endl;
+            assemblyOut << "slt $t2, $t1, $t0" << std::endl;
+            assemblyOut << "beq $t2, $0, " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
-            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "addiu $t2, $0, 0" << std::endl;
             assemblyOut << "j " << endLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << trueLabel << ":" << std::endl;
-            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+            assemblyOut << "addiu $t2, $0, 1" << std::endl;
 
             assemblyOut << endLabel << ":" << std::endl;
             break;
@@ -294,11 +281,11 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is >" << std::endl;
-            assemblyOut << "slt $t3, $t1, $t6" << std::endl;
+            assemblyOut << "slt $t2, $t1, $t0" << std::endl;
             break;
         }
         case Type::GREATER_EQUAL:
@@ -306,7 +293,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is >=" << std::endl;
@@ -314,16 +301,16 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             std::string trueLabel = generateUniqueLabel("trueLabel");
             std::string endLabel = generateUniqueLabel("end");
             
-            assemblyOut << "slt $t3, $t6, $t1" << std::endl;
-            assemblyOut << "beq $t3, $0, " << trueLabel << std::endl;
+            assemblyOut << "slt $t2, $t0, $t1" << std::endl;
+            assemblyOut << "beq $t2, $0, " << trueLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
-            assemblyOut << "addiu $t3, $0, 0" << std::endl;
+            assemblyOut << "addiu $t2, $0, 0" << std::endl;
             assemblyOut << "j " << endLabel << std::endl;
             assemblyOut << "nop" << std::endl;
 
             assemblyOut << trueLabel << ":" << std::endl;
-            assemblyOut << "addiu $t3, $0, 1" << std::endl;
+            assemblyOut << "addiu $t2, $0, 1" << std::endl;
 
             assemblyOut << endLabel << ":" << std::endl;
             break;
@@ -333,11 +320,11 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is <<" << std::endl;
-            assemblyOut << "sll $t3, $t6, $t1" << std::endl;
+            assemblyOut << "sll $t2, $t0, $t1" << std::endl;
             break;
         }
         case Type::SHIFT_R:
@@ -345,11 +332,11 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is >>" << std::endl;
-            assemblyOut << "srl $t3, $t6, $t1" << std::endl;
+            assemblyOut << "srl $t2, $t0, $t1" << std::endl;
             break;
         }
         case Type::PLUS:
@@ -357,11 +344,11 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is +" << std::endl;
-            assemblyOut << "add $t3, $t6, $t1" << std::endl;
+            assemblyOut << "add $t2, $t0, $t1" << std::endl;
             break;
         }
         case Type::MINUS:
@@ -369,11 +356,11 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is -" << std::endl;
-            assemblyOut << "sub $t3, $t6, $t1" << std::endl;
+            assemblyOut << "sub $t2, $t0, $t1" << std::endl;
             break;
         }
         case Type::STAR:
@@ -381,14 +368,14 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is *" << std::endl;
-            assemblyOut << "mult $t6, $t1" << std::endl;
+            assemblyOut << "mult $t0, $t1" << std::endl;
 
             // only care about 32 least significant bits
-            assemblyOut << "mflo $t3" << std::endl;
+            assemblyOut << "mflo $t2" << std::endl;
             break;
         }
         case Type::SLASH_F:
@@ -396,14 +383,14 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is /" << std::endl;
-            assemblyOut << "div $t6, $t1" << std::endl;
+            assemblyOut << "div $t0, $t1" << std::endl;
 
             // only care about quotient for fixed point division (get remainder using 'mfhi')
-            assemblyOut << "mflo $t3" << std::endl;
+            assemblyOut << "mflo $t2" << std::endl;
             break;
         }
         case Type::PERCENT:
@@ -411,14 +398,14 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             // load result of right expression into register
             right->compile(assemblyOut);
             
-            assemblyOut << "lw $t6, 16($sp)" << std::endl;
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " is %" << std::endl;
-            assemblyOut << "div $t6, $t1" << std::endl;
+            assemblyOut << "div $t0, $t1" << std::endl;
 
             // only care about remainder
-            assemblyOut << "mfhi $t3" << std::endl;
+            assemblyOut << "mfhi $t2" << std::endl;
             break;
         }
         default:
@@ -429,7 +416,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     }
 
     // store result in memory
-    assemblyOut << "sw $t3, 16($sp)" << std::endl;
+    assemblyOut << "sw $t2, 16($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
     assemblyOut << "# end " << binLabel << std::endl << std::endl; 
@@ -502,7 +489,7 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "addiu $t1, $t0, 1" << std::endl;
 
             // update variable
-            operand->updateVariable(assemblyOut, frame, "t1");
+            operand->updateVariable(assemblyOut, frame, "$t1");
             break;
         }
         case Type::PRE_DECREMENT:
@@ -512,7 +499,7 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "addiu $t1, $t0, -1" << std::endl;
 
             // update variable
-            operand->updateVariable(assemblyOut, frame, "t1");
+            operand->updateVariable(assemblyOut, frame, "$t1");
             break;
         }
         case Type::POST_INCREMENT:
@@ -525,7 +512,7 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "addiu $t1, $t0, 1" << std::endl;
 
             // update variable
-            operand->updateVariable(assemblyOut, frame, "t1");
+            operand->updateVariable(assemblyOut, frame, "$t1");
             break;
         }
         case Type::POST_DECREMENT:
@@ -538,7 +525,7 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "addiu $t1, $t0, -1" << std::endl;
 
             // update variable
-            operand->updateVariable(assemblyOut, frame, "t1");
+            operand->updateVariable(assemblyOut, frame, "$t1");
             break;
         }
         default:

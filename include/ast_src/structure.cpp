@@ -22,11 +22,16 @@ AST_Sequence::~AST_Sequence(){
     delete second;
 }
 
-AST_FunDeclaration::AST_FunDeclaration(std::string _type, std::string* _name, AST* _body) :
+AST_FunDeclaration::AST_FunDeclaration(std::string _type, std::string* _name, AST* _body, std::vector<std::pair<std::string,std::string>>* _params) :
     type(_type),
     name(*_name),
-    body(_body)
-{}
+    body(_body),
+    params(_params)
+
+{
+    parity = 0;
+    if(_params != nullptr) parity = _params->size();
+}
 
 void AST_FunDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
@@ -83,6 +88,9 @@ AST_FunDeclaration::~AST_FunDeclaration() {
     if (body != nullptr) {
         delete body;
     }
+    if (params != nullptr){
+        delete params;
+    }
 }
 
 AST_VarDeclaration::AST_VarDeclaration(std::string _type, std::string* _name, AST* _expr) :
@@ -103,22 +111,13 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
     if (expr != nullptr) {
         assemblyOut << std::endl << "#start var dec with definition " << name << std::endl;
 
-        std::pair<int, int> varAddress = frame->getVarAddress(name);
-
         expr->compile(assemblyOut);
 
         // load top of stack into register t0
         assemblyOut << "lw $t0, 8($sp)" << std::endl;
         assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
-        // coppy frame pointer to t1 and recurse back expected number of frames
-        assemblyOut << "move $t1, $fp" << std::endl;
-        for(int i = 0; i < varAddress.first; i++){
-            assemblyOut << "lw $t1, 12($t1)" << std::endl;
-        }
-
-        // store register data into variable's memory address
-        assemblyOut << "sw $t0, -" << varAddress.second << "($t1)" << std::endl;
+        regToVar(assemblyOut, frame, "$t0", name);
         
         assemblyOut << "#end var dec with definition " << name << std::endl << std::endl;
     }

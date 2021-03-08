@@ -38,7 +38,7 @@ std::pair<int, int> Frame::getVarAddress(const std::string &variableName) {
     int pos = frame->getVarPos(variableName);
     while(pos == -1){
         depth++;
-        frame = this->parentFrame;
+        frame = frame->parentFrame;
         pos = frame->getVarPos(variableName);
     }
     return {depth, pos};

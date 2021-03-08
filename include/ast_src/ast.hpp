@@ -7,8 +7,6 @@
 #include <unordered_map>
 #include <stdexcept>
 
-#include "util.hpp"
-
 class Frame;
 
 /*
@@ -129,3 +127,5 @@ public:
     std::string getStartLoopLabelName() const;
     std::string getEndLoopLabelName() const;
 };
+
+#include "util.hpp"

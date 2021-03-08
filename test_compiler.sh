@@ -4,6 +4,7 @@ set -eou pipefail
 
 # Optional: Path to a specific testcase to run
 TESTCASE="${1:-all}"
+TESTFOLDER="${2:-all}"
 
 TEST_DIRECTORY="compiler_tests"
 COMPILER="./bin/c_compiler"
@@ -11,7 +12,7 @@ BIN="./bin"
 ERROR_LOG_FILE="./bin/log.txt"
 
 # Needed as make appears to miss some small changes, resulting in incorrect results
-make clean
+# make clean
 
 make
 printf "\n\n"
@@ -71,6 +72,47 @@ if [[ "$TESTCASE" != "all" ]] ; then
     exit
 fi
 
+if [[ "$TESTFOLDER" != "all" ]] ; then
+    DRIVER_FILES="${TEST_DIRECTORY}/${TESTFOLDER}/*_driver.c"
+    for DRIVER_FILE in ${DRIVER_FILES} ; do
+        TESTCASE="$(echo $DRIVER_FILE | sed 's/\_driver\.c/.c/')"
+        echo ${TESTCASE}
+        OUT_NAME="$(basename $TESTCASE | cut -f 1 -d '.')"
+
+        set +e
+
+        ${COMPILER} -S ${TESTCASE} -o ${BIN}/${OUT_NAME}.s 1>/dev/null
+        
+        RESULT=$?
+        if [[ "${RESULT}" -ne 0 ]] ; then
+            tput setaf 1; echo "  ${TESTCASE} FAIL    # compiler"; tput sgr0
+        fi
+
+        mips-linux-gnu-gcc -mfp32 -o ${BIN}/out.o -c ${BIN}/${OUT_NAME}.s
+        RESULT=$?
+        if [[ "${RESULT}" -ne 0 ]] ; then
+            tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc: assembling"; tput sgr0
+        fi
+
+        mips-linux-gnu-gcc -mfp32 -static -o ${BIN}/out ${BIN}/out.o ${DRIVER_FILE}
+        RESULT=$?
+        if [[ "${RESULT}" -ne 0 ]] ; then
+            tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc: linking"; tput sgr0
+        fi
+        
+        qemu-mips ${BIN}/out
+        RESULT=$?
+        if [[ "${RESULT}" -ne 0 ]] ; then
+            tput setaf 1; echo "  ${TESTCASE} FAIL    # qemu"; tput sgr0
+        fi
+        
+        set -e
+
+        tput setaf 2; echo "  ${TESTCASE} PASS"; tput sgr0
+    done
+    exit
+fi
+
 TEST_SUBDIRECTORIES="./${TEST_DIRECTORY}/*/"
 
 for TEST_SUBDIRECTORY in ${TEST_SUBDIRECTORIES} ; do
@@ -79,7 +121,7 @@ for TEST_SUBDIRECTORY in ${TEST_SUBDIRECTORIES} ; do
 
     DRIVER_FILES="${TEST_SUBDIRECTORY}*_driver.c"
     for DRIVER_FILE in ${DRIVER_FILES} ; do
-        TESTCASE="$(echo $DRIVER_FILE | sed 's/\.c/_driver\.c/')"
+        TESTCASE="$(echo $DRIVER_FILE | sed 's/\_driver\.c/.c/')"
         OUT_NAME="$(basename $TESTCASE | cut -f 1 -d '.')"
 
         set +e
