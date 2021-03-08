@@ -48,7 +48,7 @@
 %token T_BANG T_NOT
 
 %type <NODE> PROGRAM SEQUENCE DECLARATION FUN_DECLARATION VAR_DECLARATION // Structures
-%type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT IF_STMT WHILE_STMT BLOCK // Statements
+%type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT IF_STMT WHILE_STMT FOR_STMT BLOCK // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY CALL PRIMARY // Expressions
 
@@ -69,14 +69,6 @@ PROGRAM : SEQUENCE { g_root = $1; }
 
 SEQUENCE : DECLARATION SEQUENCE { $$ = new AST_Sequence($1, $2); }
          | DECLARATION          {$$ = $1; }
-         | T_FOR T_BRACK_L EXPRESSION_STMT EXPRESSION_STMT EXPRESSION T_BRACE_R STATEMENT { 
-                        // Source translation of for loop into sequence
-                        AST* whileBodyContents = new AST_Sequence($7, $5);
-                        AST* whileBody = new AST_Block(whileBodyContents);
-                        AST* whileStmt = new AST_WhileStmt($4, whileBody);
-
-                        $$ = new AST_Sequence($3, whileStmt);
-                }
          ;
 
 DECLARATION : FUN_DECLARATION { $$ = $1; }
@@ -98,6 +90,7 @@ STATEMENT : EXPRESSION_STMT { $$ = $1; }
           | CONTINUE_STMT   { $$ = $1; }
           | IF_STMT         { $$ = $1; }
           | WHILE_STMT      { $$ = $1; }
+          | FOR_STMT        { $$ = $1; }
           | BLOCK           { $$ = $1; }
           ;
 
@@ -120,6 +113,16 @@ IF_STMT : T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT    %prec NO_ELSE { $$ = 
 
 WHILE_STMT : T_WHILE T_BRACK_L EXPRESSION T_BRACK_R STATEMENT { $$ = new AST_WhileStmt($3, $5); }
            ;
+
+FOR_STMT : T_FOR T_BRACK_L EXPRESSION_STMT EXPRESSION_STMT EXPRESSION T_BRACK_R STATEMENT { 
+                        // Source translation of for loop into sequence
+                        AST* whileBodyContents = new AST_Sequence($7, $5);
+                        AST* whileBody = new AST_Block(whileBodyContents);
+                        AST* whileStmt = new AST_WhileStmt($4, whileBody);
+
+                        $$ = new AST_Sequence($3, whileStmt);
+                }
+         ;
 
 BLOCK : T_BRACE_L T_BRACE_R          { $$ = new AST_Block(); }
       | T_BRACE_L SEQUENCE T_BRACE_R { $$ = new AST_Block($2); }
