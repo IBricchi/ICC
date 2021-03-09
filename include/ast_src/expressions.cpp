@@ -40,19 +40,42 @@ AST_FunctionCall::AST_FunctionCall(std::string* _functionName, std::vector<AST*>
 
 void AST_FunctionCall::generateFrames(Frame* _frame){
     frame = _frame;
+    if(args != nullptr){
+        for(AST* arg: *args){
+            arg->generateFrames(_frame);
+        }
+    }
 }
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start function call " << functionName << std::endl;
-    if(args != nullptr)
-        for (AST* arg : *args) {
-            // ...
-            throw std::runtime_error("AST_FunctionCall: Not Implemented For Arguments Yet.\n");
+    if(args != nullptr){
+        // if even arguments add 4 bits of padding so sp remians properly padded
+        if(args->size()%2){
+            assemblyOut << "addiu $sp, $sp, -4" << std::endl;
         }
+        for (int i = 0, arg_i = args->size()-1; i < args->size(); i++, arg_i--) {
+            // compile all arguments
+            args->at(i)->compile(assemblyOut);
+            // store first 4 arguments in registers
+            if(arg_i < 4){
+                assemblyOut << "lw $a" << arg_i << ", 8($sp)" << std::endl; 
+            }
+            // move sp back 4 to remove extra padding
+            assemblyOut << "addiu $sp, $sp, 4" << std::endl;
+        }
+        // move sp back by 4 to point to first argument 
+        assemblyOut << "addiu $sp, $sp, 4" << std::endl;
+    }
 
     assemblyOut << "jal " << functionName << std::endl;
     assemblyOut << "nop" << std::endl;
     
+    // remove arguments from stack
+    if(args  != nullptr){
+        assemblyOut << "addiu $sp, $sp, " << 4 * (args->size()) << std::endl;
+    }
+
     assemblyOut << "sw $v0, 0($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 

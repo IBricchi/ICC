@@ -28,6 +28,7 @@ private:
     std::string name;
     AST* body;
     int parity;
+    // first in params is type, second is variable name
     std::vector<std::pair<std::string, std::string>>* params;
 
 public:

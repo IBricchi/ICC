@@ -86,24 +86,28 @@ if [[ "$TESTFOLDER" != "all" ]] ; then
         RESULT=$?
         if [[ "${RESULT}" -ne 0 ]] ; then
             tput setaf 1; echo "  ${TESTCASE} FAIL    # compiler"; tput sgr0
+            continue
         fi
 
         mips-linux-gnu-gcc -mfp32 -o ${BIN}/out.o -c ${BIN}/${OUT_NAME}.s
         RESULT=$?
         if [[ "${RESULT}" -ne 0 ]] ; then
             tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc: assembling"; tput sgr0
+            continue
         fi
 
         mips-linux-gnu-gcc -mfp32 -static -o ${BIN}/out ${BIN}/out.o ${DRIVER_FILE}
         RESULT=$?
         if [[ "${RESULT}" -ne 0 ]] ; then
             tput setaf 1; echo "  ${TESTCASE} FAIL    # mips-linux-gnu-gcc: linking"; tput sgr0
+            continue
         fi
         
         qemu-mips ${BIN}/out
         RESULT=$?
         if [[ "${RESULT}" -ne 0 ]] ; then
-            tput setaf 1; echo "  ${TESTCASE} FAIL    # qemu"; tput sgr0
+            tput setaf 1; echo "  ${TESTCASE} FAIL    # qemu returned ${RESULT}"; tput sgr0
+            continue
         fi
         
         set -e
