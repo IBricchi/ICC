@@ -66,7 +66,7 @@ void Frame::addCaseLabelValueMapping(std::string label, int value) {
     caseLabelValueMapping[label] = value;
 }
 
-std::unordered_map<std::string, int> Frame::getCaseLabelValueMapping() const {
+std::map<std::string, int> Frame::getCaseLabelValueMapping() const {
     return caseLabelValueMapping;
 }
 

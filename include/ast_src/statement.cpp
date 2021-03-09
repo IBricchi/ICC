@@ -254,6 +254,15 @@ void AST_SwitchStmt::compile(std::ostream &assemblyOut){
     assemblyOut << "lw $t4, 8($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
+    /*
+        BUG:
+        ---------------------------------------------------------------------------------------------------------
+        Currently, the following is jumping into a new frame and hence does not start the new frame.
+        This messes up the whole frame logic.
+        Need to find a way to start the frame even when jumping over a block start. Similarly to how did this for
+        break and continue when jumping over end of frame.
+        ---------------------------------------------------------------------------------------------------------
+    */
     auto caseLabelToValueMapping = frame->getCaseLabelValueMapping();
     for (const auto &labelValue : caseLabelToValueMapping) {
         if (hasEnding(labelValue.first, "default") == true) {
@@ -299,10 +308,10 @@ void AST_CaseStmt::generateFrames(Frame* _frame){
 
     // make accessible to parent AST_SwitchStmt
     if (!isDefaultCase) {
-        caseStartLabel = generateUniqueLabel("caseStmt" + value);
+        caseStartLabel = generateUniqueLabel("caseStmt") + "_" + std::to_string(value);
         frame->parentFrame->addCaseLabelValueMapping(caseStartLabel, value);
     } else {
-        caseStartLabel = generateUniqueLabel("caseStmt") + "default";
+        caseStartLabel = generateUniqueLabel("caseStmt") + "_default";
         frame->parentFrame->addCaseLabelValueMapping(caseStartLabel, 0);
     }
     

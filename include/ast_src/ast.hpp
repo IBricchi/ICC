@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <stdexcept>
 
 class Frame;
@@ -54,13 +55,16 @@ private:
     int memOcc = 0;
 
     /*
+        Must be a normal map to preserve ordering.
+        Especially important to guarantee that default only appears at end.
+        
         Used by switch statement.
         Case children must make labels known to parent switch.
 
         Default case is special: Its label ends with "default", which can
         be used to identify it.
     */
-    std::unordered_map<std::string, int> caseLabelValueMapping;
+    std::map<std::string, int> caseLabelValueMapping;
 
 public:
     /*
@@ -106,7 +110,7 @@ public:
     void setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName);
 
     void addCaseLabelValueMapping(std::string label, int value);
-    std::unordered_map<std::string, int> getCaseLabelValueMapping() const;
+    std::map<std::string, int> getCaseLabelValueMapping() const;
 
     /*
         Used for 'return'
