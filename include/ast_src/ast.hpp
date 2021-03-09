@@ -53,17 +53,6 @@ private:
     // information about current memory occupied by variables
     int memOcc = 0;
 
-    /* 
-        Used for 'break' and 'continue'.
-
-        Enough for them to be strings as should never have more than one active loop
-        in one frame (Every block created as new frame).
-
-        Must set these to "" after a loop is finished!
-    */
-    std::string startLoopLabelName;
-    std::string endLoopLabelName;
-
     /*
         Used by switch statement.
         Case children must make labels known to parent switch.
@@ -132,12 +121,26 @@ public:
     bool isFun = false;
     int getDistanceToFun();
 
+    /* 
+        Used for 'break' and 'continue'.
+
+        Enough for them to be strings as should never have more than one active loop
+        in one frame (Every block created as new frame).
+
+        Must set these to "" after a loop is finished!
+    */
+    std::string startLoopLabelName;
+    std::string endLoopLabelName;
+
     /*
         First checks current frame, then parent frame.
         Does not do error checking.
+
+        first element is label name.
+        second element is distance to loop frame that contains this label.
     */
-    std::string getStartLoopLabelName() const;
-    std::string getEndLoopLabelName() const;
+    std::pair<std::string, int> getStartLoopLabelName(std::ostream &assemblyOut = std::cout);
+    std::pair<std::string, int> getEndLoopLabelName(std::ostream &assemblyOut = std::cout);
 };
 
 #include "util.hpp"

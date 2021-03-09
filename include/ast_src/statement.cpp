@@ -54,16 +54,29 @@ void AST_Break::generateFrames(Frame* _frame) {
 }
 
 void AST_Break::compile(std::ostream &assemblyOut) {
-    std::string returnLab = generateUniqueLabel("return");
-    assemblyOut << std::endl << "# start " << returnLab << std::endl;
+    std::string breakLabel = generateUniqueLabel("break");
+    assemblyOut << std::endl << "# start " << breakLabel << std::endl;
 
-    std::string endLoopLabel = frame->getEndLoopLabelName();
+    auto endLoopLabel = frame->getEndLoopLabelName();
+
+    // skip through frames between current frame and loop frame
+    for(int i = 0; i < endLoopLabel.second - 1 ; i++){
+        assemblyOut << "lw $fp, 12($fp)" << std::endl;
+    }
+
+    // exit last frame properly
+    if (endLoopLabel.second != 0) {
+        assemblyOut << "move $sp, $fp" << std::endl;
+        assemblyOut << "lw $31, 8($sp)" << std::endl;
+        assemblyOut << "lw $fp, 12($sp)" << std::endl;
+        assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
+    }
 
     // jumps to the end of a loop
-    assemblyOut << "j " << endLoopLabel << std::endl;
+    assemblyOut << "j " << endLoopLabel.first << std::endl;
     assemblyOut << "nop" << std::endl;
 
-    assemblyOut << "# end " << returnLab << std::endl << std::endl;
+    assemblyOut << "# end " << breakLabel << std::endl << std::endl;
 }
 
 void AST_Continue::generateFrames(Frame* _frame) {
@@ -74,10 +87,23 @@ void AST_Continue::compile(std::ostream &assemblyOut) {
     std::string continueLab = generateUniqueLabel("continue");
     assemblyOut << std::endl << "# start " << continueLab << std::endl;
 
-    std::string startLoopLabel = frame->getStartLoopLabelName();
+    auto startLoopLabel = frame->getStartLoopLabelName();
+
+    // skip through frames between current frame and loop frame
+    for(int i = 0; i < startLoopLabel.second - 1 ; i++){
+        assemblyOut << "lw $fp, 12($fp)" << std::endl;
+    }
+
+    // exit last frame properly
+    if (startLoopLabel.second != 0) {
+         assemblyOut << "move $sp, $fp" << std::endl;
+        assemblyOut << "lw $31, 8($sp)" << std::endl;
+        assemblyOut << "lw $fp, 12($sp)" << std::endl;
+        assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
+    }
 
     // jumps to the begining of a loop
-    assemblyOut << "j " << startLoopLabel << std::endl;
+    assemblyOut << "j " << startLoopLabel.first << std::endl;
     assemblyOut << "nop" << std::endl;
 
     assemblyOut << "# end " << continueLab << std::endl << std::endl;

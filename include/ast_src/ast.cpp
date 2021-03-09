@@ -80,23 +80,28 @@ int Frame::getDistanceToFun(){
     return i;
 }
 
-std::string Frame::getStartLoopLabelName() const {
-    // first try to find in current frame
-    if (startLoopLabelName != "") {
-        return startLoopLabelName;
+std::pair<std::string, int> Frame::getStartLoopLabelName(std::ostream &assemblyOut) {
+    int i = 0;
+    Frame* frame = this;
+    while (frame->startLoopLabelName == "") {
+        // variable does not exist in current frame
+        // try to find in parent frame
+        i++;
+        frame = frame->parentFrame;
     }
-    
-    // variable does not exist in current frame
-    // try to find in parent frame
-    return parentFrame->getStartLoopLabelName();
+
+    return {frame->startLoopLabelName, i};
 }
-std::string Frame::getEndLoopLabelName() const {    
-    // first try to find in current frame
-    if (endLoopLabelName != "") {
-        return endLoopLabelName;
+
+std::pair<std::string, int> Frame::getEndLoopLabelName(std::ostream &assemblyOut) {
+    int i = 0;
+    Frame* frame = this;
+    while (frame->endLoopLabelName == "") {
+        // variable does not exist in current frame
+        // try to find in parent frame
+        i++;
+        frame = frame->parentFrame;
     }
-    
-    // variable does not exist in current frame
-    // try to find in parent frame
-    return parentFrame->getEndLoopLabelName();
+
+    return {frame->endLoopLabelName, i};
 }
