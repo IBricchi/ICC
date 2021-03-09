@@ -82,17 +82,20 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         // copy over arguments from call
         if(params != nullptr){
             for(int i = 0, arg_i = params->size() - 1; i < params->size(); i++, arg_i--){
+                // comment
+                assemblyOut << std::endl << "# start loading parameter " << params->at(i).second << " in " << name << std::endl;
                 // load from register
                 if(arg_i < 4){
                     // If I didn't do it like this at runtime the strings got randomly truncated
                     std::string reg = std::string("$a") + std::to_string(arg_i);
-                    std::cerr << "Passing argument " << reg << std::endl;
                     regToVar(assemblyOut, body->frame, reg, params->at(i).second);
                 }
                 // load from memory
                 else{
-                    throw std::runtime_error("Not implemented yet");
+                    assemblyOut << "lw $t0, " << 4 * arg_i + body->frame->getStoreSize() << "($fp)" << std::endl;
+                    regToVar(assemblyOut, body->frame, "$t0", params->at(i).second);
                 }
+                assemblyOut << "# loading parameter " << params->at(i).second << " in " << name << std::endl << std::endl;
             }
         }
 
@@ -139,7 +142,7 @@ void AST_VarDeclaration::generateFrames(Frame* _frame){
     if(expr != nullptr)
         expr->generateFrames(_frame);
     
-    _frame->addVariable(name, 4);
+    _frame->addVariable(name, getTypeByteSize(type));
 }
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {

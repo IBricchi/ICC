@@ -44,9 +44,9 @@ std::pair<int, int> Frame::getVarAddress(const std::string &variableName) {
     return {depth, pos};
 }
 
-void Frame::addVariable(const std::string &variableName, int byteSize) {
+void Frame::addVariable(const std::string &variableName, int bitSize) {
     variableBindings[variableName] = memOcc;
-    memOcc += byteSize * 4;
+    memOcc += bitSize + bitSize%8;
 }
 
 int Frame::getStoreSize() const {
