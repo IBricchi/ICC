@@ -46,8 +46,7 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start function call " << functionName << std::endl;
     if(args != nullptr)
         for (AST* arg : *args) {
-            // ...
-            throw std::runtime_error("AST_FunctionCall: Not Implemented For Arguments Yet.\n");
+            arg->compile(assemblyOut);
         }
 
     assemblyOut << "jal " << functionName << std::endl;
