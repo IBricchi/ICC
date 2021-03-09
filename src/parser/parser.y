@@ -57,7 +57,7 @@
 %type <NODE> PROGRAM SEQUENCE DECLARATION FUN_DECLARATION VAR_DECLARATION // Structures
 %type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT IF_STMT WHILE_STMT FOR_STMT BLOCK // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
-%type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY CALL PRIMARY // Expressions
+%type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL PRIMARY // Expressions
 
 %type <FDP> FUN_DEC_PARAMS // helper for fun declaration
 %type <FCP> FUN_CALL_PARAMS // helper for fun call
@@ -258,22 +258,25 @@ TERM : FACTOR T_PLUS TERM  { $$ = new AST_BinOp(AST_BinOp::Type::PLUS, $1, $3); 
      | FACTOR              { $$ = $1; }
      ;
 
-FACTOR : UNARY T_STAR FACTOR    { $$ = new AST_BinOp(AST_BinOp::Type::STAR, $1, $3); }
-       | UNARY T_SLASH_F FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::SLASH_F, $1, $3); }
-       | UNARY T_PERCENT FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::PERCENT, $1, $3); }
-       | UNARY T_MINUSMINUS     { $$ = new AST_UnOp(AST_UnOp::Type::POST_DECREMENT, $1); }
-       | UNARY T_PLUSPLUS       { $$ = new AST_UnOp(AST_UnOp::Type::POST_INCREMENT, $1); }
-       | UNARY                  { $$ = $1; }
+FACTOR : UNARY_PRE T_STAR FACTOR    { $$ = new AST_BinOp(AST_BinOp::Type::STAR, $1, $3); }
+       | UNARY_PRE T_SLASH_F FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::SLASH_F, $1, $3); }
+       | UNARY_PRE T_PERCENT FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::PERCENT, $1, $3); }
+       | UNARY_PRE                  { $$ = $1; }
        ;
 
-UNARY : T_BANG UNARY          { $$ = new AST_UnOp(AST_UnOp::Type::BANG, $2); }
-      | T_NOT UNARY           { $$ = new AST_UnOp(AST_UnOp::Type::NOT, $2); }
-      | T_MINUS UNARY         { $$ = new AST_UnOp(AST_UnOp::Type::MINUS, $2); }
-      | T_MINUSMINUS UNARY    { $$ = new AST_UnOp(AST_UnOp::Type::PRE_DECREMENT, $2); }
-      | T_PLUS UNARY          { $$ = new AST_UnOp(AST_UnOp::Type::PLUS, $2); }
-      | T_PLUSPLUS UNARY      { $$ = new AST_UnOp(AST_UnOp::Type::PRE_INCREMENT, $2); }
-      | CALL                  { $$ = $1; }
-      ;
+UNARY_PRE : T_BANG UNARY_PRE          { $$ = new AST_UnOp(AST_UnOp::Type::BANG, $2); }
+          | T_NOT UNARY_PRE           { $$ = new AST_UnOp(AST_UnOp::Type::NOT, $2); }
+          | T_MINUS UNARY_PRE         { $$ = new AST_UnOp(AST_UnOp::Type::MINUS, $2); }
+          | T_MINUSMINUS UNARY_PRE    { $$ = new AST_UnOp(AST_UnOp::Type::PRE_DECREMENT, $2); }
+          | T_PLUS UNARY_PRE          { $$ = new AST_UnOp(AST_UnOp::Type::PLUS, $2); }
+          | T_PLUSPLUS UNARY_PRE      { $$ = new AST_UnOp(AST_UnOp::Type::PRE_INCREMENT, $2); }
+          | UNARY_POST                { $$ = $1; }
+          ;
+
+UNARY_POST : UNARY_POST T_MINUSMINUS    { $$ = new AST_UnOp(AST_UnOp::Type::POST_DECREMENT, $1); }
+           | UNARY_POST T_PLUSPLUS      { $$ = new AST_UnOp(AST_UnOp::Type::POST_INCREMENT, $1); }
+           | CALL                       { $$ = $1; }
+           ;
 
 CALL : T_IDENTIFIER T_BRACK_L T_BRACK_R                            { $$ = new AST_FunctionCall($1); }
      | T_IDENTIFIER T_BRACK_L EXPRESSION T_BRACK_R                 { $$ = new AST_FunctionCall($1, new std::vector<AST*>({{$3}})); }
