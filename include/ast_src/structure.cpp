@@ -63,7 +63,7 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         assemblyOut << name << ":" << std::endl;
 
         // function header 2
-        assemblyOut << ".frame	$fp, " << frame->getStoreSize() << " , $31" << std::endl;
+        assemblyOut << ".frame	$fp, " << body->frame->getStoreSize() << " , $31" << std::endl;
         assemblyOut << ".mask	0x40000000,-4" << std::endl;
         assemblyOut << ".fmask	0x00000000,0" << std::endl;
         assemblyOut << ".set	noreorder" << std::endl;
@@ -71,13 +71,13 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
 
         // increase size of current frame by required ammount for storing previous state data
         // currently storing only $31, and $fp
-        assemblyOut << "addiu $sp, $sp, -" << frame->getStoreSize() << std::endl;
+        assemblyOut << "addiu $sp, $sp, -" << body->frame->getStoreSize() << std::endl;
         assemblyOut << "sw $31, 8($sp)" << std::endl;
         assemblyOut << "sw $fp, 12($sp)" << std::endl;
         assemblyOut << "move $fp, $sp" << std::endl;
 
         // move stack pointer down to allocate space for temporary variables in frame
-        assemblyOut << "addiu $sp, $sp, -" << frame->getVarSize() << std::endl;
+        assemblyOut << "addiu $sp, $sp, -" << body->frame->getVarSize() << std::endl;
 
         // copy over arguments from call
         if(params != nullptr){
@@ -103,7 +103,7 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         assemblyOut << "move $sp, $fp" << std::endl;
         assemblyOut << "lw $31, 8($sp)" << std::endl;
         assemblyOut << "lw $fp, 12($sp)" << std::endl;
-        assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
+        assemblyOut << "addiu $sp, $sp, " << body->frame->getStoreSize() << std::endl;
         
         // jump back to wherever function was called from (this is only in place in case of void functions)
         // normally return statement will handle jumping
