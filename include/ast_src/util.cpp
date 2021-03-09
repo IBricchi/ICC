@@ -1,8 +1,11 @@
 #include "util.hpp"
 
 int getTypeByteSize(const std::string &type) {
-    if (type == "int") {
-        return 8;
+    if(type == "pointer"){
+        return 4;
+    }
+    else if (type == "int") {
+        return 4;
     }
 
     throw std::runtime_error("getTypeByteSize: Not Implemented Yet.\n");

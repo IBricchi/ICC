@@ -165,3 +165,27 @@ AST_VarDeclaration::~AST_VarDeclaration() {
     if(expr != nullptr)
         delete expr; 
 }
+
+AST_ArrayDeclaration::AST_ArrayDeclaration(std::string _type, std::string* _name, int _size) :
+    type(_type),
+    name(*_name),
+    size(_size)
+{}
+
+void AST_ArrayDeclaration::generateFrames(Frame* _frame){
+    frame = _frame;
+    int pointer_size = getTypeByteSize("pointer");
+    int type_size = getTypeByteSize(type);
+    // pointer_size % 8 is too add padding after pointer.
+    // this isn't useful for int's but when we need double word sized types this will save us
+    // a lot of headaches.
+    // no need to type_size since addVariable does that for us
+    _frame->addVariable(name, pointer_size + pointer_size % 8 + type_size);
+}
+
+void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {
+    // get pointer to start of allocated memory space
+    // always a double word away from allocated memory space
+    assemblyOut << "addiu $t0, $0, " << frame->getVarAddress(name).second + 8 << std::endl;
+    regToVar(assemblyOut, frame, "$t0", name);
+}

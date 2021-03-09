@@ -36,7 +36,7 @@
 %token T_COMMA T_SEMI_COLON
 %token T_BRACK_L T_BRACK_R
 %token T_BRACE_L T_BRACE_R
-
+%token T_SQUARE_L T_SQUARE_R
 
 %token T_AND_EQUAL T_XOR_EQUAL T_OR_EQUAL T_SHIFT_L_EQUAL T_SHIFT_R_EQUAL T_STAR_EQUAL
 %token T_SLASH_F_EQUAL T_PERCENT_EQUAL T_PLUS_EQUAL T_MINUS_EQUAL 
@@ -107,8 +107,9 @@ FUN_DEC_PARAMS : T_COMMA T_INT T_IDENTIFIER                     { $$ = new std::
                         }
                ;
 
-VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                                { $$ = new AST_VarDeclaration("int", $2); }
-                | T_INT T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON %prec VAR_DEC { $$ = new AST_VarDeclaration("int", $2, $4); }
+VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                                   { $$ = new AST_VarDeclaration("int", $2); }
+                | T_INT T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON %prec VAR_DEC    { $$ = new AST_VarDeclaration("int", $2, $4); }
+                | T_INT T_IDENTIFIER T_SQUARE_L T_CONST_INT T_SQUARE_R T_SEMI_COLON { $$ = new AST_ArrayDeclaration("int", $2, $4); }
                 ;
 
 STATEMENT : EXPRESSION_STMT { $$ = $1; }

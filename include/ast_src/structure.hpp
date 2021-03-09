@@ -66,3 +66,19 @@ public:
 
     ~AST_VarDeclaration();
 };
+
+class AST_ArrayDeclaration
+    : public AST
+{
+private:
+    std::string type;
+    std::string name;
+    int size;
+public:
+    AST_ArrayDeclaration(std::string _type, std::string* _name, int _size);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
+
+    // no destructor needed as there are no pointers
+};
