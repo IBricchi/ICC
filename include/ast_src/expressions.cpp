@@ -66,6 +66,11 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     assemblyOut << "jal " << functionName << std::endl;
     assemblyOut << "nop" << std::endl;
     
+    // remove arguments from stack
+    if(args  != nullptr){
+        assemblyOut << "addiu $sp, $sp, " << 4 * (args->size()) << std::endl;
+    }
+
     assemblyOut << "sw $v0, 0($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
