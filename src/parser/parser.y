@@ -158,7 +158,7 @@ FOR_STMT : T_FOR T_BRACK_L EXPRESSION_STMT EXPRESSION_STMT EXPRESSION T_BRACK_R 
 SWITCH_STMT : T_SWITCH T_BRACK_L EXPRESSION T_BRACK_R STATEMENT { $$ = new AST_SwitchStmt($3, $5); }
             ;
 
-CASE_STMT : T_CASE PRIMARY T_COLON STATEMENT { $$ = new AST_CaseStmt($4, $2); }
+CASE_STMT : T_CASE T_CONST_INT T_COLON STATEMENT { $$ = new AST_CaseStmt($4, $2); } // Need to extend for strings
           | T_DEFAULT T_COLON STATEMENT { $$ = new AST_CaseStmt($3); }
           ;
 

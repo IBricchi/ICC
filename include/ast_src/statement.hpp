@@ -94,16 +94,22 @@ public:
     ~AST_SwitchStmt();
 };
 
-// default case if label = nullptr
 class AST_CaseStmt
     : public AST
 {
 private:
-    AST* label;
     AST* body;
+    int value;
+
+    bool isDefaultCase;
+
+    std::string caseStartLabel;
 
 public:
-    AST_CaseStmt(AST* _body, AST* _label = nullptr);
+    AST_CaseStmt(AST* _body, int value);
+
+    // default case
+    AST_CaseStmt(AST* _body);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream& assemblyOut) override;

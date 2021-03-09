@@ -65,12 +65,21 @@ private:
     std::string endLoopLabelName;
 
     /*
+        Used by switch statement.
+        Case children must make labels known to parent switch.
+
+        Default case is special: Its label ends with "default", which can
+        be used to identify it.
+    */
+    std::unordered_map<std::string, int> caseLabelValueMapping;
+
+public:
+    /*
         Pointer to the parent frame.
         Enables us to access variables from parent frame if they have not been defined locally.
     */
     Frame *parentFrame;
 
-public:
     Frame(Frame* _parentFrame = nullptr);
 
     ~Frame();
@@ -106,6 +115,9 @@ public:
     int getVarSize() const;
 
     void setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName);
+
+    void addCaseLabelValueMapping(std::string label, int value);
+    std::unordered_map<std::string, int> getCaseLabelValueMapping() const;
 
     /*
         Used for 'return'

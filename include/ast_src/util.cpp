@@ -2,10 +2,10 @@
 
 int getTypeByteSize(const std::string &type) {
     if (type == "int") {
-        return 8;
+        return 4;
     }
 
-    throw std::runtime_error("getTypeByteSize: Not Implemented Yet.\n");
+    throw std::runtime_error("getTypeByteSize: Not Implemented Yet For " + type + "\n");
 }
 
 std::string generateUniqueLabel(const std::string &labelName) {
@@ -37,4 +37,12 @@ void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
     
     // store register data into variable's memory address
     assemblyOut << "lw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
+}
+
+bool hasEnding(const std::string &fullString, const std::string &ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
 }

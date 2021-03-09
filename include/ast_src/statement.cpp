@@ -215,7 +215,41 @@ void AST_SwitchStmt::generateFrames(Frame* _frame){
 }
 
 void AST_SwitchStmt::compile(std::ostream &assemblyOut){
-    throw std::runtime_error("AST_Switch::compile: Not yet implemented");
+    std::string switchStmt = generateUniqueLabel("switchStmt");
+    assemblyOut << std::endl << "# start " << switchStmt << std::endl;
+
+    // needed for break statements
+    std::string endSwitchLabel = generateUniqueLabel("endSwitch");
+    frame->setLoopLabelNames("", endSwitchLabel);
+
+    value->compile(assemblyOut);
+
+    // load top of stack into register
+    assemblyOut << "lw $t4, 8($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+
+    auto caseLabelToValueMapping = frame->getCaseLabelValueMapping();
+    for (const auto &labelValue : caseLabelToValueMapping) {
+        if (hasEnding(labelValue.first, "default") == true) {
+            assemblyOut << "j " << labelValue.first << std::endl;
+            assemblyOut << "nop" << std::endl;
+        } else {
+            assemblyOut << "li $t5, " << labelValue.second << std::endl;    
+
+            assemblyOut << "beq $t4, $t5, " << labelValue.first << std::endl;
+            assemblyOut << "nop" << std::endl;
+        }
+    }
+
+    // case statements
+    body->compile(assemblyOut);
+
+    assemblyOut << endSwitchLabel << ":" << std::endl;
+
+    // remove loop labels from 
+    frame->setLoopLabelNames("", "");
+
+    assemblyOut << "# end " << switchStmt << std::endl; 
 }
 
 AST_SwitchStmt::~AST_SwitchStmt(){
@@ -223,24 +257,45 @@ AST_SwitchStmt::~AST_SwitchStmt(){
     delete body;
 }
 
-AST_CaseStmt::AST_CaseStmt(AST* _body, AST* _label):
+AST_CaseStmt::AST_CaseStmt(AST* _body, int _value):
     body(_body),
-    label(_label)
+    value(_value),
+    isDefaultCase(false)
+{}
+
+AST_CaseStmt::AST_CaseStmt(AST* _body):
+    body(_body),
+    isDefaultCase(true)
 {}
 
 void AST_CaseStmt::generateFrames(Frame* _frame){
     frame = _frame;
-    label->generateFrames(_frame);
+
+    // make accessible to parent AST_SwitchStmt
+    if (!isDefaultCase) {
+        caseStartLabel = generateUniqueLabel("caseStmt" + value);
+        frame->parentFrame->addCaseLabelValueMapping(caseStartLabel, value);
+    } else {
+        caseStartLabel = generateUniqueLabel("caseStmt") + "default";
+        frame->parentFrame->addCaseLabelValueMapping(caseStartLabel, 0);
+    }
+    
+
     body->generateFrames(_frame);
 }
 
 void AST_CaseStmt::compile(std::ostream &assemblyOut){
-    // default case if label = nullptr
-    throw std::runtime_error("AST_CaseStmt::compile: Not yet implemented");
+    std::string caseStmt = generateUniqueLabel("caseStmt");
+    assemblyOut << std::endl << "# start " << caseStmt << std::endl;
+
+    assemblyOut << caseStartLabel << ":" << std::endl;
+
+    body->compile(assemblyOut);
+
+    assemblyOut << "# end " << caseStmt << std::endl; 
 }
 
 AST_CaseStmt::~AST_CaseStmt(){
-    delete label;
     delete body;
 }
 

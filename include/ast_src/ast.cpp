@@ -62,6 +62,14 @@ void Frame::setLoopLabelNames(std::string _startLoopLabelName, std::string _endL
     endLoopLabelName = _endLoopLabelName;
 }
 
+void Frame::addCaseLabelValueMapping(std::string label, int value) {
+    caseLabelValueMapping[label] = value;
+}
+
+std::unordered_map<std::string, int> Frame::getCaseLabelValueMapping() const {
+    return caseLabelValueMapping;
+}
+
 int Frame::getDistanceToFun(){
     int i = 0;
     Frame* frame = this;
