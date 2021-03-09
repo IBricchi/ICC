@@ -45,8 +45,11 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start function call " << functionName << std::endl;
     if(args != nullptr)
-        for (AST* arg : *args) {
-            arg->compile(assemblyOut);
+        for (int i = 0; i < args->size(); i++) {
+            args->at(i)->compile(assemblyOut);
+            if(i < 4){
+                assemblyOut << "lw $a" << i << ", 8($sp)" << std::endl; 
+            }
         }
 
     assemblyOut << "jal " << functionName << std::endl;
