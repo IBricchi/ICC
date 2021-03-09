@@ -40,6 +40,11 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
     if (body != nullptr) {
         body->generateFrames(_frame);
         body->frame->isFun = true;
+        // declare parameters as variables in the frame
+        if(params != nullptr)
+            for(std::pair<std::string,std::string> param: *params){
+                body->frame->addVariable(param.second, getTypeByteSize(param.first));;
+            }
     } 
 }
 
@@ -57,9 +62,6 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         // create label
         assemblyOut << name << ":" << std::endl;
 
-        // move stack pointer down to allocate space for temporary variables in frame
-        assemblyOut << "addiu $sp, $sp, -" << frame->getVarSize() << std::endl;
-
         // function header 2
         assemblyOut << ".frame	$fp, " << frame->getStoreSize() << " , $31" << std::endl;
         assemblyOut << ".mask	0x40000000,-4" << std::endl;
@@ -67,12 +69,45 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         assemblyOut << ".set	noreorder" << std::endl;
         assemblyOut << ".set	nomacro" << std::endl;
 
+        // increase size of current frame by required ammount for storing previous state data
+        // currently storing only $31, and $fp
+        assemblyOut << "addiu $sp, $sp, -" << frame->getStoreSize() << std::endl;
+        assemblyOut << "sw $31, 8($sp)" << std::endl;
+        assemblyOut << "sw $fp, 12($sp)" << std::endl;
+        assemblyOut << "move $fp, $sp" << std::endl;
+
+        // move stack pointer down to allocate space for temporary variables in frame
+        assemblyOut << "addiu $sp, $sp, -" << frame->getVarSize() << std::endl;
+
+        // copy over arguments from call
+        if(params != nullptr){
+            for(int i = 0, arg_i = params->size() - 1; i < params->size(); i++, arg_i--){
+                // load from register
+                if(arg_i < 4){
+                    // If I didn't do it like this at runtime the strings got randomly truncated
+                    std::string reg = std::string("$a") + std::to_string(arg_i);
+                    std::cerr << "Passing argument " << reg << std::endl;
+                    regToVar(assemblyOut, body->frame, reg, params->at(i).second);
+                }
+                // load from memory
+                else{
+                    throw std::runtime_error("Not implemented yet");
+                }
+            }
+        }
+
         // body
         body->compile(assemblyOut);
+
+        // move fp back to start of frame and re-instate previous frame
+        assemblyOut << "move $sp, $fp" << std::endl;
+        assemblyOut << "lw $31, 8($sp)" << std::endl;
+        assemblyOut << "lw $fp, 12($sp)" << std::endl;
+        assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
         
         // jump back to wherever function was called from (this is only in place in case of void functions)
         // normally return statement will handle jumping
-        assemblyOut << "j $31" << std::endl;
+        assemblyOut << "jr $31" << std::endl;
         assemblyOut << "nop" << std::endl;
 
         // function footer
