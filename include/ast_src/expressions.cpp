@@ -40,6 +40,11 @@ AST_FunctionCall::AST_FunctionCall(std::string* _functionName, std::vector<AST*>
 
 void AST_FunctionCall::generateFrames(Frame* _frame){
     frame = _frame;
+    if(args != nullptr){
+        for(AST* arg: *args){
+            arg->generateFrames(_frame);
+        }
+    }
 }
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
