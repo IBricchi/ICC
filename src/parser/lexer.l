@@ -30,7 +30,18 @@ extern "C" int fileno(FILE *stream);
 "("       { return T_BRACK_L; }
 ")"       { return T_BRACK_R; }
 
+"&="      { return T_AND_EQUAL; }
+"^="      { return T_XOR_EQUAL; }
+"|="      { return T_OR_EQUAL; }
+"<<="     { return T_SHIFT_L_EQUAL; }
+">>="     { return T_SHIFT_R_EQUAL; }
+"*="      { return T_STAR_EQUAL; }
+"/="      { return T_SLASH_F_EQUAL; }
+"%="      { return T_PERCENT_EQUAL; }
+"+="      { return T_PLUS_EQUAL; }
+"-="      { return T_MINUS_EQUAL; }
 "="       { return T_EQUAL; }
+
 "||"      { return T_OR_L; }
 "&&"      { return T_AND_L; }
 "|"       { return T_OR_B; }
