@@ -32,7 +32,6 @@ public:
     /*
         Generates frames and creates context for them
     */
-    void copySpecialParamsTo(AST* child, SpecialParam new_param = SpecialParam::NONE);
     virtual void generateFrames(Frame* _frame = nullptr);
 
     /*
@@ -43,8 +42,16 @@ public:
     // overriden by AST_Variable
     virtual void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg);
 
-    // set special params
-    void setSpecialParam(SpecialParam param);
+    // copys over special params to child
+    void copySpecialParamsTo(AST* child, SpecialParam new_param = SpecialParam::NONE);
+
+    /*
+        This function is only required for source translation of things like short hand assignements
+        Deep copy does not currently copy:
+        * Frame
+        * Or special Params
+    */
+    virtual AST* deepCopy();
 };
 
 /*

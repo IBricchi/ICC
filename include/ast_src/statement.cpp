@@ -10,6 +10,11 @@ void AST_Return::generateFrames(Frame* _frame){
     expr->generateFrames(_frame);
 }
 
+AST* AST_Return::deepCopy(){
+    AST* new_expr = expr->deepCopy();
+    return new AST_Return(new_expr);
+}
+
 void AST_Return::compile(std::ostream &assemblyOut) {
     std::string retLab = generateUniqueLabel("return");
     assemblyOut << std::endl << "# start " << retLab << std::endl;
@@ -54,6 +59,10 @@ void AST_Break::generateFrames(Frame* _frame) {
     frame = _frame;
 }
 
+AST* AST_Break::deepCopy(){
+    return new AST_Break();
+}
+
 void AST_Break::compile(std::ostream &assemblyOut) {
     std::string returnLab = generateUniqueLabel("return");
     assemblyOut << std::endl << "# start " << returnLab << std::endl;
@@ -69,6 +78,10 @@ void AST_Break::compile(std::ostream &assemblyOut) {
 
 void AST_Continue::generateFrames(Frame* _frame) {
     frame = _frame;
+}
+
+AST* AST_Continue::deepCopy(){
+    return new AST_Continue();
 }
 
 void AST_Continue::compile(std::ostream &assemblyOut) {
@@ -103,6 +116,16 @@ void AST_IfStmt::generateFrames(Frame* _frame){
         copySpecialParamsTo(other);
         other->generateFrames(_frame);
     }
+}
+
+AST* AST_IfStmt::deepCopy(){
+    AST* new_cond = cond->deepCopy();
+    AST* new_then = then->deepCopy();
+    AST* new_other = nullptr;
+    if(other != nullptr){
+        new_other = other->deepCopy();
+    }
+    return new AST_IfStmt(new_cond, new_then, new_other);
 }
 
 void AST_IfStmt::compile(std::ostream &assemblyOut) {
@@ -165,6 +188,12 @@ void AST_WhileStmt::generateFrames(Frame* _frame){
     body->generateFrames(_frame);
 }
 
+AST* AST_WhileStmt::deepCopy(){
+    AST* new_cond = cond->deepCopy();
+    AST* new_body = body->deepCopy();
+    return new AST_WhileStmt(new_cond, new_body);
+}
+
 void AST_WhileStmt::compile(std::ostream &assemblyOut){
     std::string whileLab = generateUniqueLabel("while");
     assemblyOut << std::endl << "# start " << whileLab << std::endl; 
@@ -220,6 +249,14 @@ void AST_Block::generateFrames(Frame* _frame){
         copySpecialParamsTo(body);
         body->generateFrames(frame);
     }
+}
+
+AST* AST_Block::deepCopy(){
+    AST* new_body = nullptr;
+    if(body != nullptr){
+        new_body = body->deepCopy();
+    }
+    return new AST_Block(new_body);
 }
 
 void AST_Block::compile(std::ostream &assemblyOut) {

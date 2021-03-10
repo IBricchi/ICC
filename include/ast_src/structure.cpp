@@ -14,6 +14,12 @@ void AST_Sequence::generateFrames(Frame* _frame){
     second->generateFrames(_frame);
 }
 
+AST* AST_Sequence::deepCopy(){
+    AST* new_first = first->deepCopy();
+    AST* new_second = second->deepCopy();
+    return new AST_Sequence(new_first, new_second);
+}
+
 void AST_Sequence::compile(std::ostream &assemblyOut) {
     first->compile(assemblyOut);
     second->compile(assemblyOut);
@@ -49,6 +55,21 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
                 body->frame->addVariable(param.second, getTypeByteSize(param.first));;
             }
     } 
+}
+
+AST* AST_FunDeclaration::deepCopy(){
+    AST* new_body = nullptr;
+    if(body != nullptr){
+        new_body = body->deepCopy();
+    }
+    std::vector<std::pair<std::string,std::string>>* new_params = nullptr;
+    if(params != nullptr){
+        new_params = new std::vector<std::pair<std::string,std::string>>();
+        for(std::pair<std::string, std::string> param: *params){
+            new_params->push_back(param);
+        }
+    }
+    return new AST_FunDeclaration(type, &name, new_body, new_params);
 }
 
 void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
@@ -150,6 +171,14 @@ void AST_VarDeclaration::generateFrames(Frame* _frame){
     _frame->addVariable(name, getTypeByteSize(type));
 }
 
+AST* AST_VarDeclaration::deepCopy(){
+    AST* new_expr = nullptr;
+    if(expr != nullptr){
+        new_expr = expr->deepCopy();
+    }
+    return new AST_VarDeclaration(type, &name, new_expr);
+}
+
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
     if (expr != nullptr) {
         assemblyOut << std::endl << "#start var dec with definition " << name << std::endl;
@@ -186,6 +215,10 @@ void AST_ArrayDeclaration::generateFrames(Frame* _frame){
     // a lot of headaches.
     // no need to type_size since addVariable does that for us
     _frame->addVariable(name, pointer_size + pointer_size % 8 + type_size);
+}
+
+AST* AST_ArrayDeclaration::deepCopy(){
+    return new AST_ArrayDeclaration(type, &name, size);
 }
 
 void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {

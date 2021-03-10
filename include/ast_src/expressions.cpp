@@ -13,6 +13,12 @@ void AST_Assign::generateFrames(Frame* _frame){
     expr->generateFrames(_frame);
 }
 
+AST* AST_Assign::deepCopy(){
+    AST* new_assigne = assignee->deepCopy();
+    AST* new_expr = expr->deepCopy();
+    return new AST_Assign(new_assigne, new_expr);
+}
+
 void AST_Assign::compile(std::ostream &assemblyOut){
     std::string name = generateUniqueLabel("var_definition");
     assemblyOut << std::endl << "# start " << name << std::endl;
@@ -56,6 +62,18 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
             arg->generateFrames(_frame);
         }
     }
+}
+
+AST* AST_FunctionCall::deepCopy(){
+    std::vector<AST*>* new_args = nullptr;
+    if(args!=nullptr){
+        new_args = new std::vector<AST*>();
+        for(AST* arg: *args){
+            AST* new_arg = arg->deepCopy();
+            new_args->push_back(new_arg);
+        }
+    }
+    return new AST_FunctionCall(&functionName, new_args);
 }
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
@@ -116,6 +134,12 @@ void AST_BinOp::generateFrames(Frame* _frame){
     left->generateFrames(_frame);
     copySpecialParamsTo(right);
     right->generateFrames(_frame);
+}
+
+AST* AST_BinOp::deepCopy(){
+    AST* new_left = left->deepCopy();
+    AST* new_right = right->deepCopy();
+    return new AST_BinOp(type, new_left, new_right);
 }
 
 void AST_BinOp::compile(std::ostream &assemblyOut) {
@@ -472,6 +496,11 @@ void AST_UnOp::generateFrames(Frame* _frame){
     frame = _frame;
     copySpecialParamsTo(operand);
     operand->generateFrames(_frame);
+}
+
+AST* AST_UnOp::deepCopy(){
+    AST* new_operand = operand->deepCopy();
+    return new AST_UnOp(type, new_operand);
 }
 
 void AST_UnOp::compile(std::ostream &assemblyOut) {

@@ -1,13 +1,5 @@
 #include "ast.hpp"
 
-void AST::copySpecialParamsTo(AST* child, SpecialParam new_param){
-    for(int i = 0; i < (int)SpecialParam::NONE; i++){
-        child->specialParams[i] = specialParams[i];
-    }
-    if(new_param != SpecialParam::NONE)
-        child->specialParams[(int)new_param] = true;
-}
-
 void AST::generateFrames(Frame* _frame){
     throw std::runtime_error("AST: generateFrames Not implemented yet by child class.\n");
 }
@@ -18,6 +10,18 @@ void AST::compile(std::ostream &assemblyOut) {
 
 void AST::updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) {
     throw std::runtime_error("AST: updateVariable Not implemented by child class.\n");
+}
+
+void AST::copySpecialParamsTo(AST* child, SpecialParam new_param){
+    for(int i = 0; i < (int)SpecialParam::NONE; i++){
+        child->specialParams[i] = specialParams[i];
+    }
+    if(new_param != SpecialParam::NONE)
+        child->specialParams[(int)new_param] = true;
+}
+
+AST* AST::deepCopy(){
+    throw std::runtime_error("AST: deepCopy Not implemented by child class.\n");
 }
 
 AST::~AST() {

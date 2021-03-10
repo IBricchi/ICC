@@ -15,6 +15,7 @@ public:
     AST_Sequence(AST* _first, AST* _second);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_Sequence();
@@ -38,6 +39,7 @@ public:
     AST_FunDeclaration(std::string _type, std::string* _name, AST* _body = nullptr, std::vector<std::pair<std::string,std::string>>* _params = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_FunDeclaration();
@@ -62,6 +64,7 @@ public:
     AST_VarDeclaration(std::string _type, std::string* _name, AST* _expr = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_VarDeclaration();
@@ -78,6 +81,7 @@ public:
     AST_ArrayDeclaration(std::string _type, std::string* _name, int _size);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     // no destructor needed as there are no pointers

@@ -8,6 +8,10 @@ void AST_ConstInt::generateFrames(Frame* _frame){
     frame = _frame;
 }
 
+AST* AST_ConstInt::deepCopy(){
+    return new AST_ConstInt(value);
+}
+
 void AST_ConstInt::compile(std::ostream &assemblyOut){
     assemblyOut << std::endl << "# start const int " << value << std::endl;
     
@@ -27,6 +31,10 @@ AST_Variable::AST_Variable(std::string* _name) :
 
 void AST_Variable::generateFrames(Frame* _frame){
     frame = _frame;
+}
+
+AST* AST_Variable::deepCopy(){
+    return new AST_Variable(&name);
 }
 
 void AST_Variable::compile(std::ostream &assemblyOut) {

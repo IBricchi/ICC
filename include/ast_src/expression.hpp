@@ -20,6 +20,7 @@ public:
     AST_Assign(AST* _assignee, AST* _expr);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_Assign();
@@ -37,6 +38,7 @@ public:
     AST_FunctionCall(std::string* _functionName, std::vector<AST*>* _args = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_FunctionCall();
@@ -75,6 +77,7 @@ public:
     AST_BinOp(Type _type, AST* _left, AST* _right);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_BinOp();
@@ -97,6 +100,7 @@ public:
     AST_UnOp(Type _type, AST* _operand);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_UnOp();

@@ -19,6 +19,7 @@ public:
     AST_Return(AST* _expr = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_Return();
@@ -29,6 +30,7 @@ class AST_Break
 {
 public:
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 };
 
@@ -37,6 +39,7 @@ class AST_Continue
 {
 public:
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 };
 
@@ -52,6 +55,7 @@ public:
     AST_IfStmt(AST* _cond, AST* _then, AST* _other = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_IfStmt();
@@ -73,6 +77,7 @@ public:
     AST_WhileStmt(AST* _cond, AST* _body);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream& assemblyOut) override;
 
     ~AST_WhileStmt();
@@ -94,6 +99,7 @@ public:
     AST_Block(AST* _body = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream& assemblyOut) override;
 
     ~AST_Block();
