@@ -64,3 +64,28 @@ void AST_Variable::updateVariable(std::ostream &assemblyOut, Frame* currentFrame
     
     assemblyOut << "# end var update " << name << std::endl << std::endl;
 }
+
+AST_Type::AST_Type(std::string* _name) :
+    name(*_name)
+{
+    bytes = size_of_type[*_name];
+}
+
+std::unordered_map<std::string, int> AST_Type::size_of_type = {
+    {"int", 4},
+    {"char", 4},
+    {"float", 4},
+    {"double", 8}
+};
+
+void AST_Variable::generateFrames(Frame* _frame){
+    frame = _frame;
+}
+
+AST* AST_Type::deepCopy(){
+    return new AST_Type(&name);
+}
+
+void AST_Type::compile(std::ostream &assemblyOut) {
+    throw std::runtime_error("Type should never be compiled.\n");
+}

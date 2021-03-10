@@ -48,3 +48,20 @@ public:
     */
     void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) override;
 };
+
+class AST_Type
+    : public AST
+{
+private:
+    std::string name;
+    int bytes;
+public:
+    AST_Type(std::string* name);
+    static std::unordered_map<std::string, int> size_of_type;
+    
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+
+    // dont need destructor as it holds no pointers
+};
