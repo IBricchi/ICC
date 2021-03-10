@@ -7,9 +7,8 @@ AST_Assign::AST_Assign(AST* _assignee, AST* _expr):
 
 void AST_Assign::generateFrames(Frame* _frame){
     frame = _frame;
-    copySpecialParamsTo(assignee, SpecialParam::LEFT_OF_ASSIGN);
+    assignee->returnPtr = true;
     assignee->generateFrames(_frame);
-    copySpecialParamsTo(expr);
     expr->generateFrames(_frame);
 }
 
@@ -60,7 +59,6 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
     frame = _frame;
     if(args != nullptr){
         for(AST* arg: *args){
-            copySpecialParamsTo(arg);
             arg->generateFrames(_frame);
         }
     }
@@ -132,13 +130,11 @@ AST_BinOp::AST_BinOp(AST_BinOp::Type _type, AST* _left, AST* _right):
 
 void AST_BinOp::generateFrames(Frame* _frame){
     frame = _frame;
-    copySpecialParamsTo(left);
+    // if type is array, remove left-assignment param from index expression
+    if(type == Type::ARRAY){
+        left->returnPtr = true;
+    }
     left->generateFrames(_frame);
-    // if on left of assignement, and type is array, remove left-assignment param from index expression
-    if(specialParams[(int)SpecialParam::LEFT_OF_ASSIGN] && type == Type::ARRAY)
-        copySpecialParamsTo(right, SpecialParam::LEFT_OF_ASSIGN);
-    else
-        copySpecialParamsTo(right);
     right->generateFrames(_frame);
 }
 
@@ -481,8 +477,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             
             assemblyOut << "lw $t0, 16($sp)" << std::endl;
             // if left of assign de-reference left variable
-            if(specialParams[(int)SpecialParam::LEFT_OF_ASSIGN])
-                assemblyOut << "lw $t0, 0($t0)" << std::endl;
+            // if(specialParams[(int)SpecialParam::KEEP_AS_POINTER])
+            //     assemblyOut << "lw $t0, 0($t0)" << std::endl;
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " [] " << std::endl;
@@ -491,7 +487,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "mflo $t1" << std::endl;
             assemblyOut << "sub $t2, $t0, $t1" << std::endl;
             // if not left of assign load value
-            if(!specialParams[(int)SpecialParam::LEFT_OF_ASSIGN])
+            if(!returnPtr)
                 assemblyOut << "lw $t2, 0($t2)" << std::endl;
             
             break;
@@ -541,7 +537,6 @@ AST_UnOp::AST_UnOp(AST_UnOp::Type _type, AST* _operand):
 
 void AST_UnOp::generateFrames(Frame* _frame){
     frame = _frame;
-    copySpecialParamsTo(operand);
     operand->generateFrames(_frame);
 }
 

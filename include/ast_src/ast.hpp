@@ -16,16 +16,7 @@ class AST
 {
 public:
     Frame* frame;
-    
-    /*
-        enum for special parameters which an AST node can have
-        none must be the last item in the enum
-    */
-    enum struct SpecialParam{
-        LEFT_OF_ASSIGN,
-        NONE
-    };
-    bool specialParams[(int)SpecialParam::NONE] = {false};
+    bool returnPtr = false;
 
     virtual ~AST();
     
@@ -42,14 +33,10 @@ public:
     // overriden by AST_Variable
     virtual void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg);
 
-    // copys over special params to child
-    void copySpecialParamsTo(AST* child, SpecialParam new_param = SpecialParam::NONE);
-
     /*
         This function is only required for source translation of things like short hand assignements
         Deep copy does not currently copy:
         * Frame
-        * Or special Params
     */
     virtual AST* deepCopy();
 
