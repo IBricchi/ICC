@@ -62,6 +62,7 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+    int getSize() override;
 
     // dont need destructor as it holds no pointers
 };

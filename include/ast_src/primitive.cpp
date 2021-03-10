@@ -89,3 +89,7 @@ AST* AST_Type::deepCopy(){
 void AST_Type::compile(std::ostream &assemblyOut) {
     throw std::runtime_error("Type should never be compiled.\n");
 }
+
+int AST_Type::getSize(){
+    return bytes;
+}
