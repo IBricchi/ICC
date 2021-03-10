@@ -72,9 +72,8 @@ class AST_ArrayDeclaration
 private:
     AST* type;
     std::string name;
-    int size;
 public:
-    AST_ArrayDeclaration(AST* _type, std::string* _name, int _size);
+    AST_ArrayDeclaration(AST* _type, std::string* _name);
 
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;

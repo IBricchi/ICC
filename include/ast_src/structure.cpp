@@ -54,7 +54,7 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
         // declare parameters as variables in the frame
         if(params != nullptr)
             for(std::pair<AST*,std::string> param: *params){
-                body->frame->addVariable(param.second, param.first->getSize());
+                body->frame->addVariable(param.second, param.first->getBytes());
             }
     } 
 }
@@ -173,7 +173,7 @@ void AST_VarDeclaration::generateFrames(Frame* _frame){
         expr->generateFrames(_frame);
     }
     
-    _frame->addVariable(name, type->getSize());
+    _frame->addVariable(name, type->getBytes());
 }
 
 AST* AST_VarDeclaration::deepCopy(){
@@ -207,10 +207,9 @@ AST_VarDeclaration::~AST_VarDeclaration() {
         delete expr; 
 }
 
-AST_ArrayDeclaration::AST_ArrayDeclaration(AST* _type, std::string* _name, int _size) :
+AST_ArrayDeclaration::AST_ArrayDeclaration(AST* _type, std::string* _name) :
     type(_type),
-    name(*_name),
-    size(_size)
+    name(*_name)
 {}
 
 void AST_ArrayDeclaration::generateFrames(Frame* _frame){
@@ -221,13 +220,13 @@ void AST_ArrayDeclaration::generateFrames(Frame* _frame){
     // pointer_size % 8 is too add padding after pointer.
     // this isn't useful for int's but when we need double word sized types this will save us
     // a lot of headaches.
-    // no need to type_size since addVariable does that for us
-    _frame->addVariable(name, pointer_size + pointer_size % 8 + type->getSize() * size  + type->getSize() * size % 8);
+    // no need to pad type->getBytes() since addVariable does that for us
+    _frame->addVariable(name, pointer_size + pointer_size % 8 + type->getBytes());
 }
 
 AST* AST_ArrayDeclaration::deepCopy(){
     AST* new_type = type->deepCopy();
-    return new AST_ArrayDeclaration(new_type, &name, size);
+    return new AST_ArrayDeclaration(new_type, &name);
 }
 
 void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {

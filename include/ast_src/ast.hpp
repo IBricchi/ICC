@@ -59,7 +59,7 @@ public:
         (constants, variables, operators, etc.)
         Returns byte size
     */
-    virtual int getSize();
+    virtual int getBytes();
 };
 
 /*

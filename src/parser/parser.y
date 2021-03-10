@@ -22,7 +22,8 @@
   int INT;
   std::string *STR;
   std::vector<std::pair<AST*,std::string>> *FDP; // function declaration parameters
-  std::vector<AST*> *FCP; // function call parameters;
+  std::vector<AST*> *FCP; // function call parameters
+  std::vector<int> *SCP; // square chain parameters
 }
 
 %token <STR> T_TYPE
@@ -62,6 +63,7 @@
 
 %type <FDP> FUN_DEC_PARAMS // helper for fun declaration
 %type <FCP> FUN_CALL_PARAMS // helper for fun call
+%type <SCP> SQUARE_CHAIN // helper for array declarations
 
 %nonassoc NO_ELSE
 %nonassoc T_ELSE
@@ -87,13 +89,13 @@ DECLARATION : FUN_DECLARATION { $$ = $1; }
             | STATEMENT       { $$ = $1; }
             ;
 
-FUN_DECLARATION : TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON                                   { $$ = new AST_FunDeclaration($1, $2); }
+FUN_DECLARATION : TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON                                  { $$ = new AST_FunDeclaration($1, $2); }
                 | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER T_BRACK_R T_SEMI_COLON                { $$ = new AST_FunDeclaration($1, $2, nullptr, new std::vector<std::pair<AST*,std::string>>({{$4, *$5}})); }
                 | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER FUN_DEC_PARAMS T_BRACK_R T_SEMI_COLON {
                                 $6->push_back({$4, *$5});
                                 $$ = new AST_FunDeclaration($1, $2, nullptr, $6);
                         }                            
-                | TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK                                          { $$ = new AST_FunDeclaration($1, $2, $5); }
+                | TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK                                         { $$ = new AST_FunDeclaration($1, $2, $5); }
                 | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER T_BRACK_R BLOCK                       { $$ = new AST_FunDeclaration($1, $2, $7, new std::vector<std::pair<AST*,std::string>>({{$4, *$5}})); }
                 | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER FUN_DEC_PARAMS T_BRACK_R BLOCK        {
                                 $6->push_back({$4, *$5});
@@ -110,8 +112,21 @@ FUN_DEC_PARAMS : T_COMMA TYPE T_IDENTIFIER                     { $$ = new std::v
 
 VAR_DECLARATION : TYPE T_IDENTIFIER T_SEMI_COLON                                   { $$ = new AST_VarDeclaration($1, $2); }
                 | TYPE T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON %prec VAR_DEC    { $$ = new AST_VarDeclaration($1, $2, $4); }
-                | TYPE T_IDENTIFIER T_SQUARE_L T_CONST_INT T_SQUARE_R T_SEMI_COLON { $$ = new AST_ArrayDeclaration($1, $2, $4); }
+                | TYPE T_IDENTIFIER SQUARE_CHAIN T_SEMI_COLON {
+                                AST* type = new AST_ArrayType($1, $3->at($3->size()-1));
+                                for(int i = $3->size() - 1; i >= 0; i--){
+                                        type = new AST_ArrayType(type, $3->at(i));
+                                }
+                                $$ = new AST_ArrayDeclaration(type, $2);
+                        }
                 ;
+
+SQUARE_CHAIN : T_SQUARE_L T_CONST_INT T_SQUARE_R              { $$ = new std::vector<int>($2); }
+             | SQUARE_CHAIN T_SQUARE_L T_CONST_INT T_SQUARE_R {
+                     $1->push_back($3);
+                     $$ = $1;
+                }
+             ;
 
 TYPE : T_TYPE { $$ = new AST_Type($1); }
      ;

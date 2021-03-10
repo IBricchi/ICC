@@ -90,6 +90,35 @@ void AST_Type::compile(std::ostream &assemblyOut) {
     throw std::runtime_error("Type should never be compiled.\n");
 }
 
-int AST_Type::getSize(){
+int AST_Type::getBytes(){
     return bytes;
+}
+
+AST_ArrayType::AST_ArrayType(AST* _type, int _size) :
+    type(_type),
+    size(_size)
+{
+    bytes = _type->getBytes() * size;
+}
+
+void AST_ArrayType::generateFrames(Frame* _frame){
+    frame = _frame;
+    type->generateFrames(_frame);
+}
+
+AST* AST_ArrayType::deepCopy(){
+    AST* new_type = type->deepCopy();
+    return new AST_ArrayType(new_type, size);
+}
+
+void AST_ArrayType::compile(std::ostream &assemblyOut) {
+    throw std::runtime_error("ArrayType should never be compiled.\n");
+}
+
+int AST_ArrayType::getBytes(){
+    return bytes;
+}
+
+AST_ArrayType::~AST_ArrayType(){
+    delete type;
 }

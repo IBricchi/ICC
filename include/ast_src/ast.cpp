@@ -25,7 +25,7 @@ AST* AST::deepCopy(){
     throw std::runtime_error("AST: deepCopy Not implemented by child class.\n");
 }
 
-int AST::getSize(){
+int AST::getBytes(){
     throw std::runtime_error("AST: getSize Not implemented by child class.\n");
 }
 

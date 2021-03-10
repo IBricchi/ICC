@@ -62,7 +62,25 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
-    int getSize() override;
+    int getBytes() override;
 
     // dont need destructor as it holds no pointers
+};
+
+class AST_ArrayType
+    : public AST
+{
+private:
+    AST* type;
+    int size;
+    int bytes;
+public:
+    AST_ArrayType(AST* _type, int _size);
+    
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+    int getBytes() override;
+
+    ~AST_ArrayType();
 };
