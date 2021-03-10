@@ -32,7 +32,7 @@
 
 %token <INT> T_CONST_INT
 
-%token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK T_CONTINUE T_CASE T_DEFAULT
+%token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK T_CONTINUE T_CASE T_DEFAULT T_ENUM
 
 %token T_COMMA T_SEMI_COLON T_COLON
 %token T_BRACK_L T_BRACK_R
@@ -59,6 +59,7 @@
 %type <NODE> TYPE // helper for anything with type
 %type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT // Statements
 %type <NODE> IF_STMT WHILE_STMT FOR_STMT SWITCH_STMT CASE_STMT BLOCK // Statements
+%type <NODE> ENUM_DECLARATION ENUM_LIST ENUM // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL PRIMARY // Expressions
 
@@ -130,6 +131,18 @@ SQUARE_CHAIN : T_SQUARE_L T_CONST_INT T_SQUARE_R              { $$ = new std::ve
              ;
 
 TYPE : T_TYPE { $$ = new AST_Type($1); }
+
+ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLON // e.g. enum boolean {false, true};
+                 | T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_IDENTIFIER T_SEMI_COLON // e.g. enum boolean {false, true} check;
+                 | T_ENUM T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON // e.g. enum boolean check; (declaring an enum variable)
+                 ;
+                
+ENUM_LIST : ENUM
+          | ENUM_LIST T_COMMA ENUM
+          ;
+
+ENUM : T_IDENTIFIER T_EQUAL T_CONST_INT
+     | T_IDENTIFIER
      ;
 
 STATEMENT : EXPRESSION_STMT { $$ = $1; }
