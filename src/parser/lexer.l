@@ -27,11 +27,15 @@ std::unordered_set<std::string> lexer_types = {
 "else"     { return T_ELSE; }
 "while"    { return T_WHILE; }
 "for"      { return T_FOR; }
+"switch"   { return T_SWITCH; }
 "break"    { return T_BREAK; }
 "continue" { return T_CONTINUE; }
+"case"     { return T_CASE; }
+"default"  { return T_DEFAULT; }
 
 ","       { return T_COMMA; }
 ";"       { return T_SEMI_COLON; }
+":"       { return T_COLON; }
 "{"       { return T_BRACE_L; }
 "}"       { return T_BRACE_R; }
 "("       { return T_BRACK_L; }

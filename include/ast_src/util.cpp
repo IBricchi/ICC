@@ -31,6 +31,7 @@ void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
     assemblyOut << "lw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
 }
 
+<<<<<<< HEAD
 void varAddressToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var){
     std::pair<int, int> varAddress = frame->getVarAddress(var);
     
@@ -42,4 +43,12 @@ void varAddressToReg(std::ostream &assemblyOut, Frame* frame, const std::string&
     
     // store register data into variable's memory address
     assemblyOut << "addiu " << reg << ", $t6, -" << varAddress.second << std::endl;
+=======
+bool hasEnding(const std::string &fullString, const std::string &ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+>>>>>>> master
 }

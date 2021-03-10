@@ -62,16 +62,29 @@ AST* AST_Break::deepCopy(){
 }
 
 void AST_Break::compile(std::ostream &assemblyOut) {
-    std::string returnLab = generateUniqueLabel("return");
-    assemblyOut << std::endl << "# start " << returnLab << std::endl;
+    std::string breakLabel = generateUniqueLabel("break");
+    assemblyOut << std::endl << "# start " << breakLabel << std::endl;
 
-    std::string endLoopLabel = frame->getEndLoopLabelName();
+    auto endLoopLabel = frame->getEndLoopLabelName();
+
+    // skip through frames between current frame and loop frame
+    for(int i = 0; i < endLoopLabel.second - 1 ; i++){
+        assemblyOut << "lw $fp, 12($fp)" << std::endl;
+    }
+
+    // exit last frame properly
+    if (endLoopLabel.second != 0) {
+        assemblyOut << "move $sp, $fp" << std::endl;
+        assemblyOut << "lw $31, 8($sp)" << std::endl;
+        assemblyOut << "lw $fp, 12($sp)" << std::endl;
+        assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
+    }
 
     // jumps to the end of a loop
-    assemblyOut << "j " << endLoopLabel << std::endl;
+    assemblyOut << "j " << endLoopLabel.first << std::endl;
     assemblyOut << "nop" << std::endl;
 
-    assemblyOut << "# end " << returnLab << std::endl << std::endl;
+    assemblyOut << "# end " << breakLabel << std::endl << std::endl;
 }
 
 void AST_Continue::generateFrames(Frame* _frame) {
@@ -86,10 +99,23 @@ void AST_Continue::compile(std::ostream &assemblyOut) {
     std::string continueLab = generateUniqueLabel("continue");
     assemblyOut << std::endl << "# start " << continueLab << std::endl;
 
-    std::string startLoopLabel = frame->getStartLoopLabelName();
+    auto startLoopLabel = frame->getStartLoopLabelName();
+
+    // skip through frames between current frame and loop frame
+    for(int i = 0; i < startLoopLabel.second - 1 ; i++){
+        assemblyOut << "lw $fp, 12($fp)" << std::endl;
+    }
+
+    // exit last frame properly
+    if (startLoopLabel.second != 0) {
+         assemblyOut << "move $sp, $fp" << std::endl;
+        assemblyOut << "lw $31, 8($sp)" << std::endl;
+        assemblyOut << "lw $fp, 12($sp)" << std::endl;
+        assemblyOut << "addiu $sp, $sp, " << frame->getStoreSize() << std::endl;
+    }
 
     // jumps to the begining of a loop
-    assemblyOut << "j " << startLoopLabel << std::endl;
+    assemblyOut << "j " << startLoopLabel.first << std::endl;
     assemblyOut << "nop" << std::endl;
 
     assemblyOut << "# end " << continueLab << std::endl << std::endl;
@@ -228,6 +254,114 @@ void AST_WhileStmt::compile(std::ostream &assemblyOut){
 
 AST_WhileStmt::~AST_WhileStmt(){
     delete cond;
+    delete body;
+}
+
+AST_SwitchStmt::AST_SwitchStmt(AST* _value, AST* _body):
+    value(_value),
+    body(_body)
+{}
+
+void AST_SwitchStmt::generateFrames(Frame* _frame){
+    frame = _frame;
+    value->generateFrames(_frame);
+    body->generateFrames(_frame);
+}
+
+void AST_SwitchStmt::compile(std::ostream &assemblyOut){
+    std::string switchStmt = generateUniqueLabel("switchStmt");
+    assemblyOut << std::endl << "# start " << switchStmt << std::endl;
+
+    // needed for break statements
+    std::string endSwitchLabel = generateUniqueLabel("endSwitch");
+    frame->setLoopLabelNames("", endSwitchLabel);
+
+    value->compile(assemblyOut);
+
+    // load top of stack into register
+    assemblyOut << "lw $t4, 8($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+
+    // Every switch statement will have exactly one block that encapsulates its cases (body of switch).
+    // The below logic will jump into one of these cases and while doing so jump over the
+    // beginning of the block. The beginning of the block is normally responsible for opening
+    // a new frame.
+    // Therefore, we must open this new frame manually to counter this problem. The frame will be closed
+    // by the end of block as normal.
+    assemblyOut << "addiu $sp, $sp, -" << body->frame->getStoreSize() << std::endl;
+    assemblyOut << "sw $31, 8($sp)" << std::endl;
+    assemblyOut << "sw $fp, 12($sp)" << std::endl;
+    assemblyOut << "move $fp, $sp" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -" << body->frame->getVarSize() << std::endl;
+
+    auto caseLabelToValueMapping = frame->getCaseLabelValueMapping();
+    for (const auto &labelValue : caseLabelToValueMapping) {
+        if (hasEnding(labelValue.first, "default") == true) {
+            assemblyOut << "j " << labelValue.first << std::endl;
+            assemblyOut << "nop" << std::endl;
+        } else {
+            assemblyOut << "li $t5, " << labelValue.second << std::endl;    
+
+            assemblyOut << "beq $t4, $t5, " << labelValue.first << std::endl;
+            assemblyOut << "nop" << std::endl;
+        }
+    }
+
+    // case statements
+    body->compile(assemblyOut);
+
+    assemblyOut << endSwitchLabel << ":" << std::endl;
+
+    // remove loop labels from 
+    frame->setLoopLabelNames("", "");
+
+    assemblyOut << "# end " << switchStmt << std::endl; 
+}
+
+AST_SwitchStmt::~AST_SwitchStmt(){
+    delete value;
+    delete body;
+}
+
+AST_CaseStmt::AST_CaseStmt(AST* _body, int _value):
+    body(_body),
+    value(_value),
+    isDefaultCase(false)
+{}
+
+AST_CaseStmt::AST_CaseStmt(AST* _body):
+    body(_body),
+    isDefaultCase(true)
+{}
+
+void AST_CaseStmt::generateFrames(Frame* _frame){
+    frame = _frame;
+
+    // make accessible to parent AST_SwitchStmt
+    if (!isDefaultCase) {
+        caseStartLabel = generateUniqueLabel("caseStmt") + "_" + std::to_string(value);
+        frame->parentFrame->addCaseLabelValueMapping(caseStartLabel, value);
+    } else {
+        caseStartLabel = generateUniqueLabel("caseStmt") + "_default";
+        frame->parentFrame->addCaseLabelValueMapping(caseStartLabel, 0);
+    }
+    
+
+    body->generateFrames(_frame);
+}
+
+void AST_CaseStmt::compile(std::ostream &assemblyOut){
+    std::string caseStmt = generateUniqueLabel("caseStmt");
+    assemblyOut << std::endl << "# start " << caseStmt << std::endl;
+
+    assemblyOut << caseStartLabel << ":" << std::endl;
+
+    body->compile(assemblyOut);
+
+    assemblyOut << "# end " << caseStmt << std::endl; 
+}
+
+AST_CaseStmt::~AST_CaseStmt(){
     delete body;
 }
 
