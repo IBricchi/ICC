@@ -254,15 +254,18 @@ void AST_SwitchStmt::compile(std::ostream &assemblyOut){
     assemblyOut << "lw $t4, 8($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
-    /*
-        BUG:
-        ---------------------------------------------------------------------------------------------------------
-        Currently, the following is jumping into a new frame and hence does not start the new frame.
-        This messes up the whole frame logic.
-        Need to find a way to start the frame even when jumping over a block start. Similarly to how did this for
-        break and continue when jumping over end of frame.
-        ---------------------------------------------------------------------------------------------------------
-    */
+    // Every switch statement will have exactly one block that encapsulates its cases (body of switch).
+    // The below logic will jump into one of these cases and while doing so jump over the
+    // beginning of the block. The beginning of the block is normally responsible for opening
+    // a new frame.
+    // Therefore, we must open this new frame manually to counter this problem. The frame will be closed
+    // by the end of block as normal.
+    assemblyOut << "addiu $sp, $sp, -" << body->frame->getStoreSize() << std::endl;
+    assemblyOut << "sw $31, 8($sp)" << std::endl;
+    assemblyOut << "sw $fp, 12($sp)" << std::endl;
+    assemblyOut << "move $fp, $sp" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -" << body->frame->getVarSize() << std::endl;
+
     auto caseLabelToValueMapping = frame->getCaseLabelValueMapping();
     for (const auto &labelValue : caseLabelToValueMapping) {
         if (hasEnding(labelValue.first, "default") == true) {
