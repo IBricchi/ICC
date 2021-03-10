@@ -8,7 +8,9 @@ AST_Sequence::AST_Sequence(AST* _first, AST* _second) :
 
 void AST_Sequence::generateFrames(Frame* _frame){
     frame = _frame;
+    copySpecialParamsTo(first);
     first->generateFrames(_frame);
+    copySpecialParamsTo(second);
     second->generateFrames(_frame);
 }
 
@@ -38,6 +40,7 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
     // we don't need to generate a new frame here since the block statement that will be the body
     // will handle generating the new frame
     if (body != nullptr) {
+        copySpecialParamsTo(body);
         body->generateFrames(_frame);
         body->frame->isFun = true;
         // declare parameters as variables in the frame
@@ -139,8 +142,10 @@ AST_VarDeclaration::AST_VarDeclaration(std::string _type, std::string* _name, AS
 
 void AST_VarDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
-    if(expr != nullptr)
+    if(expr != nullptr){
+        copySpecialParamsTo(expr);
         expr->generateFrames(_frame);
+    }
     
     _frame->addVariable(name, getTypeByteSize(type));
 }

@@ -6,6 +6,7 @@ AST_Return::AST_Return(AST* _expr) :
 
 void AST_Return::generateFrames(Frame* _frame){
     frame = _frame;
+    copySpecialParamsTo(expr);
     expr->generateFrames(_frame);
 }
 
@@ -91,12 +92,15 @@ AST_IfStmt::AST_IfStmt(AST* _cond, AST* _then, AST* _other) :
 
 void AST_IfStmt::generateFrames(Frame* _frame){
     frame = _frame;
+    copySpecialParamsTo(cond);
     cond->generateFrames(_frame);
     // here we don't need to generate a new frame since that is only required if the statement after the if
     // is a block statement, which will itself handle the new frame generation
+    copySpecialParamsTo(then);
     then->generateFrames(_frame);
 
     if (other != nullptr) {
+        copySpecialParamsTo(other);
         other->generateFrames(_frame);
     }
 }
@@ -154,8 +158,10 @@ AST_WhileStmt::AST_WhileStmt(AST* _cond, AST* _body):
 
 void AST_WhileStmt::generateFrames(Frame* _frame){
     frame = _frame;
+    copySpecialParamsTo(cond);
     cond->generateFrames(_frame);
     // we don't need a new frame here for the same reason we don't need one for the if statemnt
+    copySpecialParamsTo(body);
     body->generateFrames(_frame);
 }
 
@@ -211,6 +217,7 @@ void AST_Block::generateFrames(Frame* _frame){
     // here we creat a new frame since blocks generate new scopes
     frame = new Frame(_frame);
     if(body != nullptr){
+        copySpecialParamsTo(body);
         body->generateFrames(frame);
     }
 }

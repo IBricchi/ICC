@@ -16,14 +16,25 @@ class AST
 {
 public:
     Frame* frame;
+    
+    /*
+        enum for special parameters which an AST node can have
+        none must be the last item in the enum
+    */
+    enum struct SpecialParam{
+        LEFT_OF_ASSIGN,
+        NONE
+    };
+    bool specialParams[(int)SpecialParam::NONE] = {false};
 
     virtual ~AST();
     
     /*
         Generates frames and creates context for them
     */
+    void copySpecialParamsTo(AST* child, SpecialParam new_param = SpecialParam::NONE);
     virtual void generateFrames(Frame* _frame = nullptr);
-    
+
     /*
         Writes MIPS assembly to output stream.
     */
@@ -31,6 +42,9 @@ public:
 
     // overriden by AST_Variable
     virtual void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg);
+
+    // set special params
+    void setSpecialParam(SpecialParam param);
 };
 
 /*

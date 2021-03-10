@@ -10,19 +10,19 @@
     We don't need to error check existance of variable name since it should always
     Exists as provided by the specs
 */
-class AST_VarAssign
+class AST_Assign
     : public AST
 {
 private:
-    std::string name;
+    AST* assignee;
     AST* expr;
 public:
-    AST_VarAssign(std::string* _name, AST* _expr);
+    AST_Assign(AST* _assignee, AST* _expr);
 
     void generateFrames(Frame* _frame = nullptr) override;
     void compile(std::ostream &assemblyOut) override;
 
-    ~AST_VarAssign();
+    ~AST_Assign();
 };
 
 class AST_FunctionCall

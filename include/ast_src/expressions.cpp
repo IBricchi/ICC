@@ -1,17 +1,21 @@
 #include "expression.hpp"
 
-AST_VarAssign::AST_VarAssign(std::string* _name, AST* _expr):
-    name(*_name),
+AST_Assign::AST_Assign(AST* _assignee, AST* _expr):
+    assignee(_assignee),
     expr(_expr)
 {}
 
-void AST_VarAssign::generateFrames(Frame* _frame){
+void AST_Assign::generateFrames(Frame* _frame){
     frame = _frame;
+    copySpecialParamsTo(assignee, SpecialParam::LEFT_OF_ASSIGN);
+    assignee->generateFrames(_frame);
+    copySpecialParamsTo(expr);
     expr->generateFrames(_frame);
 }
 
-void AST_VarAssign::compile(std::ostream &assemblyOut){
-    assemblyOut << std::endl << "# start var definition " << name << std::endl;
+void AST_Assign::compile(std::ostream &assemblyOut){
+    std::string name = generateUniqueLabel("var_definition");
+    assemblyOut << std::endl << "# start " << name << std::endl;
 
     expr->compile(assemblyOut);
 
@@ -26,7 +30,8 @@ void AST_VarAssign::compile(std::ostream &assemblyOut){
 // void regToVar(std::ostream &assemblyOut, Frame *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
 // void regToVar(std::ostream &assemblyOut, <error-type> *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
 
-AST_VarAssign::~AST_VarAssign(){
+AST_Assign::~AST_Assign(){
+    delete assignee;
     delete expr;
 }
 
@@ -42,6 +47,7 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
     frame = _frame;
     if(args != nullptr){
         for(AST* arg: *args){
+            copySpecialParamsTo(arg);
             arg->generateFrames(_frame);
         }
     }
@@ -101,7 +107,9 @@ AST_BinOp::AST_BinOp(AST_BinOp::Type _type, AST* _left, AST* _right):
 
 void AST_BinOp::generateFrames(Frame* _frame){
     frame = _frame;
+    copySpecialParamsTo(left);
     left->generateFrames(_frame);
+    copySpecialParamsTo(right);
     right->generateFrames(_frame);
 }
 
@@ -457,6 +465,7 @@ AST_UnOp::AST_UnOp(AST_UnOp::Type _type, AST* _operand):
 
 void AST_UnOp::generateFrames(Frame* _frame){
     frame = _frame;
+    copySpecialParamsTo(operand);
     operand->generateFrames(_frame);
 }
 
