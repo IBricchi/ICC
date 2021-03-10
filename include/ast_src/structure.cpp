@@ -224,6 +224,8 @@ AST* AST_ArrayDeclaration::deepCopy(){
 void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {
     // get pointer to start of allocated memory space
     // always a double word away from allocated memory space
-    assemblyOut << "addiu $t0, $0, " << frame->getVarAddress(name).second + 8 << std::endl;
+    assemblyOut << std::endl << "# start array declaration " << name << std::endl; 
+    assemblyOut << "addiu $t0, $fp, -" << frame->getVarAddress(name).second + 8 << std::endl;
     regToVar(assemblyOut, frame, "$t0", name);
+    assemblyOut << "# end array declaration " << name << std::endl << std::endl;
 }

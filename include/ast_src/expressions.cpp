@@ -20,7 +20,7 @@ AST* AST_Assign::deepCopy(){
 }
 
 void AST_Assign::compile(std::ostream &assemblyOut){
-    std::string name = generateUniqueLabel("var_definition");
+    std::string name = generateUniqueLabel("assignment");
     assemblyOut << std::endl << "# start " << name << std::endl;
 
     // compile expresison
@@ -36,6 +36,8 @@ void AST_Assign::compile(std::ostream &assemblyOut){
     // assign and pop memory address
     assemblyOut << "sw $t0, 0($t1)" << std::endl;
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+
+    assemblyOut << "# end " << name << std::endl << std::endl;
 }
 
 // void regToVar(std::ostream &assemblyOut, Frame *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
@@ -466,6 +468,28 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
 
             // only care about remainder
             assemblyOut << "mfhi $t2" << std::endl;
+            break;
+        }
+        case Type::ARRAY:
+        {
+            // load result of index expression into register
+            right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
+            // if left of assign de-reference left variable
+            if(specialParams[(int)SpecialParam::LEFT_OF_ASSIGN])
+                assemblyOut << "lw $t0, 0($t0)" << std::endl;
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
+            assemblyOut << "# " << binLabel << " [] " << std::endl;
+            assemblyOut << "addiu $t2, $0, 4" << std::endl; // TODO! generalize with size of
+            assemblyOut << "mult $t1, $t2" << std::endl;
+            assemblyOut << "mflo $t1" << std::endl;
+            assemblyOut << "sub $t2, $t0, $0" << std::endl;
+            // if not left of assign load value
+            if(!specialParams[(int)SpecialParam::LEFT_OF_ASSIGN])
+                assemblyOut << "lw $t2, 0($t2)" << std::endl;
+            
             break;
         }
         default:

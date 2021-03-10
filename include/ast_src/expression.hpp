@@ -67,6 +67,7 @@ public:
         SHIFT_L, SHIFT_R,
         PLUS, MINUS,
         STAR, SLASH_F, PERCENT,
+        ARRAY,
         EXP // NOT YET IMPLEMENTED
     };
 private:

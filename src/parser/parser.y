@@ -284,6 +284,7 @@ CALL : T_IDENTIFIER T_BRACK_L T_BRACK_R                            { $$ = new AS
              $4->push_back($3);
              $$ = new AST_FunctionCall($1, $4);
         }
+     | CALL T_SQUARE_L EXPRESSION T_SQUARE_R                       { $$ = new AST_BinOp(AST_BinOp::Type::ARRAY, $1, $3); }
      | PRIMARY                                                     { $$ = $1; }
      ;
 
