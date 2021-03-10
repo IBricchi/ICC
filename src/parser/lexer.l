@@ -6,14 +6,21 @@
 extern "C" int fileno(FILE *stream);
 
 #include "parser.tab.hpp"
+#include <string>
+#include <unordered_set>
+
+std::unordered_set<std::string> lexer_types = {
+  "int",
+  "char",
+  "float",
+  "double"
+};
 
 %}
 
 %option yylineno
 
 %%
-
-"int"      { return T_INT; }
 
 "return"   { return T_RETURN; }
 "if"       { return T_IF; }
@@ -70,7 +77,14 @@ extern "C" int fileno(FILE *stream);
 "//".*                     { /* DO NOTHING (COMMENT) */ }
 "\/\*(\*(?!\/)|[^*])*\*\/" { /* DO NOTHING (COMMENT) */ }
 
-[a-zA-Z]([a-zA-Z1-9_])* { yylval.STR = new std::string(yytext); return T_IDENTIFIER; }
+[a-zA-Z]([a-zA-Z1-9_])* {
+  std::string* s = new std::string(yytext);
+  yylval.STR = s;
+  if(lexer_types.find(*s) != lexer_types.end())
+    return T_TYPE;
+  else
+    return T_IDENTIFIER;
+}
 [0-9]+                  { yylval.INT = strtol(yytext, 0, 10); return T_CONST_INT; }
 
 [ \t\r\n]+		{;}

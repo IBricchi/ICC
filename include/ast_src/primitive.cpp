@@ -78,7 +78,7 @@ std::unordered_map<std::string, int> AST_Type::size_of_type = {
     {"double", 8}
 };
 
-void AST_Variable::generateFrames(Frame* _frame){
+void AST_Type::generateFrames(Frame* _frame){
     frame = _frame;
 }
 

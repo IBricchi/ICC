@@ -52,6 +52,14 @@ public:
         * Or special Params
     */
     virtual AST* deepCopy();
+
+    /*
+        This function is required whenever the byte size of a node is needed
+        Only implemented by Expressions and children of expressions
+        (constants, variables, operators, etc.)
+        Returns byte size
+    */
+    virtual int getSize();
 };
 
 /*
