@@ -32,7 +32,15 @@ void AST_Variable::generateFrames(Frame* _frame){
 void AST_Variable::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start variable read " << name << std::endl;
 
-    varToReg(assemblyOut, frame, "$t0", name);
+    // if left of assign load address otherwise load value
+    if(specialParams[(int)SpecialParam::LEFT_OF_ASSIGN]){
+        assemblyOut << "# (reading address)" << std::endl;
+        varAddressToReg(assemblyOut, frame, "$t0", name);
+    }
+    else{   
+        assemblyOut << "# (reading value)" << std::endl;
+        varToReg(assemblyOut, frame, "$t0", name);
+    }
 
     // store value in memory
     assemblyOut << "sw $t0, 0($sp)" << std::endl;

@@ -17,14 +17,19 @@ void AST_Assign::compile(std::ostream &assemblyOut){
     std::string name = generateUniqueLabel("var_definition");
     assemblyOut << std::endl << "# start " << name << std::endl;
 
+    // compile expresison
     expr->compile(assemblyOut);
 
-    // load top of stack into register t0
-    assemblyOut << "lw $t0, 8($sp)" << std::endl;
-    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+    // compile assignee location
+    assignee->compile(assemblyOut);
 
-    // save register to var in mem
-    regToVar(assemblyOut, frame, "$t0", name);
+    // load result of expression
+    assemblyOut << "lw $t0, 16($sp)" << std::endl;
+    // load memory address to assign to
+    assemblyOut << "lw $t1, 8($sp)" << std::endl;
+    // assign and pop memory address
+    assemblyOut << "sw $t0, 0($t1)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 }
 
 // void regToVar(std::ostream &assemblyOut, Frame *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
