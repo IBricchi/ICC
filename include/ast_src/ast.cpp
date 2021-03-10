@@ -25,8 +25,12 @@ AST* AST::deepCopy(){
     throw std::runtime_error("AST: deepCopy Not implemented by child class.\n");
 }
 
+AST* AST::getType(){
+    throw std::runtime_error("AST: getType Not implemented by child class.\n");
+}
+
 int AST::getBytes(){
-    throw std::runtime_error("AST: getSize Not implemented by child class.\n");
+    throw std::runtime_error("AST: getBytes Not implemented by child class.\n");
 }
 
 AST::~AST() {
@@ -61,8 +65,17 @@ std::pair<int, int> Frame::getVarAddress(const std::string &variableName) {
     return {depth, pos};
 }
 
-void Frame::addVariable(const std::string &variableName, int byteSize) {
+AST* Frame::getVarType(const std::string& variableName) const{
+    auto it = variableType.find(variableName);
+    if(it != variableType.end())
+        return it->second;
+    else
+        return parentFrame->getVarType(variableName);
+}
+
+void Frame::addVariable(const std::string &variableName, AST* type, int byteSize) {
     variableBindings[variableName] = memOcc;
+    variableType[variableName] = type;
     memOcc += byteSize + byteSize%8;
 }
 
@@ -70,7 +83,7 @@ int Frame::getStoreSize() const {
     return storeSize;
 }
 
-int Frame::getVarSize() const {
+int Frame::getVarStoreSize() const {
     return memOcc;
 }
 

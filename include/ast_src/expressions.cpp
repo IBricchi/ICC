@@ -486,7 +486,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
             assemblyOut << "# " << binLabel << " [] " << std::endl;
-            assemblyOut << "addiu $t2, $0, 4" << std::endl; // TODO! generalize with size of
+            assemblyOut << "addiu $t2, $0, " << getBytes() << std::endl;
             assemblyOut << "multu $t1, $t2" << std::endl;
             assemblyOut << "mflo $t1" << std::endl;
             assemblyOut << "sub $t2, $t0, $t1" << std::endl;
@@ -508,6 +508,25 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
     assemblyOut << "# end " << binLabel << std::endl << std::endl; 
+}
+
+AST* AST_BinOp::getType(){
+    // assuming left and right have same type
+    // we don't need to implement implicit casting so this should be fine
+    AST* left_type = left->getType();
+    if(type == Type::ARRAY){
+        left_type = left_type->getType();
+    }
+    return left_type;
+}
+
+int AST_BinOp::getBytes(){
+    // assuming left and right have same type
+    // we don't need to implement implicit casting so this should be fine
+    int bytes = left->getBytes();
+    if(type == Type::ARRAY){
+        bytes = left->getType()->getType()->getBytes();
+    }
 }
 
 AST_BinOp::~AST_BinOp(){

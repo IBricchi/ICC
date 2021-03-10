@@ -39,6 +39,8 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+    int getBytes() override;
 
     /*
         reg is the register that contains the new value.
@@ -80,6 +82,7 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
     int getBytes() override;
 
     ~AST_ArrayType();

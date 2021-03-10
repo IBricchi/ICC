@@ -57,6 +57,14 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
     assemblyOut << "# end variable read " << name << std::endl << std::endl;
 }
 
+AST* AST_Variable::getType(){
+    return frame->getVarType(name);
+}
+
+int AST_Variable::getBytes(){
+    return getType()->getBytes();
+}
+
 void AST_Variable::updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) {
     assemblyOut << std::endl << "# start var update " << name << std::endl;
 
@@ -113,6 +121,10 @@ AST* AST_ArrayType::deepCopy(){
 
 void AST_ArrayType::compile(std::ostream &assemblyOut) {
     throw std::runtime_error("ArrayType should never be compiled.\n");
+}
+
+AST* AST_ArrayType::getType(){
+    return type;
 }
 
 int AST_ArrayType::getBytes(){

@@ -30,7 +30,6 @@ void AST_Return::compile(std::ostream &assemblyOut) {
         // set return register to value on top of stack
         assemblyOut << "lw $v0, 8($sp)" << std::endl;;
         // no need to shift stack pointer since return will end a scope anyway
-        // TODO! loop out of scopes untill you reach function scope
     }
 
     // skip through frames between current frame and function frame
@@ -273,7 +272,7 @@ void AST_Block::compile(std::ostream &assemblyOut) {
         assemblyOut << "move $fp, $sp" << std::endl;
 
         // move stack pointer down to allocate space for temporary variables in frame
-        assemblyOut << "addiu $sp, $sp, -" << frame->getVarSize() << std::endl;
+        assemblyOut << "addiu $sp, $sp, -" << frame->getVarStoreSize() << std::endl;
     }
 
     if (body != nullptr) {
