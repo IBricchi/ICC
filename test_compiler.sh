@@ -12,7 +12,7 @@ BIN="./bin"
 ERROR_LOG_FILE="./bin/log.txt"
 
 # Needed as make appears to miss some small changes, resulting in incorrect results
-# make clean
+make clean
 
 make
 printf "\n\n"

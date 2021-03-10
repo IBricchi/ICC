@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <stdexcept>
 
 class Frame;
@@ -53,24 +54,25 @@ private:
     // information about current memory occupied by variables
     int memOcc = 0;
 
-    /* 
-        Used for 'break' and 'continue'.
+    /*
+        Must be a normal map to preserve ordering.
+        Especially important to guarantee that default only appears at end.
+        
+        Used by switch statement.
+        Case children must make labels known to parent switch.
 
-        Enough for them to be strings as should never have more than one active loop
-        in one frame (Every block created as new frame).
-
-        Must set these to "" after a loop is finished!
+        Default case is special: Its label ends with "default", which can
+        be used to identify it.
     */
-    std::string startLoopLabelName;
-    std::string endLoopLabelName;
+    std::map<std::string, int> caseLabelValueMapping;
 
+public:
     /*
         Pointer to the parent frame.
         Enables us to access variables from parent frame if they have not been defined locally.
     */
     Frame *parentFrame;
 
-public:
     Frame(Frame* _parentFrame = nullptr);
 
     ~Frame();
@@ -107,6 +109,9 @@ public:
 
     void setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName);
 
+    void addCaseLabelValueMapping(std::string label, int value);
+    std::map<std::string, int> getCaseLabelValueMapping() const;
+
     /*
         Used for 'return'
 
@@ -120,12 +125,26 @@ public:
     bool isFun = false;
     int getDistanceToFun();
 
+    /* 
+        Used for 'break' and 'continue'.
+
+        Enough for them to be strings as should never have more than one active loop
+        in one frame (Every block created as new frame).
+
+        Must set these to "" after a loop is finished!
+    */
+    std::string startLoopLabelName;
+    std::string endLoopLabelName;
+
     /*
         First checks current frame, then parent frame.
         Does not do error checking.
+
+        first element is label name.
+        second element is distance to loop frame that contains this label.
     */
-    std::string getStartLoopLabelName() const;
-    std::string getEndLoopLabelName() const;
+    std::pair<std::string, int> getStartLoopLabelName(std::ostream &assemblyOut = std::cout);
+    std::pair<std::string, int> getEndLoopLabelName(std::ostream &assemblyOut = std::cout);
 };
 
 #include "util.hpp"
