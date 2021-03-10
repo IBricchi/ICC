@@ -162,57 +162,47 @@ EXPRESSION : ASSIGNMENT { $$ = $1; }
 
 // do source translation for all shorthand assigns
 ASSIGNMENT : UNARY_PRE T_AND_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_AND, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_AND, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            | UNARY_PRE T_XOR_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_XOR, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_XOR, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            | UNARY_PRE T_OR_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_OR, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_OR, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            | UNARY_PRE T_SHIFT_L_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::SHIFT_L, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::SHIFT_L, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            | UNARY_PRE T_SHIFT_R_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::SHIFT_R, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::SHIFT_R, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            | UNARY_PRE T_STAR_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::STAR, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::STAR, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            | UNARY_PRE T_SLASH_F_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::SLASH_F, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::SLASH_F, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            | UNARY_PRE T_PERCENT_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::PERCENT, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::PERCENT, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            | UNARY_PRE T_PLUS_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::PLUS, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::PLUS, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            | UNARY_PRE T_MINUS_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::MINUS, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::MINUS, $1, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            // normal assign
-           | UNARY_PRE T_EQUAL LOGIC_OR %prec VAR_ASS { $$ = new AST_VarAssign($1, $3); }
+           | UNARY_PRE T_EQUAL LOGIC_OR %prec VAR_ASS { $$ = new AST_Assign($1, $3); }
            | LOGIC_OR                                 { $$ = $1; }
            ;
 
