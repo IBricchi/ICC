@@ -114,14 +114,14 @@ VAR_DECLARATION : TYPE T_IDENTIFIER T_SEMI_COLON                                
                 | TYPE T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON %prec VAR_DEC    { $$ = new AST_VarDeclaration($1, $2, $4); }
                 | TYPE T_IDENTIFIER SQUARE_CHAIN T_SEMI_COLON {
                                 AST* type = new AST_ArrayType($1, $3->at($3->size()-1));
-                                for(int i = $3->size() - 1; i >= 0; i--){
+                                for(int i = $3->size() - 2; i >= 0; i--){
                                         type = new AST_ArrayType(type, $3->at(i));
                                 }
                                 $$ = new AST_ArrayDeclaration(type, $2);
                         }
                 ;
 
-SQUARE_CHAIN : T_SQUARE_L T_CONST_INT T_SQUARE_R              { $$ = new std::vector<int>($2); }
+SQUARE_CHAIN : T_SQUARE_L T_CONST_INT T_SQUARE_R              { $$ = new std::vector<int>({$2}); }
              | SQUARE_CHAIN T_SQUARE_L T_CONST_INT T_SQUARE_R {
                      $1->push_back($3);
                      $$ = $1;
