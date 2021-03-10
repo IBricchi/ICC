@@ -134,7 +134,11 @@ void AST_BinOp::generateFrames(Frame* _frame){
     frame = _frame;
     copySpecialParamsTo(left);
     left->generateFrames(_frame);
-    copySpecialParamsTo(right);
+    // if on left of assignement, and type is array, remove left-assignment param from index expression
+    if(specialParams[(int)SpecialParam::LEFT_OF_ASSIGN] && type == Type::ARRAY)
+        copySpecialParamsTo(right, SpecialParam::LEFT_OF_ASSIGN);
+    else
+        copySpecialParamsTo(right);
     right->generateFrames(_frame);
 }
 
@@ -483,9 +487,9 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
 
             assemblyOut << "# " << binLabel << " [] " << std::endl;
             assemblyOut << "addiu $t2, $0, 4" << std::endl; // TODO! generalize with size of
-            assemblyOut << "mult $t1, $t2" << std::endl;
+            assemblyOut << "multu $t1, $t2" << std::endl;
             assemblyOut << "mflo $t1" << std::endl;
-            assemblyOut << "sub $t2, $t0, $0" << std::endl;
+            assemblyOut << "sub $t2, $t0, $t1" << std::endl;
             // if not left of assign load value
             if(!specialParams[(int)SpecialParam::LEFT_OF_ASSIGN])
                 assemblyOut << "lw $t2, 0($t2)" << std::endl;

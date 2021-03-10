@@ -142,10 +142,10 @@ IF_STMT : T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT    %prec NO_ELSE { $$ = 
 WHILE_STMT : T_WHILE T_BRACK_L EXPRESSION T_BRACK_R STATEMENT { $$ = new AST_WhileStmt($3, $5); }
            ;
 
-FOR_STMT : T_FOR T_BRACK_L EXPRESSION_STMT EXPRESSION_STMT EXPRESSION T_BRACK_R DECLARATION 
+FOR_STMT : T_FOR T_BRACK_L EXPRESSION_STMT EXPRESSION_STMT EXPRESSION T_BRACK_R STATEMENT 
                 { 
                         // Source translation of for loop into sequence
-                        AST* whileBodyContents = new AST_Sequence($5, $7);
+                        AST* whileBodyContents = new AST_Sequence($7, $5);
                         AST* whileBody = new AST_Block(whileBodyContents);
                         AST* whileStmt = new AST_WhileStmt($4, whileBody);
 

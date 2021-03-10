@@ -181,7 +181,7 @@ AST* AST_VarDeclaration::deepCopy(){
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
     if (expr != nullptr) {
-        assemblyOut << std::endl << "#start var dec with definition " << name << std::endl;
+        assemblyOut << std::endl << "# start var dec with definition " << name << std::endl;
 
         expr->compile(assemblyOut);
 
@@ -191,7 +191,7 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
 
         regToVar(assemblyOut, frame, "$t0", name);
         
-        assemblyOut << "#end var dec with definition " << name << std::endl << std::endl;
+        assemblyOut << "# end var dec with definition " << name << std::endl << std::endl;
     }
 }
 
@@ -214,7 +214,7 @@ void AST_ArrayDeclaration::generateFrames(Frame* _frame){
     // this isn't useful for int's but when we need double word sized types this will save us
     // a lot of headaches.
     // no need to type_size since addVariable does that for us
-    _frame->addVariable(name, pointer_size + pointer_size % 8 + type_size);
+    _frame->addVariable(name, pointer_size + pointer_size % 8 + type_size * size + type_size * size % 8);
 }
 
 AST* AST_ArrayDeclaration::deepCopy(){
