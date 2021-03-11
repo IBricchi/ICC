@@ -17,6 +17,7 @@ class AST
 {
 public:
     Frame* frame;
+    bool returnPtr = false;
 
     virtual ~AST();
     
@@ -24,7 +25,7 @@ public:
         Generates frames and creates context for them
     */
     virtual void generateFrames(Frame* _frame = nullptr);
-    
+
     /*
         Writes MIPS assembly to output stream.
     */
@@ -32,6 +33,22 @@ public:
 
     // overriden by AST_Variable
     virtual void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg);
+
+    /*
+        This function is only required for source translation of things like short hand assignements
+        Deep copy does not currently copy:
+        * Frame
+    */
+    virtual AST* deepCopy();
+
+    /*
+        These function is required whenever the type of a node is needed
+
+        Only implemented by Expressions and children of expressions
+        (constants, variables, operators, etc.)
+    */
+    virtual AST* getType();
+    virtual int getBytes();
 };
 
 /*
@@ -46,6 +63,7 @@ private:
         retrieve using 'lw ${destinationReg} {variableBindings[variableName]}($fp)'
     */ 
     std::unordered_map<std::string, int> variableBindings;
+    std::unordered_map<std::string, AST*> variableType;
 
     // information about how much memory is needed to preserve previous stack
     // currently only stores state of $fp and $31
@@ -86,12 +104,13 @@ public:
     */
     int getVarPos(const std::string& variableName) const;
     std::pair<int, int> getVarAddress(const std::string &variableName);
+    AST* getVarType(const std::string& variableName) const;
 
     /*
         Does not check if variable already exists.
         If the variable name already exists, it will be overriden.
     */
-    void addVariable(const std::string &variableName, int byteSize);
+    void addVariable(const std::string &variableName, AST* type, int byteSize);
 
     /*
         Used for moving '$sp' pointer when creating new stack frame.
@@ -105,7 +124,7 @@ public:
         Used to set stack pointer in a new frame.
         Is how much memory is required to contain all local variables
     */
-    int getVarSize() const;
+    int getVarStoreSize() const;
 
     void setLoopLabelNames(std::string _startLoopLabelName, std::string _endLoopLabelName);
 

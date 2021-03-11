@@ -10,19 +10,20 @@
     We don't need to error check existance of variable name since it should always
     Exists as provided by the specs
 */
-class AST_VarAssign
+class AST_Assign
     : public AST
 {
 private:
-    std::string name;
+    AST* assignee;
     AST* expr;
 public:
-    AST_VarAssign(std::string* _name, AST* _expr);
+    AST_Assign(AST* _assignee, AST* _expr);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
-    ~AST_VarAssign();
+    ~AST_Assign();
 };
 
 class AST_FunctionCall
@@ -37,6 +38,7 @@ public:
     AST_FunctionCall(std::string* _functionName, std::vector<AST*>* _args = nullptr);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_FunctionCall();
@@ -65,6 +67,7 @@ public:
         SHIFT_L, SHIFT_R,
         PLUS, MINUS,
         STAR, SLASH_F, PERCENT,
+        ARRAY,
         EXP // NOT YET IMPLEMENTED
     };
 private:
@@ -75,7 +78,10 @@ public:
     AST_BinOp(Type _type, AST* _left, AST* _right);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+    int getBytes() override;
 
     ~AST_BinOp();
 };
@@ -97,6 +103,7 @@ public:
     AST_UnOp(Type _type, AST* _operand);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
     ~AST_UnOp();

@@ -14,6 +14,7 @@ public:
     AST_ConstInt(int _value);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
     
     // doesn't need a destructor since it holds not pointers
@@ -36,7 +37,10 @@ public:
     AST_Variable(std::string* _name);
 
     void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+    int getBytes() override;
 
     /*
         reg is the register that contains the new value.
@@ -45,4 +49,41 @@ public:
         - I made the change so it was compatible with the helper function for saving and reading variables
     */
     void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) override;
+};
+
+class AST_Type
+    : public AST
+{
+private:
+    std::string name;
+    int bytes;
+public:
+    AST_Type(std::string* name);
+    static std::unordered_map<std::string, int> size_of_type;
+    
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+    int getBytes() override;
+
+    // dont need destructor as it holds no pointers
+};
+
+class AST_ArrayType
+    : public AST
+{
+private:
+    AST* type;
+    int size;
+    int bytes;
+public:
+    AST_ArrayType(AST* _type, int _size);
+    
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+    int getBytes() override;
+
+    ~AST_ArrayType();
 };

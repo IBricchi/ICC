@@ -21,11 +21,12 @@
   AST* NODE ;
   int INT;
   std::string *STR;
-  std::vector<std::pair<std::string,std::string>> *FDP; // function declaration parameters
-  std::vector<AST*> *FCP; // function call parameters;
+  std::vector<std::pair<AST*,std::string>> *FDP; // function declaration parameters
+  std::vector<AST*> *FCP; // function call parameters
+  std::vector<int> *SCP; // square chain parameters
 }
 
-%token T_INT
+%token <STR> T_TYPE
 
 %token <STR> T_IDENTIFIER
 
@@ -36,7 +37,7 @@
 %token T_COMMA T_SEMI_COLON T_COLON
 %token T_BRACK_L T_BRACK_R
 %token T_BRACE_L T_BRACE_R
-
+%token T_SQUARE_L T_SQUARE_R
 
 %token T_AND_EQUAL T_XOR_EQUAL T_OR_EQUAL T_SHIFT_L_EQUAL T_SHIFT_R_EQUAL T_STAR_EQUAL
 %token T_SLASH_F_EQUAL T_PERCENT_EQUAL T_PLUS_EQUAL T_MINUS_EQUAL 
@@ -55,13 +56,15 @@
 %token T_BANG T_NOT
 
 %type <NODE> PROGRAM SEQUENCE DECLARATION FUN_DECLARATION VAR_DECLARATION // Structures
-%type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT // Statements
+%type <NODE> TYPE // helper for anything with type
+%type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT IF_STMT WHILE_STMT FOR_STMT BLOCK // Statements
 %type <NODE> IF_STMT WHILE_STMT FOR_STMT SWITCH_STMT CASE_STMT BLOCK // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
-%type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY CALL PRIMARY // Expressions
+%type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL PRIMARY // Expressions
 
 %type <FDP> FUN_DEC_PARAMS // helper for fun declaration
 %type <FCP> FUN_CALL_PARAMS // helper for fun call
+%type <SCP> SQUARE_CHAIN // helper for array declarations
 
 %nonassoc NO_ELSE
 %nonassoc T_ELSE
@@ -87,30 +90,47 @@ DECLARATION : FUN_DECLARATION { $$ = $1; }
             | STATEMENT       { $$ = $1; }
             ;
 
-FUN_DECLARATION : T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON                                   { $$ = new AST_FunDeclaration("int", $2); }
-                | T_INT T_IDENTIFIER T_BRACK_L T_INT T_IDENTIFIER T_BRACK_R T_SEMI_COLON                { $$ = new AST_FunDeclaration("int", $2, nullptr, new std::vector<std::pair<std::string,std::string>>({{"int", *$5}})); }
-                | T_INT T_IDENTIFIER T_BRACK_L T_INT T_IDENTIFIER FUN_DEC_PARAMS T_BRACK_R T_SEMI_COLON {
-                                $6->push_back({"int", *$5});
-                                $$ = new AST_FunDeclaration("int", $2, nullptr, $6);
+FUN_DECLARATION : TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON                                  { $$ = new AST_FunDeclaration($1, $2); }
+                | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER T_BRACK_R T_SEMI_COLON                { $$ = new AST_FunDeclaration($1, $2, nullptr, new std::vector<std::pair<AST*,std::string>>({{$4, *$5}})); }
+                | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER FUN_DEC_PARAMS T_BRACK_R T_SEMI_COLON {
+                                $6->push_back({$4, *$5});
+                                $$ = new AST_FunDeclaration($1, $2, nullptr, $6);
                         }                            
-                | T_INT T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK                                          { $$ = new AST_FunDeclaration("int", $2, $5); }
-                | T_INT T_IDENTIFIER T_BRACK_L T_INT T_IDENTIFIER T_BRACK_R BLOCK                       { $$ = new AST_FunDeclaration("int", $2, $7, new std::vector<std::pair<std::string,std::string>>({{"int", *$5}})); }
-                | T_INT T_IDENTIFIER T_BRACK_L T_INT T_IDENTIFIER FUN_DEC_PARAMS T_BRACK_R BLOCK        {
-                                $6->push_back({"int", *$5});
-                                $$ = new AST_FunDeclaration("int", $2, $8, $6);
+                | TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R BLOCK                                         { $$ = new AST_FunDeclaration($1, $2, $5); }
+                | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER T_BRACK_R BLOCK                       { $$ = new AST_FunDeclaration($1, $2, $7, new std::vector<std::pair<AST*,std::string>>({{$4, *$5}})); }
+                | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER FUN_DEC_PARAMS T_BRACK_R BLOCK        {
+                                $6->push_back({$4, *$5});
+                                $$ = new AST_FunDeclaration($1, $2, $8, $6);
                         }
                 ;
 
-FUN_DEC_PARAMS : T_COMMA T_INT T_IDENTIFIER                     { $$ = new std::vector<std::pair<std::string,std::string>>({{"int", *$3}}); }
-               | T_COMMA T_INT T_IDENTIFIER FUN_DEC_PARAMS      {
-                                $4->push_back({"int", *$3});
+FUN_DEC_PARAMS : T_COMMA TYPE T_IDENTIFIER                     { $$ = new std::vector<std::pair<AST*,std::string>>({{$2, *$3}}); }
+               | T_COMMA TYPE T_IDENTIFIER FUN_DEC_PARAMS      {
+                                $4->push_back({$2, *$3});
                                 $$ = $4;
                         }
                ;
 
-VAR_DECLARATION : T_INT T_IDENTIFIER T_SEMI_COLON                                { $$ = new AST_VarDeclaration("int", $2); }
-                | T_INT T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON %prec VAR_DEC { $$ = new AST_VarDeclaration("int", $2, $4); }
+VAR_DECLARATION : TYPE T_IDENTIFIER T_SEMI_COLON                                   { $$ = new AST_VarDeclaration($1, $2); }
+                | TYPE T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON %prec VAR_DEC    { $$ = new AST_VarDeclaration($1, $2, $4); }
+                | TYPE T_IDENTIFIER SQUARE_CHAIN T_SEMI_COLON {
+                                AST* type = new AST_ArrayType($1, $3->at($3->size()-1));
+                                for(int i = $3->size() - 2; i >= 0; i--){
+                                        type = new AST_ArrayType(type, $3->at(i));
+                                }
+                                $$ = new AST_ArrayDeclaration(type, $2);
+                        }
                 ;
+
+SQUARE_CHAIN : T_SQUARE_L T_CONST_INT T_SQUARE_R              { $$ = new std::vector<int>({$2}); }
+             | SQUARE_CHAIN T_SQUARE_L T_CONST_INT T_SQUARE_R {
+                     $1->push_back($3);
+                     $$ = $1;
+                }
+             ;
+
+TYPE : T_TYPE { $$ = new AST_Type($1); }
+     ;
 
 STATEMENT : EXPRESSION_STMT { $$ = $1; }
           | RETURN_STMT     { $$ = $1; }
@@ -144,10 +164,10 @@ IF_STMT : T_IF T_BRACK_L EXPRESSION T_BRACK_R STATEMENT    %prec NO_ELSE { $$ = 
 WHILE_STMT : T_WHILE T_BRACK_L EXPRESSION T_BRACK_R STATEMENT { $$ = new AST_WhileStmt($3, $5); }
            ;
 
-FOR_STMT : T_FOR T_BRACK_L EXPRESSION_STMT EXPRESSION_STMT EXPRESSION T_BRACK_R DECLARATION 
+FOR_STMT : T_FOR T_BRACK_L EXPRESSION_STMT EXPRESSION_STMT EXPRESSION T_BRACK_R STATEMENT 
                 { 
                         // Source translation of for loop into sequence
-                        AST* whileBodyContents = new AST_Sequence($5, $7);
+                        AST* whileBodyContents = new AST_Sequence($7, $5);
                         AST* whileBody = new AST_Block(whileBodyContents);
                         AST* whileStmt = new AST_WhileStmt($4, whileBody);
 
@@ -170,59 +190,59 @@ EXPRESSION : ASSIGNMENT { $$ = $1; }
            ;
 
 // do source translation for all shorthand assigns
-ASSIGNMENT : T_IDENTIFIER T_AND_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_AND, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+ASSIGNMENT : UNARY_PRE T_AND_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_AND, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
-           | T_IDENTIFIER T_XOR_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_XOR, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+           | UNARY_PRE T_XOR_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_XOR, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
-           | T_IDENTIFIER T_OR_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_OR, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+           | UNARY_PRE T_OR_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::BIT_OR, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
-           | T_IDENTIFIER T_SHIFT_L_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::SHIFT_L, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+           | UNARY_PRE T_SHIFT_L_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::SHIFT_L, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
-           | T_IDENTIFIER T_SHIFT_R_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::SHIFT_R, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+           | UNARY_PRE T_SHIFT_R_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::SHIFT_R, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
-           | T_IDENTIFIER T_STAR_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::STAR, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+           | UNARY_PRE T_STAR_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::STAR, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
-           | T_IDENTIFIER T_SLASH_F_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::SLASH_F, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+           | UNARY_PRE T_SLASH_F_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::SLASH_F, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
-           | T_IDENTIFIER T_PERCENT_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::PERCENT, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+           | UNARY_PRE T_PERCENT_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::PERCENT, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
-           | T_IDENTIFIER T_PLUS_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::PLUS, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+           | UNARY_PRE T_PLUS_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::PLUS, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
-           | T_IDENTIFIER T_MINUS_EQUAL LOGIC_OR %prec VAR_ASS {
-                        AST* left_var = new AST_Variable($1);
-                        AST* operation = new AST_BinOp(AST_BinOp::Type::MINUS, left_var, $3);
-                        $$ = new AST_VarAssign($1, operation);
+           | UNARY_PRE T_MINUS_EQUAL LOGIC_OR %prec VAR_ASS {
+                        AST* assignee_copy = $1->deepCopy();
+                        AST* operation = new AST_BinOp(AST_BinOp::Type::MINUS, assignee_copy, $3);
+                        $$ = new AST_Assign($1, operation);
                 }
            // normal assign
-           | T_IDENTIFIER T_EQUAL LOGIC_OR %prec VAR_ASS { $$ = new AST_VarAssign($1, $3); }
-           | LOGIC_OR                                    { $$ = $1; }
+           | UNARY_PRE T_EQUAL LOGIC_OR %prec VAR_ASS { $$ = new AST_Assign($1, $3); }
+           | LOGIC_OR                                 { $$ = $1; }
            ;
 
 LOGIC_OR : LOGIC_AND T_OR_L LOGIC_OR { $$ = new AST_BinOp(AST_BinOp::Type::LOGIC_OR, $1, $3); }
@@ -267,22 +287,25 @@ TERM : FACTOR T_PLUS TERM  { $$ = new AST_BinOp(AST_BinOp::Type::PLUS, $1, $3); 
      | FACTOR              { $$ = $1; }
      ;
 
-FACTOR : UNARY T_STAR FACTOR    { $$ = new AST_BinOp(AST_BinOp::Type::STAR, $1, $3); }
-       | UNARY T_SLASH_F FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::SLASH_F, $1, $3); }
-       | UNARY T_PERCENT FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::PERCENT, $1, $3); }
-       | UNARY T_MINUSMINUS     { $$ = new AST_UnOp(AST_UnOp::Type::POST_DECREMENT, $1); }
-       | UNARY T_PLUSPLUS       { $$ = new AST_UnOp(AST_UnOp::Type::POST_INCREMENT, $1); }
-       | UNARY                  { $$ = $1; }
+FACTOR : UNARY_PRE T_STAR FACTOR    { $$ = new AST_BinOp(AST_BinOp::Type::STAR, $1, $3); }
+       | UNARY_PRE T_SLASH_F FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::SLASH_F, $1, $3); }
+       | UNARY_PRE T_PERCENT FACTOR { $$ = new AST_BinOp(AST_BinOp::Type::PERCENT, $1, $3); }
+       | UNARY_PRE                  { $$ = $1; }
        ;
 
-UNARY : T_BANG UNARY          { $$ = new AST_UnOp(AST_UnOp::Type::BANG, $2); }
-      | T_NOT UNARY           { $$ = new AST_UnOp(AST_UnOp::Type::NOT, $2); }
-      | T_MINUS UNARY         { $$ = new AST_UnOp(AST_UnOp::Type::MINUS, $2); }
-      | T_MINUSMINUS UNARY    { $$ = new AST_UnOp(AST_UnOp::Type::PRE_DECREMENT, $2); }
-      | T_PLUS UNARY          { $$ = new AST_UnOp(AST_UnOp::Type::PLUS, $2); }
-      | T_PLUSPLUS UNARY      { $$ = new AST_UnOp(AST_UnOp::Type::PRE_INCREMENT, $2); }
-      | CALL                  { $$ = $1; }
-      ;
+UNARY_PRE : T_BANG UNARY_PRE          { $$ = new AST_UnOp(AST_UnOp::Type::BANG, $2); }
+          | T_NOT UNARY_PRE           { $$ = new AST_UnOp(AST_UnOp::Type::NOT, $2); }
+          | T_MINUS UNARY_PRE         { $$ = new AST_UnOp(AST_UnOp::Type::MINUS, $2); }
+          | T_MINUSMINUS UNARY_PRE    { $$ = new AST_UnOp(AST_UnOp::Type::PRE_DECREMENT, $2); }
+          | T_PLUS UNARY_PRE          { $$ = new AST_UnOp(AST_UnOp::Type::PLUS, $2); }
+          | T_PLUSPLUS UNARY_PRE      { $$ = new AST_UnOp(AST_UnOp::Type::PRE_INCREMENT, $2); }
+          | UNARY_POST                { $$ = $1; }
+          ;
+
+UNARY_POST : UNARY_POST T_MINUSMINUS    { $$ = new AST_UnOp(AST_UnOp::Type::POST_DECREMENT, $1); }
+           | UNARY_POST T_PLUSPLUS      { $$ = new AST_UnOp(AST_UnOp::Type::POST_INCREMENT, $1); }
+           | CALL                       { $$ = $1; }
+           ;
 
 CALL : T_IDENTIFIER T_BRACK_L T_BRACK_R                            { $$ = new AST_FunctionCall($1); }
      | T_IDENTIFIER T_BRACK_L EXPRESSION T_BRACK_R                 { $$ = new AST_FunctionCall($1, new std::vector<AST*>({{$3}})); }
@@ -290,6 +313,7 @@ CALL : T_IDENTIFIER T_BRACK_L T_BRACK_R                            { $$ = new AS
              $4->push_back($3);
              $$ = new AST_FunctionCall($1, $4);
         }
+     | CALL T_SQUARE_L EXPRESSION T_SQUARE_R                       { $$ = new AST_BinOp(AST_BinOp::Type::ARRAY, $1, $3); }
      | PRIMARY                                                     { $$ = $1; }
      ;
 

@@ -1,32 +1,49 @@
 #include "expression.hpp"
 
-AST_VarAssign::AST_VarAssign(std::string* _name, AST* _expr):
-    name(*_name),
+AST_Assign::AST_Assign(AST* _assignee, AST* _expr):
+    assignee(_assignee),
     expr(_expr)
 {}
 
-void AST_VarAssign::generateFrames(Frame* _frame){
+void AST_Assign::generateFrames(Frame* _frame){
     frame = _frame;
+    assignee->returnPtr = true;
+    assignee->generateFrames(_frame);
     expr->generateFrames(_frame);
 }
 
-void AST_VarAssign::compile(std::ostream &assemblyOut){
-    assemblyOut << std::endl << "# start var definition " << name << std::endl;
+AST* AST_Assign::deepCopy(){
+    AST* new_assigne = assignee->deepCopy();
+    AST* new_expr = expr->deepCopy();
+    return new AST_Assign(new_assigne, new_expr);
+}
 
+void AST_Assign::compile(std::ostream &assemblyOut){
+    std::string name = generateUniqueLabel("assignment");
+    assemblyOut << std::endl << "# start " << name << std::endl;
+
+    // compile expresison
     expr->compile(assemblyOut);
 
-    // load top of stack into register t0
-    assemblyOut << "lw $t0, 8($sp)" << std::endl;
+    // compile assignee location
+    assignee->compile(assemblyOut);
+
+    // load result of expression
+    assemblyOut << "lw $t0, 16($sp)" << std::endl;
+    // load memory address to assign to
+    assemblyOut << "lw $t1, 8($sp)" << std::endl;
+    // assign and pop memory address
+    assemblyOut << "sw $t0, 0($t1)" << std::endl;
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
-    // save register to var in mem
-    regToVar(assemblyOut, frame, "$t0", name);
+    assemblyOut << "# end " << name << std::endl << std::endl;
 }
 
 // void regToVar(std::ostream &assemblyOut, Frame *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
 // void regToVar(std::ostream &assemblyOut, <error-type> *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
 
-AST_VarAssign::~AST_VarAssign(){
+AST_Assign::~AST_Assign(){
+    delete assignee;
     delete expr;
 }
 
@@ -45,6 +62,18 @@ void AST_FunctionCall::generateFrames(Frame* _frame){
             arg->generateFrames(_frame);
         }
     }
+}
+
+AST* AST_FunctionCall::deepCopy(){
+    std::vector<AST*>* new_args = nullptr;
+    if(args!=nullptr){
+        new_args = new std::vector<AST*>();
+        for(AST* arg: *args){
+            AST* new_arg = arg->deepCopy();
+            new_args->push_back(new_arg);
+        }
+    }
+    return new AST_FunctionCall(&functionName, new_args);
 }
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
@@ -101,8 +130,18 @@ AST_BinOp::AST_BinOp(AST_BinOp::Type _type, AST* _left, AST* _right):
 
 void AST_BinOp::generateFrames(Frame* _frame){
     frame = _frame;
+    // if type is array, remove left-assignment param from index expression
+    if(type == Type::ARRAY){
+        left->returnPtr = true;
+    }
     left->generateFrames(_frame);
     right->generateFrames(_frame);
+}
+
+AST* AST_BinOp::deepCopy(){
+    AST* new_left = left->deepCopy();
+    AST* new_right = right->deepCopy();
+    return new AST_BinOp(type, new_left, new_right);
 }
 
 void AST_BinOp::compile(std::ostream &assemblyOut) {
@@ -431,6 +470,28 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             assemblyOut << "mfhi $t2" << std::endl;
             break;
         }
+        case Type::ARRAY:
+        {
+            // load result of index expression into register
+            right->compile(assemblyOut);
+            
+            assemblyOut << "lw $t0, 16($sp)" << std::endl;
+            // if left of assign de-reference left variable
+            // if(specialParams[(int)SpecialParam::KEEP_AS_POINTER])
+            //     assemblyOut << "lw $t0, 0($t0)" << std::endl;
+            assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
+            assemblyOut << "# " << binLabel << " [] " << std::endl;
+            assemblyOut << "addiu $t2, $0, " << getBytes() << std::endl;
+            assemblyOut << "multu $t1, $t2" << std::endl;
+            assemblyOut << "mflo $t1" << std::endl;
+            assemblyOut << "sub $t2, $t0, $t1" << std::endl;
+            // if not left of assign load value
+            if(!returnPtr)
+                assemblyOut << "lw $t2, 0($t2)" << std::endl;
+            
+            break;
+        }
         default:
         {
             throw std::runtime_error("AST_BinOp: Not Implemented Yet.\n");
@@ -443,6 +504,25 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
     assemblyOut << "# end " << binLabel << std::endl << std::endl; 
+}
+
+AST* AST_BinOp::getType(){
+    // assuming left and right have same type
+    // we don't need to implement implicit casting so this should be fine
+    AST* left_type = left->getType();
+    if(type == Type::ARRAY){
+        left_type = left_type->getType();
+    }
+    return left_type;
+}
+
+int AST_BinOp::getBytes(){
+    // assuming left and right have same type
+    // we don't need to implement implicit casting so this should be fine
+    int bytes = left->getBytes();
+    if(type == Type::ARRAY){
+        bytes = left->getType()->getType()->getBytes();
+    }
 }
 
 AST_BinOp::~AST_BinOp(){
@@ -458,6 +538,11 @@ AST_UnOp::AST_UnOp(AST_UnOp::Type _type, AST* _operand):
 void AST_UnOp::generateFrames(Frame* _frame){
     frame = _frame;
     operand->generateFrames(_frame);
+}
+
+AST* AST_UnOp::deepCopy(){
+    AST* new_operand = operand->deepCopy();
+    return new AST_UnOp(type, new_operand);
 }
 
 void AST_UnOp::compile(std::ostream &assemblyOut) {

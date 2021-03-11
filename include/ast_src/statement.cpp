@@ -9,6 +9,11 @@ void AST_Return::generateFrames(Frame* _frame){
     expr->generateFrames(_frame);
 }
 
+AST* AST_Return::deepCopy(){
+    AST* new_expr = expr->deepCopy();
+    return new AST_Return(new_expr);
+}
+
 void AST_Return::compile(std::ostream &assemblyOut) {
     std::string retLab = generateUniqueLabel("return");
     assemblyOut << std::endl << "# start " << retLab << std::endl;
@@ -24,7 +29,6 @@ void AST_Return::compile(std::ostream &assemblyOut) {
         // set return register to value on top of stack
         assemblyOut << "lw $v0, 8($sp)" << std::endl;;
         // no need to shift stack pointer since return will end a scope anyway
-        // TODO! loop out of scopes untill you reach function scope
     }
 
     // skip through frames between current frame and function frame
@@ -51,6 +55,10 @@ AST_Return::~AST_Return() {
 
 void AST_Break::generateFrames(Frame* _frame) {
     frame = _frame;
+}
+
+AST* AST_Break::deepCopy(){
+    return new AST_Break();
 }
 
 void AST_Break::compile(std::ostream &assemblyOut) {
@@ -81,6 +89,10 @@ void AST_Break::compile(std::ostream &assemblyOut) {
 
 void AST_Continue::generateFrames(Frame* _frame) {
     frame = _frame;
+}
+
+AST* AST_Continue::deepCopy(){
+    return new AST_Continue();
 }
 
 void AST_Continue::compile(std::ostream &assemblyOut) {
@@ -125,6 +137,16 @@ void AST_IfStmt::generateFrames(Frame* _frame){
     if (other != nullptr) {
         other->generateFrames(_frame);
     }
+}
+
+AST* AST_IfStmt::deepCopy(){
+    AST* new_cond = cond->deepCopy();
+    AST* new_then = then->deepCopy();
+    AST* new_other = nullptr;
+    if(other != nullptr){
+        new_other = other->deepCopy();
+    }
+    return new AST_IfStmt(new_cond, new_then, new_other);
 }
 
 void AST_IfStmt::compile(std::ostream &assemblyOut) {
@@ -183,6 +205,12 @@ void AST_WhileStmt::generateFrames(Frame* _frame){
     cond->generateFrames(_frame);
     // we don't need a new frame here for the same reason we don't need one for the if statemnt
     body->generateFrames(_frame);
+}
+
+AST* AST_WhileStmt::deepCopy(){
+    AST* new_cond = cond->deepCopy();
+    AST* new_body = body->deepCopy();
+    return new AST_WhileStmt(new_cond, new_body);
 }
 
 void AST_WhileStmt::compile(std::ostream &assemblyOut){
@@ -349,6 +377,14 @@ void AST_Block::generateFrames(Frame* _frame){
     }
 }
 
+AST* AST_Block::deepCopy(){
+    AST* new_body = nullptr;
+    if(body != nullptr){
+        new_body = body->deepCopy();
+    }
+    return new AST_Block(new_body);
+}
+
 void AST_Block::compile(std::ostream &assemblyOut) {
     std::string blockname = generateUniqueLabel("block");
     assemblyOut << std::endl << "# start " << blockname << std::endl;
@@ -363,7 +399,7 @@ void AST_Block::compile(std::ostream &assemblyOut) {
         assemblyOut << "move $fp, $sp" << std::endl;
 
         // move stack pointer down to allocate space for temporary variables in frame
-        assemblyOut << "addiu $sp, $sp, -" << frame->getVarSize() << std::endl;
+        assemblyOut << "addiu $sp, $sp, -" << frame->getVarStoreSize() << std::endl;
     }
 
     if (body != nullptr) {
