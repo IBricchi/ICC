@@ -68,25 +68,30 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start " << varType << " variable read " << name << std::endl;
 
     // if left of assign load address otherwise load value
-    std::string reg;
     if(returnPtr){
         assemblyOut << "# (reading address)" << std::endl;
         
         varAddressToReg(assemblyOut, frame, "$t0", name);
+
+        // store value in memory
+        assemblyOut << "sw $t0, 0($sp)" << std::endl;
     }
     else{   
         assemblyOut << "# (reading value)" << std::endl;
 
         if (varType == "float") {
-            reg = "$f4";
+            varToReg(assemblyOut, frame, "$f4", name);
+
+            // store value in memory
+            assemblyOut << "s.s $f4, 0($sp)" << std::endl;
         } else {
-            reg = "$t0";
+            varToReg(assemblyOut, frame, "$t0", name);
+
+            // store value in memory
+            assemblyOut << "sw $t0, 0($sp)" << std::endl;
         }
-        varToReg(assemblyOut, frame, reg, name);
     }
 
-    // store value in memory
-    assemblyOut << "sw $t0, 0($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
     assemblyOut << "# end " << varType << " variable read " << name << std::endl << std::endl;
