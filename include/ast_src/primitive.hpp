@@ -16,8 +16,7 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
-    
-    // doesn't need a destructor since it holds not pointers
+    AST* getType() override;
 };
 
 class AST_ConstFloat
@@ -31,6 +30,7 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
 };
 
 /*

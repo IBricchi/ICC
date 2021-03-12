@@ -25,6 +25,11 @@ void AST_ConstInt::compile(std::ostream &assemblyOut){
     assemblyOut << "# end const int " << value << std::endl << std::endl;
 }
 
+AST* AST_ConstInt::getType() {
+    std::string typeName = "int";
+    return new AST_Type(&typeName);
+}
+
 AST_ConstFloat::AST_ConstFloat(float _value):
     value(_value)
 {}
@@ -48,6 +53,11 @@ void AST_ConstFloat::compile(std::ostream &assemblyOut){
     assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
     assemblyOut << "# end const float " << value << std::endl << std::endl;
+}
+
+AST* AST_ConstFloat::getType() {
+    std::string typeName = "float";
+    return new AST_Type(&typeName);
 }
 
 AST_Variable::AST_Variable(std::string* _name) :
