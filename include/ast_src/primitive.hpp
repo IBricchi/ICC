@@ -16,8 +16,21 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
-    
-    // doesn't need a destructor since it holds not pointers
+    AST* getType() override;
+};
+
+class AST_ConstFloat
+    : public AST
+{
+private:
+    float value;
+public:
+    AST_ConstFloat(float _value);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
 };
 
 /*
@@ -65,6 +78,7 @@ public:
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
     int getBytes() override;
+    std::string getTypeName() override;
 
     // dont need destructor as it holds no pointers
 };

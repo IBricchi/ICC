@@ -182,18 +182,31 @@ AST* AST_VarDeclaration::deepCopy(){
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
     if (expr != nullptr) {
-        assemblyOut << std::endl << "# start var dec with definition " << name << std::endl;
+        std::string varType = this->getType()->getTypeName();
+
+        assemblyOut << std::endl << "# start " << varType << " var dec with definition " << name << std::endl;
 
         expr->compile(assemblyOut);
 
-        // load top of stack into register t0
-        assemblyOut << "lw $t0, 8($sp)" << std::endl;
-        assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+        // load top of stack into register
+        if (varType == "float") {
+            assemblyOut << "l.s $f4, 8($sp)" << std::endl;
+            assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
-        regToVar(assemblyOut, frame, "$t0", name);
+            regToVar(assemblyOut, frame, "$f4", name);
+        } else {
+            assemblyOut << "lw $t0, 8($sp)" << std::endl;
+            assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+
+            regToVar(assemblyOut, frame, "$t0", name);
+        }
         
-        assemblyOut << "# end var dec with definition " << name << std::endl << std::endl;
+        assemblyOut << "# end " << varType << " var dec with definition " << name << std::endl << std::endl;
     }
+}
+
+AST* AST_VarDeclaration::getType() {
+    return type;
 }
 
 AST_VarDeclaration::~AST_VarDeclaration() {

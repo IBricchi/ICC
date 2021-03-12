@@ -24,6 +24,10 @@ int AST::getBytes(){
     throw std::runtime_error("AST: getBytes Not implemented by child class.\n");
 }
 
+std::string AST::getTypeName(){
+    throw std::runtime_error("AST: getTypeName Not implemented by child class.\n");
+}
+
 AST::~AST() {
     delete frame;
 }
