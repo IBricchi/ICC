@@ -20,6 +20,19 @@ public:
     // doesn't need a destructor since it holds not pointers
 };
 
+class AST_ConstFloat
+    : public AST
+{
+private:
+    float value;
+public:
+    AST_ConstFloat(float _value);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+};
+
 /*
    I made the change you suggested by adding an assignment AST node
    This node will be created if an identifier acting as a variable is

@@ -25,6 +25,31 @@ void AST_ConstInt::compile(std::ostream &assemblyOut){
     assemblyOut << "# end const int " << value << std::endl << std::endl;
 }
 
+AST_ConstFloat::AST_ConstFloat(float _value):
+    value(_value)
+{}
+
+void AST_ConstFloat::generateFrames(Frame* _frame){
+    frame = _frame;
+}
+
+AST* AST_ConstFloat::deepCopy(){
+    return new AST_ConstFloat(value);
+}
+
+void AST_ConstFloat::compile(std::ostream &assemblyOut){
+    assemblyOut << std::endl << "# start const float " << value << std::endl;
+
+    // load constant into register
+    assemblyOut << "li.s $f0, " << value << std::endl;
+
+    // store constant to top of stack
+    assemblyOut << "s.s $f0, 0($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -8" << std::endl;
+
+    assemblyOut << "# end const float " << value << std::endl << std::endl;
+}
+
 AST_Variable::AST_Variable(std::string* _name) :
     name(*_name)
 {}
