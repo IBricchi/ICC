@@ -1,6 +1,8 @@
 %code requires{
   #include <ast>
   #include <cassert>
+  #include <vector>
+  #include <utility>
 
   extern AST *g_root; // A way of getting the AST out
 
@@ -24,6 +26,9 @@
   std::vector<std::pair<AST*,std::string>> *FDP; // function declaration parameters
   std::vector<AST*> *FCP; // function call parameters
   std::vector<int> *SCP; // square chain parameters
+  std::vector<std::pair<std::string,std::string>> *FDP; // function declaration parameters
+  std::vector<std::pair<std::string, int>> *EL; // enum list (identifier value mapping)
+  std::pair<std::string, int> *EN; // enum
 }
 
 %token <STR> T_TYPE
@@ -59,9 +64,12 @@
 %type <NODE> TYPE // helper for anything with type
 %type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT // Statements
 %type <NODE> IF_STMT WHILE_STMT FOR_STMT SWITCH_STMT CASE_STMT BLOCK // Statements
-%type <NODE> ENUM_DECLARATION ENUM_LIST ENUM // Statements
+%type <NODE> ENUM_DECLARATION // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL PRIMARY // Expressions
+
+%type <EN> ENUM
+%type <EL> ENUM_LIST
 
 %type <FDP> FUN_DEC_PARAMS // helper for fun declaration
 %type <FCP> FUN_CALL_PARAMS // helper for fun call
@@ -82,13 +90,14 @@
 PROGRAM : SEQUENCE { g_root = $1; }
         ;
 
-SEQUENCE : DECLARATION          {$$ = $1; }
+SEQUENCE : DECLARATION          { $$ = $1; }
          | DECLARATION SEQUENCE { $$ = new AST_Sequence($1, $2); }
          ;
 
-DECLARATION : FUN_DECLARATION { $$ = $1; }
-            | VAR_DECLARATION { $$ = $1; }
-            | STATEMENT       { $$ = $1; }
+DECLARATION : FUN_DECLARATION  { $$ = $1; }
+            | VAR_DECLARATION  { $$ = $1; }
+            | ENUM_DECLARATION { $$ = $1; }
+            | STATEMENT        { $$ = $1; }
             ;
 
 FUN_DECLARATION : TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON                                  { $$ = new AST_FunDeclaration($1, $2); }
@@ -132,17 +141,59 @@ SQUARE_CHAIN : T_SQUARE_L T_CONST_INT T_SQUARE_R              { $$ = new std::ve
 
 TYPE : T_TYPE { $$ = new AST_Type($1); }
 
-ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLON // e.g. enum boolean {false, true};
-                 | T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_IDENTIFIER T_SEMI_COLON // e.g. enum boolean {false, true} check;
-                 | T_ENUM T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON // e.g. enum boolean check; (declaring an enum variable)
+ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLON {
+                                int count = 0;
+                                std::vector<AST*> declarations{};
+                                for (auto el : *$4) {
+                                        if (el.second != 0) {
+                                                count = el.second;
+                                        }
+                                        AST* val = new AST_ConstInt(count);
+                                        AST* dec = new AST_VarDeclaration("int", &el.first, val);
+                                        declarations.push_back(dec);
+                                        count++;
+                                }
+
+                                AST* seq = declarations.at(0);
+                                for (int i=1; i<declarations.size(); i++) {
+                                        seq = new AST_Sequence(declarations.at(i), seq);
+                                }
+                                $$ = seq;
+                        }
+                 | T_ENUM T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
+                                AST* zero = new AST_ConstInt(0);
+                                $$ = new AST_VarDeclaration("int", $3, zero); 
+                        }
+                 | T_ENUM T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLON {
+                                int count = 0;
+                                std::vector<AST*> declarations{};
+                                for (auto el : *$3) {
+                                        if (el.second != 0) {
+                                                count = el.second;
+                                        }
+                                        AST* val = new AST_ConstInt(count);
+                                        AST* dec = new AST_VarDeclaration("int", &el.first, val);
+                                        declarations.push_back(dec);
+                                        count++;
+                                }
+
+                                AST* seq = declarations.at(0);
+                                for (int i=1; i<declarations.size(); i++) {
+                                        seq = new AST_Sequence(declarations.at(i), seq);
+                                }
+                                $$ = seq;
+                        }
                  ;
                 
-ENUM_LIST : ENUM
-          | ENUM_LIST T_COMMA ENUM
+ENUM_LIST : ENUM                             { $$ = new std::vector<std::pair<std::string, int>>({*$1}); }
+          | ENUM_LIST T_COMMA ENUM           { 
+                        $1->push_back(*$3);
+                        $$ = $1;
+                }
           ;
 
-ENUM : T_IDENTIFIER T_EQUAL T_CONST_INT
-     | T_IDENTIFIER
+ENUM : T_IDENTIFIER T_EQUAL T_CONST_INT { $$ = new std::pair<std::string, int>({*$1, $3}); }
+     | T_IDENTIFIER                     { $$ = new std::pair<std::string, int>({*$1, 0}); }
      ;
 
 STATEMENT : EXPRESSION_STMT { $$ = $1; }
