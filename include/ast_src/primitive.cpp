@@ -63,23 +63,35 @@ AST* AST_Variable::deepCopy(){
 }
 
 void AST_Variable::compile(std::ostream &assemblyOut) {
-    assemblyOut << std::endl << "# start variable read " << name << std::endl;
+    std::string varType = this->getType()->getTypeName();
+
+    assemblyOut << std::endl << "# start " << varType << " variable read " << name << std::endl;
 
     // if left of assign load address otherwise load value
     if(returnPtr){
         assemblyOut << "# (reading address)" << std::endl;
-        varAddressToReg(assemblyOut, frame, "$t0", name);
+        
+        if (varType == "float") {
+
+        } else {
+            varAddressToReg(assemblyOut, frame, "$t0", name);
+        }
     }
     else{   
         assemblyOut << "# (reading value)" << std::endl;
-        varToReg(assemblyOut, frame, "$t0", name);
+
+        if (varType == "float") {
+
+        } else {
+            varToReg(assemblyOut, frame, "$t0", name);
+        }
     }
 
     // store value in memory
     assemblyOut << "sw $t0, 0($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
-    assemblyOut << "# end variable read " << name << std::endl << std::endl;
+    assemblyOut << "# end " << varType << " variable read " << name << std::endl << std::endl;
 }
 
 AST* AST_Variable::getType(){

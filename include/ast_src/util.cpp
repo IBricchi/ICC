@@ -7,7 +7,7 @@ std::string generateUniqueLabel(const std::string &labelName) {
 
 void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var){
     std::pair<int, int> varAddress = frame->getVarAddress(var);
-    std::string varType = frame->getVarType(name);
+    std::string varType = frame->getVarType(var)->getTypeName();
     
     // coppy frame pointer to t6 and recurse back expected number of frames
     assemblyOut << "move $t6, $fp" << std::endl;
@@ -25,7 +25,7 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
 
 void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var){
     std::pair<int, int> varAddress = frame->getVarAddress(var);
-    std::string varType = frame->getVarType(name);
+    std::string varType = frame->getVarType(var)->getTypeName();
     
     // coppy frame pointer to t6 and recurse back expected number of frames
     assemblyOut << "move $t6, $fp" << std::endl;
