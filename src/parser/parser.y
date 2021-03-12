@@ -22,6 +22,7 @@
 %union{
   AST* NODE ;
   int INT;
+  float FLOAT;
   std::string *STR;
   std::vector<std::pair<AST*,std::string>> *FDP; // function declaration parameters
   std::vector<AST*> *FCP; // function call parameters
@@ -35,6 +36,7 @@
 %token <STR> T_IDENTIFIER
 
 %token <INT> T_CONST_INT
+%token <FLOAT> T_CONST_FLOAT
 
 %token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK T_CONTINUE T_CASE T_DEFAULT T_ENUM
 
@@ -394,6 +396,7 @@ FUN_CALL_PARAMS : T_COMMA EXPRESSION                 { $$ = new std::vector<AST*
                 ;
 
 PRIMARY : T_CONST_INT                    { $$ = new AST_ConstInt($1); }
+        | T_CONST_FLOAT                  { $$ = new AST_ConstFloat($1); }
         | T_IDENTIFIER                   { $$ = new AST_Variable($1); }
         | T_BRACK_L EXPRESSION T_BRACK_R { $$ = $2; }
         ;
