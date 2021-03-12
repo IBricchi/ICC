@@ -292,7 +292,7 @@ void AST_SwitchStmt::compile(std::ostream &assemblyOut){
     assemblyOut << "sw $31, 8($sp)" << std::endl;
     assemblyOut << "sw $fp, 12($sp)" << std::endl;
     assemblyOut << "move $fp, $sp" << std::endl;
-    assemblyOut << "addiu $sp, $sp, -" << body->frame->getVarSize() << std::endl;
+    assemblyOut << "addiu $sp, $sp, -" << body->frame->getVarStoreSize() << std::endl;
 
     auto caseLabelToValueMapping = frame->getCaseLabelValueMapping();
     for (const auto &labelValue : caseLabelToValueMapping) {
