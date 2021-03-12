@@ -26,7 +26,6 @@
   std::vector<std::pair<AST*,std::string>> *FDP; // function declaration parameters
   std::vector<AST*> *FCP; // function call parameters
   std::vector<int> *SCP; // square chain parameters
-  std::vector<std::pair<std::string,std::string>> *FDP; // function declaration parameters
   std::vector<std::pair<std::string, int>> *EL; // enum list (identifier value mapping)
   std::pair<std::string, int> *EN; // enum
 }
@@ -148,8 +147,10 @@ ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLO
                                         if (el.second != 0) {
                                                 count = el.second;
                                         }
+                                        std::string* intTypeName = new std::string("int");
+                                        AST* intType = new AST_Type(intTypeName);
                                         AST* val = new AST_ConstInt(count);
-                                        AST* dec = new AST_VarDeclaration("int", &el.first, val);
+                                        AST* dec = new AST_VarDeclaration(intType, &el.first, val);
                                         declarations.push_back(dec);
                                         count++;
                                 }
@@ -161,8 +162,10 @@ ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLO
                                 $$ = seq;
                         }
                  | T_ENUM T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
+                                std::string* intTypeName = new std::string("int");
+                                AST* intType = new AST_Type(intTypeName);
                                 AST* zero = new AST_ConstInt(0);
-                                $$ = new AST_VarDeclaration("int", $3, zero); 
+                                $$ = new AST_VarDeclaration(intType, $3, zero); 
                         }
                  | T_ENUM T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLON {
                                 int count = 0;
@@ -171,8 +174,10 @@ ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLO
                                         if (el.second != 0) {
                                                 count = el.second;
                                         }
+                                        std::string* intTypeName = new std::string("int");
+                                        AST* intType = new AST_Type(intTypeName);
                                         AST* val = new AST_ConstInt(count);
-                                        AST* dec = new AST_VarDeclaration("int", &el.first, val);
+                                        AST* dec = new AST_VarDeclaration(intType, &el.first, val);
                                         declarations.push_back(dec);
                                         count++;
                                 }
