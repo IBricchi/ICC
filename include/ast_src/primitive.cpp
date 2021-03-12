@@ -41,10 +41,10 @@ void AST_ConstFloat::compile(std::ostream &assemblyOut){
     assemblyOut << std::endl << "# start const float " << value << std::endl;
 
     // load constant into register
-    assemblyOut << "li.s $f0, " << value << std::endl;
+    assemblyOut << "li.s $f4, " << value << std::endl;
 
     // store constant to top of stack
-    assemblyOut << "s.s $f0, 0($sp)" << std::endl;
+    assemblyOut << "s.s $f4, 0($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
     assemblyOut << "# end const float " << value << std::endl << std::endl;
@@ -125,6 +125,10 @@ void AST_Type::compile(std::ostream &assemblyOut) {
 
 int AST_Type::getBytes(){
     return bytes;
+}
+
+std::string AST_Type::getTypeName() {
+    return name;
 }
 
 AST_ArrayType::AST_ArrayType(AST* _type, int _size) :

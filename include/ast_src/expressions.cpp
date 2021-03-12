@@ -19,8 +19,10 @@ AST* AST_Assign::deepCopy(){
 }
 
 void AST_Assign::compile(std::ostream &assemblyOut){
+    std::string varType = assignee->getType()->getTypeName();
+
     std::string name = generateUniqueLabel("assignment");
-    assemblyOut << std::endl << "# start " << name << std::endl;
+    assemblyOut << std::endl << "# start " << name << " for " << varType << std::endl;
 
     // compile expresison
     expr->compile(assemblyOut);
@@ -28,15 +30,27 @@ void AST_Assign::compile(std::ostream &assemblyOut){
     // compile assignee location
     assignee->compile(assemblyOut);
 
-    // load result of expression
-    assemblyOut << "lw $t0, 16($sp)" << std::endl;
     // load memory address to assign to
     assemblyOut << "lw $t1, 8($sp)" << std::endl;
-    // assign and pop memory address
-    assemblyOut << "sw $t0, 0($t1)" << std::endl;
+
+    if (varType == "float") {
+        // load result of expression
+        assemblyOut << "l.s $f4, 16($sp)" << std::endl;
+        
+        // assign memory address
+        assemblyOut << "s.s $f4, 0($t1)" << std::endl;
+    } else {
+        // load result of expression
+        assemblyOut << "lw $t0, 16($sp)" << std::endl;
+
+        // assign memory address
+        assemblyOut << "sw $t0, 0($t1)" << std::endl;
+    }
+
+    // pop memory address
     assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
-    assemblyOut << "# end " << name << std::endl << std::endl;
+    assemblyOut << "# end " << name << " for " << varType << std::endl << std::endl;
 }
 
 // void regToVar(std::ostream &assemblyOut, Frame *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)

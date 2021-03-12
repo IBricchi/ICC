@@ -78,6 +78,7 @@ public:
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
     int getBytes() override;
+    std::string getTypeName() override;
 
     // dont need destructor as it holds no pointers
 };

@@ -49,6 +49,8 @@ public:
     */
     virtual AST* getType();
     virtual int getBytes();
+
+    virtual std::string getTypeName();
 };
 
 /*
