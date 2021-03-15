@@ -90,8 +90,9 @@ std::unordered_set<std::string> lexer_types = {
   else
     return T_IDENTIFIER;
 }
-[0-9]+                         { yylval.INT = strtol(yytext, 0, 10); return T_CONST_INT; }
-[0-9]+([.][0-9]*)?|[.][0-9]+   { yylval.FLOAT = std::stof(yytext); return T_CONST_FLOAT; }
+[0-9]+                           { yylval.INT = strtol(yytext, 0, 10); return T_CONST_INT; }
+([0-9]+([.][0-9]*)?|[.][0-9]+)f  { yylval.FLOAT = std::stof(yytext); return T_CONST_FLOAT; }
+[0-9]+([.][0-9]*)?|[.][0-9]+     { yylval.DOUBLE = std::stof(yytext); return T_CONST_DOUBLE; }
 
 [ \t\r\n]+		{;}
 
