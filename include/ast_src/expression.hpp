@@ -79,6 +79,9 @@ private:
     AST* right;
 
 public:
+    // Used for float to int conversion when binOp is a comparison
+    AST* internalDataType;
+
     AST_BinOp(Type _type, AST* _left, AST* _right);
 
     void generateFrames(Frame* _frame = nullptr) override;

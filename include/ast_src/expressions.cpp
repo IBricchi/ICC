@@ -140,13 +140,7 @@ AST_BinOp::AST_BinOp(AST_BinOp::Type _type, AST* _left, AST* _right):
     type(_type),
     left(_left),
     right(_right)
-{
-    // change type to int (result is boolean)
-    if (type == Type::EQUAL_EQUAL || type == Type::BANG_EQUAL || type == Type::LESS
-        || type == Type::LESS_EQUAL || type == Type::GREATER || type == Type::GREATER_EQUAL) {
-        this->setType("int");
-    }
-}
+{}
 
 void AST_BinOp::generateFrames(Frame* _frame){
     frame = _frame;
@@ -157,6 +151,15 @@ void AST_BinOp::generateFrames(Frame* _frame){
     }
     left->generateFrames(_frame);
     right->generateFrames(_frame);
+
+    // save internal type
+    this->internalDataType = this->getType();
+
+    // change type to int (result is boolean)
+    if (type == Type::EQUAL_EQUAL || type == Type::BANG_EQUAL || type == Type::LESS
+        || type == Type::LESS_EQUAL || type == Type::GREATER || type == Type::GREATER_EQUAL) {
+        this->setType("int");
+    }
 }
 
 AST* AST_BinOp::deepCopy(){
@@ -166,7 +169,7 @@ AST* AST_BinOp::deepCopy(){
 }
 
 void AST_BinOp::compile(std::ostream &assemblyOut) {
-    std::string varType = this->getType()->getTypeName();
+    std::string varType = this->internalDataType->getTypeName();
 
     std::string binLabel = generateUniqueLabel("binOp");
     assemblyOut << std::endl << "# start " << binLabel << std::endl; 
@@ -291,7 +294,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             }
             case Type::LOGIC_AND:
             {
-                assemblyOut << "# " << binLabel << " is ||" << std::endl;
+                assemblyOut << "# " << binLabel << " is &&" << std::endl;
                 std::string trueLabel = generateUniqueLabel("trueLabel");
                 std::string falseLabel = generateUniqueLabel("falseLabel");
                 std::string endLabel = generateUniqueLabel("end");
