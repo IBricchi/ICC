@@ -41,6 +41,8 @@ public:
     */
     virtual AST* deepCopy();
 
+    virtual void setType(std::string newType);
+
     /*
         These function is required whenever the type of a node is needed
 
