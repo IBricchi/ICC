@@ -60,6 +60,36 @@ AST* AST_ConstFloat::getType() {
     return new AST_Type(&typeName);
 }
 
+AST_ConstDouble::AST_ConstDouble(double _value):
+    value(_value)
+{}
+
+void AST_ConstDouble::generateFrames(Frame* _frame){
+    frame = _frame;
+}
+
+AST* AST_ConstDouble::deepCopy(){
+    return new AST_ConstDouble(value);
+}
+
+void AST_ConstDouble::compile(std::ostream &assemblyOut){
+    assemblyOut << std::endl << "# start const double " << value << std::endl;
+
+    // load constant into register
+    assemblyOut << "li.d $f4, " << value << std::endl;
+
+    // store constant to top of stack
+    assemblyOut << "s.d $f4, 0($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -8" << std::endl;
+
+    assemblyOut << "# end const double " << value << std::endl << std::endl;
+}
+
+AST* AST_ConstDouble::getType() {
+    std::string typeName = "double";
+    return new AST_Type(&typeName);
+}
+
 AST_Variable::AST_Variable(std::string* _name) :
     name(*_name)
 {}
@@ -94,6 +124,11 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
 
             // store value in memory
             assemblyOut << "s.s $f4, 0($sp)" << std::endl;
+        } else if (varType == "double") {
+            varToReg(assemblyOut, frame, "$f4", name);
+
+            // store value in memory
+            assemblyOut << "s.d $f4, 0($sp)" << std::endl;
         } else {
             varToReg(assemblyOut, frame, "$t0", name);
 
