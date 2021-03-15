@@ -16,6 +16,10 @@ AST* AST::deepCopy(){
     throw std::runtime_error("AST: deepCopy Not implemented by child class.\n");
 }
 
+void AST::setType(std::string newType) {
+    throw std::runtime_error("AST: setType Not implemented by child class.\n");
+}
+
 AST* AST::getType(){
     throw std::runtime_error("AST: getType Not implemented by child class.\n");
 }

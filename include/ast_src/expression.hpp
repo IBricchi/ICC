@@ -72,14 +72,22 @@ public:
     };
 private:
     Type type;
+
+    AST* dataType;
+
     AST* left;
     AST* right;
+
 public:
     AST_BinOp(Type _type, AST* _left, AST* _right);
 
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+
+    // Required when for example a float comparison produces an int (boolean)
+    void setType(std::string newType) override;
+
     AST* getType() override;
     int getBytes() override;
 

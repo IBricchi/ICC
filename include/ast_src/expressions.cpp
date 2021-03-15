@@ -140,10 +140,17 @@ AST_BinOp::AST_BinOp(AST_BinOp::Type _type, AST* _left, AST* _right):
     type(_type),
     left(_left),
     right(_right)
-{}
+{
+    // change type to int (result is boolean)
+    if (type == Type::EQUAL_EQUAL || type == Type::BANG_EQUAL || type == Type::LESS
+        || type == Type::LESS_EQUAL || type == Type::GREATER || type == Type::GREATER_EQUAL) {
+        this->setType("int");
+    }
+}
 
 void AST_BinOp::generateFrames(Frame* _frame){
     frame = _frame;
+
     // if type is array, remove left-assignment param from index expression
     if(type == Type::ARRAY){
         left->returnPtr = true;
@@ -185,6 +192,35 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
 
                 assemblyOut << "c.eq.s $f4, $f5" << std::endl;
                 assemblyOut << "bc1t " << trueLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << "addiu $t2, $0, 0" << std::endl;
+                assemblyOut << "j " << endLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << trueLabel << ":" << std::endl;
+                assemblyOut << "addiu $t2, $0, 1" << std::endl;
+
+                assemblyOut << endLabel << ":" << std::endl;
+
+                // store result in memory
+                assemblyOut << "sw $t2, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::BANG_EQUAL:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.s $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.s $f5, 8($sp)" << std::endl;
+                            
+                assemblyOut << "# " << binLabel << " is float !=" << std::endl;
+                std::string trueLabel = generateUniqueLabel("trueLabel");
+                std::string endLabel = generateUniqueLabel("end");
+
+                assemblyOut << "c.eq.s $f4, $f5" << std::endl;
+                assemblyOut << "bc1f " << trueLabel << std::endl;
                 assemblyOut << "nop" << std::endl;
 
                 assemblyOut << "addiu $t2, $0, 0" << std::endl;
@@ -579,14 +615,21 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
     assemblyOut << "# end " << binLabel << std::endl << std::endl; 
 }
 
+void AST_BinOp::setType(std::string newType) { 
+    this->dataType = new AST_Type(&newType);
+}
+
 AST* AST_BinOp::getType(){
-    // assuming left and right have same type
-    // we don't need to implement implicit casting so this should be fine
-    AST* left_type = left->getType();
-    if(type == Type::ARRAY){
-        left_type = left_type->getType();
+    if (dataType == nullptr) {
+        // assuming left and right have same type
+        // we don't need to implement implicit casting so this should be fine
+        AST* left_type = left->getType();
+        if(type == Type::ARRAY){
+            left_type = left_type->getType();
+        }
+        dataType = left_type;
     }
-    return left_type;
+    return this->dataType;
 }
 
 int AST_BinOp::getBytes(){
