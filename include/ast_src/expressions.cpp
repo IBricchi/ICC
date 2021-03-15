@@ -841,7 +841,7 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
             {
                 assemblyOut << "# " << unLabel << " is float -" << std::endl;
 
-                assemblyOut << "neg.s $f7, $f4" << std::endl;
+                assemblyOut << "neg.s $f6, $f4" << std::endl;
                 break;
             }
             default:
@@ -852,7 +852,27 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
         }
 
         // push onto operand stack
-        assemblyOut << "s.s $f7, 8($sp)" << std::endl;
+        assemblyOut << "s.s $f6, 8($sp)" << std::endl;
+    } else if (varType == "double") {
+        assemblyOut << "l.d $f4, 8($sp)" << std::endl;
+
+        switch (type) {
+            case Type::MINUS:
+            {
+                assemblyOut << "# " << unLabel << " is double -" << std::endl;
+
+                assemblyOut << "neg.d $f6, $f4" << std::endl;
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("AST_BinOp: Double Not Implemented Yet.\n");
+                break;
+            }
+        }
+
+        // push onto operand stack
+        assemblyOut << "s.d $f6, 8($sp)" << std::endl;
     } else {
         assemblyOut << "lw $t0, 8($sp)" << std::endl;
 
