@@ -276,11 +276,40 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "l.s $f4, 16($sp)" << std::endl;
                 assemblyOut << "l.s $f5, 8($sp)" << std::endl;
 
-                assemblyOut << "# " << binLabel << " is float <" << std::endl;
+                assemblyOut << "# " << binLabel << " is float <=" << std::endl;
                 std::string trueLabel = generateUniqueLabel("trueLabel");
                 std::string endLabel = generateUniqueLabel("end");
 
                 assemblyOut << "c.le.s $f4, $f5" << std::endl;
+                assemblyOut << "bc1t " << trueLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << "li $t2, 0" << std::endl;
+                assemblyOut << "j " << endLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << trueLabel << ":" << std::endl;
+                assemblyOut << "li $t2, 1" << std::endl;
+
+                assemblyOut << endLabel << ":" << std::endl;
+
+                // store result in memory
+                assemblyOut << "sw $t2, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::GREATER:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.s $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.s $f5, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is float <" << std::endl;
+                std::string trueLabel = generateUniqueLabel("trueLabel");
+                std::string endLabel = generateUniqueLabel("end");
+
+                assemblyOut << "c.lt.s $f5, $f4" << std::endl;
                 assemblyOut << "bc1t " << trueLabel << std::endl;
                 assemblyOut << "nop" << std::endl;
 
@@ -826,6 +855,14 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
     }
 
     assemblyOut << "# end " << unLabel << std::endl << std::endl; 
+}
+
+AST* AST_UnOp::getType(){
+    return this->operand->getType();
+}
+
+int AST_UnOp::getBytes(){
+    return this->operand->getBytes();
 }
 
 AST_UnOp::~AST_UnOp(){

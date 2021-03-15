@@ -117,5 +117,8 @@ public:
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
+    AST* getType() override;
+    int getBytes() override;
+
     ~AST_UnOp();
 };
