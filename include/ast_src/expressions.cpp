@@ -305,7 +305,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "l.s $f4, 16($sp)" << std::endl;
                 assemblyOut << "l.s $f5, 8($sp)" << std::endl;
 
-                assemblyOut << "# " << binLabel << " is float <" << std::endl;
+                assemblyOut << "# " << binLabel << " is float >" << std::endl;
                 std::string trueLabel = generateUniqueLabel("trueLabel");
                 std::string endLabel = generateUniqueLabel("end");
 
@@ -334,7 +334,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "l.s $f4, 16($sp)" << std::endl;
                 assemblyOut << "l.s $f5, 8($sp)" << std::endl;
 
-                assemblyOut << "# " << binLabel << " is float <=" << std::endl;
+                assemblyOut << "# " << binLabel << " is float >=" << std::endl;
                 std::string trueLabel = generateUniqueLabel("trueLabel");
                 std::string endLabel = generateUniqueLabel("end");
 
@@ -365,6 +365,21 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
 
                 assemblyOut << "# " << binLabel << " is float +" << std::endl;
                 assemblyOut << "add.s $f6, $f4, $f5" << std::endl;
+
+                // store result in memory
+                assemblyOut << "s.s $f6, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::MINUS:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.s $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.s $f5, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is float -" << std::endl;
+                assemblyOut << "sub.s $f6, $f4, $f5" << std::endl;
 
                 // store result in memory
                 assemblyOut << "s.s $f6, 16($sp)" << std::endl;
