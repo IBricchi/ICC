@@ -385,6 +385,36 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "s.s $f6, 16($sp)" << std::endl;
                 break;
             }
+            case Type::STAR:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.s $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.s $f5, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is float *" << std::endl;
+                assemblyOut << "mul.s $f6, $f4, $f5" << std::endl;
+
+                // store result in memory
+                assemblyOut << "s.s $f6, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::SLASH_F:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.s $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.s $f5, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is float /" << std::endl;
+                assemblyOut << "div.s $f6, $f4, $f5" << std::endl;
+
+                // store result in memory
+                assemblyOut << "s.s $f6, 16($sp)" << std::endl;
+                break;
+            }
             default:
             {
                 throw std::runtime_error("AST_BinOp: Float Not Implemented Yet.\n");
