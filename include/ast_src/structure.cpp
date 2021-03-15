@@ -194,6 +194,11 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
             assemblyOut << "addiu $sp, $sp, 8" << std::endl;
 
             regToVar(assemblyOut, frame, "$f4", name);
+        } else if (varType == "double") {
+            assemblyOut << "l.d $f4, 8($sp)" << std::endl;
+            assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+
+            regToVar(assemblyOut, frame, "$f4", name);
         } else {
             assemblyOut << "lw $t0, 8($sp)" << std::endl;
             assemblyOut << "addiu $sp, $sp, 8" << std::endl;

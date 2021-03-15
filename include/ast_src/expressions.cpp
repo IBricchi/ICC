@@ -39,6 +39,12 @@ void AST_Assign::compile(std::ostream &assemblyOut){
         
         // assign memory address
         assemblyOut << "s.s $f4, 0($t1)" << std::endl;
+    } else if (varType == "double") {
+        // load result of expression
+        assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+        
+        // assign memory address
+        assemblyOut << "s.d $f4, 0($t1)" << std::endl;
     } else {
         // load result of expression
         assemblyOut << "lw $t0, 16($sp)" << std::endl;
@@ -418,6 +424,250 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             default:
             {
                 throw std::runtime_error("AST_BinOp: Float Not Implemented Yet.\n");
+                break;
+            }
+        }
+    } else if (varType == "double") {
+        // storing result in memory is done in every case statement because results are
+        // int (boolean) or double
+        switch (type) {
+            case Type::EQUAL_EQUAL:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+                            
+                assemblyOut << "# " << binLabel << " is double ==" << std::endl;
+                std::string trueLabel = generateUniqueLabel("trueLabel");
+                std::string endLabel = generateUniqueLabel("end");
+
+                assemblyOut << "c.eq.d $f4, $f6" << std::endl;
+                assemblyOut << "bc1t " << trueLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << "addiu $t2, $0, 0" << std::endl;
+                assemblyOut << "j " << endLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << trueLabel << ":" << std::endl;
+                assemblyOut << "addiu $t2, $0, 1" << std::endl;
+
+                assemblyOut << endLabel << ":" << std::endl;
+
+                // store result in memory
+                assemblyOut << "sw $t2, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::BANG_EQUAL:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+                            
+                assemblyOut << "# " << binLabel << " is double !=" << std::endl;
+                std::string trueLabel = generateUniqueLabel("trueLabel");
+                std::string endLabel = generateUniqueLabel("end");
+
+                assemblyOut << "c.eq.d $f4, $f6" << std::endl;
+                assemblyOut << "bc1f " << trueLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << "addiu $t2, $0, 0" << std::endl;
+                assemblyOut << "j " << endLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << trueLabel << ":" << std::endl;
+                assemblyOut << "addiu $t2, $0, 1" << std::endl;
+
+                assemblyOut << endLabel << ":" << std::endl;
+
+                // store result in memory
+                assemblyOut << "sw $t2, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::LESS:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is double <" << std::endl;
+                std::string trueLabel = generateUniqueLabel("trueLabel");
+                std::string endLabel = generateUniqueLabel("end");
+
+                assemblyOut << "c.lt.d $f4, $f6" << std::endl;
+                assemblyOut << "bc1t " << trueLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << "li $t2, 0" << std::endl;
+                assemblyOut << "j " << endLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << trueLabel << ":" << std::endl;
+                assemblyOut << "li $t2, 1" << std::endl;
+
+                assemblyOut << endLabel << ":" << std::endl;
+
+                // store result in memory
+                assemblyOut << "sw $t2, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::LESS_EQUAL:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is double <=" << std::endl;
+                std::string trueLabel = generateUniqueLabel("trueLabel");
+                std::string endLabel = generateUniqueLabel("end");
+
+                assemblyOut << "c.le.d $f4, $f6" << std::endl;
+                assemblyOut << "bc1t " << trueLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << "li $t2, 0" << std::endl;
+                assemblyOut << "j " << endLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << trueLabel << ":" << std::endl;
+                assemblyOut << "li $t2, 1" << std::endl;
+
+                assemblyOut << endLabel << ":" << std::endl;
+
+                // store result in memory
+                assemblyOut << "sw $t2, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::GREATER:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is double >" << std::endl;
+                std::string trueLabel = generateUniqueLabel("trueLabel");
+                std::string endLabel = generateUniqueLabel("end");
+
+                assemblyOut << "c.lt.d $f6, $f4" << std::endl;
+                assemblyOut << "bc1t " << trueLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << "li $t2, 0" << std::endl;
+                assemblyOut << "j " << endLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << trueLabel << ":" << std::endl;
+                assemblyOut << "li $t2, 1" << std::endl;
+
+                assemblyOut << endLabel << ":" << std::endl;
+
+                // store result in memory
+                assemblyOut << "sw $t2, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::GREATER_EQUAL:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is double >=" << std::endl;
+                std::string trueLabel = generateUniqueLabel("trueLabel");
+                std::string endLabel = generateUniqueLabel("end");
+
+                assemblyOut << "c.le.d $f6, $f4" << std::endl;
+                assemblyOut << "bc1t " << trueLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << "li $t2, 0" << std::endl;
+                assemblyOut << "j " << endLabel << std::endl;
+                assemblyOut << "nop" << std::endl;
+
+                assemblyOut << trueLabel << ":" << std::endl;
+                assemblyOut << "li $t2, 1" << std::endl;
+
+                assemblyOut << endLabel << ":" << std::endl;
+
+                // store result in memory
+                assemblyOut << "sw $t2, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::PLUS:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is double +" << std::endl;
+                assemblyOut << "add.d $f8, $f4, $f6" << std::endl;
+
+                // store result in memory
+                assemblyOut << "s.d $f8, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::MINUS:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is double -" << std::endl;
+                assemblyOut << "sub.d $f8, $f4, $f6" << std::endl;
+
+                // store result in memory
+                assemblyOut << "s.d $f8, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::STAR:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is double *" << std::endl;
+                assemblyOut << "mul.d $f8, $f4, $f6" << std::endl;
+
+                // store result in memory
+                assemblyOut << "s.d $f8, 16($sp)" << std::endl;
+                break;
+            }
+            case Type::SLASH_F:
+            {
+                // load result of right expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "l.d $f4, 16($sp)" << std::endl;
+                assemblyOut << "l.d $f6, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " is double /" << std::endl;
+                assemblyOut << "div.d $f8, $f4, $f6" << std::endl;
+
+                // store result in memory
+                assemblyOut << "s.d $f8, 16($sp)" << std::endl;
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("AST_BinOp: Double Not Implemented Yet.\n");
                 break;
             }
         }
