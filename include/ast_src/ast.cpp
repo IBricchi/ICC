@@ -21,7 +21,9 @@ void AST::setType(std::string newType) {
 }
 
 AST* AST::getType(){
-    throw std::runtime_error("AST: getType Not implemented by child class.\n");
+    std::cerr << "AST::getType: Not implemented by child class: Returning default type int" << std::endl;
+    std::string typeName = "int";
+    return new AST_Type(&typeName);
 }
 
 int AST::getBytes(){
@@ -29,7 +31,8 @@ int AST::getBytes(){
 }
 
 std::string AST::getTypeName(){
-    throw std::runtime_error("AST: getTypeName Not implemented by child class.\n");
+    std::cerr << "AST::getTypeName: Not implemented by child class: Returning default type int" << std::endl;
+    return "int";
 }
 
 AST::~AST() {
@@ -66,10 +69,12 @@ std::pair<int, int> Frame::getVarAddress(const std::string &variableName) {
 
 AST* Frame::getVarType(const std::string& variableName) const{
     auto it = variableType.find(variableName);
-    if(it != variableType.end())
+    if(it != variableType.end()) {
         return it->second;
-    else
+    }
+    else {
         return parentFrame->getVarType(variableName);
+    }
 }
 
 void Frame::addVariable(const std::string &variableName, AST* type, int byteSize) {
