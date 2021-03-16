@@ -157,15 +157,6 @@ void AST_BinOp::generateFrames(Frame* _frame){
     }
     left->generateFrames(_frame);
     right->generateFrames(_frame);
-
-    // save internal type
-    this->internalDataType = this->getType();
-
-    // change type to int (result is boolean)
-    if (type == Type::EQUAL_EQUAL || type == Type::BANG_EQUAL || type == Type::LESS
-        || type == Type::LESS_EQUAL || type == Type::GREATER || type == Type::GREATER_EQUAL) {
-        this->setType("int");
-    }
 }
 
 AST* AST_BinOp::deepCopy(){
@@ -175,6 +166,7 @@ AST* AST_BinOp::deepCopy(){
 }
 
 void AST_BinOp::compile(std::ostream &assemblyOut) {
+    this->getType(); // ensure that interalDataType is initialised
     std::string varType = this->internalDataType->getTypeName();
 
     std::string binLabel = generateUniqueLabel("binOp");
@@ -1034,14 +1026,29 @@ void AST_BinOp::setType(std::string newType) {
 }
 
 AST* AST_BinOp::getType(){
-    if (dataType == nullptr) {
+    if (this->internalDataType == nullptr) {
+        // save internal type
+        AST* left_type = left->getType();
+        if(type == Type::ARRAY){
+            left_type = left_type->getType();
+        }
+        this->internalDataType = left_type;
+
+        // change type to int (result is boolean)
+        if (type == Type::EQUAL_EQUAL || type == Type::BANG_EQUAL || type == Type::LESS
+            || type == Type::LESS_EQUAL || type == Type::GREATER || type == Type::GREATER_EQUAL) {
+            this->setType("int");
+        }
+    }
+
+    if (this->dataType == nullptr) {
         // assuming left and right have same type
         // we don't need to implement implicit casting so this should be fine
         AST* left_type = left->getType();
         if(type == Type::ARRAY){
             left_type = left_type->getType();
         }
-        dataType = left_type;
+        this->dataType = left_type;
     }
     return this->dataType;
 }

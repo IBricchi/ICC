@@ -170,4 +170,6 @@ public:
     std::pair<std::string, int> getEndLoopLabelName(std::ostream &assemblyOut = std::cout);
 };
 
+// Need to come at end of file as dependent on declarations above
 #include "util.hpp"
+#include "primitive.hpp"
