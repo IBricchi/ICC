@@ -122,7 +122,7 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     
     // remove arguments from stack
     if(args  != nullptr){
-        assemblyOut << "addiu $sp, $sp, " << 4 * (args->size()) << std::endl;
+        assemblyOut << "addiu $sp, $sp, " << 4 * (args->size() - (args->size()%2==0)) << std::endl;
     }
 
     assemblyOut << "sw $v0, 0($sp)" << std::endl;
