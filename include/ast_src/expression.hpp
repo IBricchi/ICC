@@ -121,3 +121,22 @@ public:
 
     ~AST_UnOp();
 };
+
+class AST_Sizeof
+    : public AST
+{
+private:
+    // One of AST_Type, AST_ArrayType, AST_Variable
+    AST* operand;
+
+public:
+    AST_Sizeof(AST* _operand);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
+
+    AST* getType() override;
+    int getBytes() override;
+
+    ~AST_Sizeof();
+};

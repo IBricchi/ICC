@@ -42,7 +42,8 @@
 %token <DOUBLE> T_CONST_DOUBLE
 %token <CHAR> T_CONST_CHAR
 
-%token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK T_CONTINUE T_CASE T_DEFAULT T_ENUM
+%token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK 
+%token T_CONTINUE T_CASE T_DEFAULT T_ENUM T_SIZEOF
 
 %token T_COMMA T_SEMI_COLON T_COLON
 %token T_BRACK_L T_BRACK_R
@@ -71,7 +72,7 @@
 %type <NODE> IF_STMT WHILE_STMT FOR_STMT SWITCH_STMT CASE_STMT BLOCK // Statements
 %type <NODE> ENUM_DECLARATION // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
-%type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL PRIMARY // Expressions
+%type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL SIZEOF PRIMARY // Expressions
 
 %type <EN> ENUM
 %type <EL> ENUM_LIST
@@ -143,6 +144,10 @@ SQUARE_CHAIN : T_SQUARE_L T_CONST_INT T_SQUARE_R              { $$ = new std::ve
                      $$ = $1;
                 }
              ;
+
+SIZEOF : T_SIZEOF T_BRACK_L TYPE T_BRACK_R    { $$ = new AST_Sizeof($3); }
+       | T_SIZEOF T_BRACK_L PRIMARY T_BRACK_R { $$ = new AST_Sizeof($3); } // PRIMARY must be a variable
+       ;
 
 TYPE : T_TYPE { $$ = new AST_Type($1); }
 
@@ -404,6 +409,7 @@ PRIMARY : T_CONST_INT                    { $$ = new AST_ConstInt($1); }
         | T_CONST_DOUBLE                 { $$ = new AST_ConstDouble($1); }
         | T_CONST_CHAR                   { $$ = new AST_ConstChar($1); }
         | T_IDENTIFIER                   { $$ = new AST_Variable($1); }
+        | SIZEOF                         { $$ = $1; }
         | T_BRACK_L EXPRESSION T_BRACK_R { $$ = $2; }
         ;
 
