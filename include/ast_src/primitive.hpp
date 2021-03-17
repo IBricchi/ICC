@@ -47,6 +47,20 @@ public:
     AST* getType() override;
 };
 
+class AST_ConstChar
+    : public AST
+{
+private:
+    char value;
+public:
+    AST_ConstChar(char _value);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+};
+
 /*
    I made the change you suggested by adding an assignment AST node
    This node will be created if an identifier acting as a variable is

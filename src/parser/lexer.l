@@ -91,7 +91,13 @@ std::unordered_set<std::string> lexer_types = {
     return T_IDENTIFIER;
 }
 
-\'.\' { yylval.CHAR = *yytext; return T_COST_CHAR; }
+\'.\' {
+  // Remove single quotes
+  yytext++;
+  yytext[strlen(yytext)-1] = 0;
+  yylval.CHAR = *yytext;
+  return T_CONST_CHAR;
+}
 
 [0-9]+                           { yylval.INT = strtol(yytext, 0, 10); return T_CONST_INT; }
 ([0-9]+([.][0-9]*)?|[.][0-9]+)f  { yylval.FLOAT = std::stof(yytext); return T_CONST_FLOAT; }
