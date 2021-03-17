@@ -83,6 +83,20 @@ void Frame::addVariable(const std::string &variableName, AST* type, int byteSize
     memOcc += byteSize + byteSize%8;
 }
 
+void Frame::addFn(const std::string &fnName, AST* type){
+    fnType[fnName] = type;
+}
+
+AST* Frame::getFnType(const std::string &fnName){
+    auto it = fnType.find(fnName);
+    if(it != fnType.end()) {
+        return it->second;
+    }
+    else {
+        return parentFrame->getFnType(fnName);
+    }
+}
+
 int Frame::getStoreSize() const {
     return storeSize;
 }

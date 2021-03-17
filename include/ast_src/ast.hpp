@@ -68,6 +68,7 @@ private:
     */ 
     std::unordered_map<std::string, int> variableBindings;
     std::unordered_map<std::string, AST*> variableType;
+    std::unordered_map<std::string, AST*> fnType;
 
     // information about how much memory is needed to preserve previous stack
     // currently only stores state of $fp and $31
@@ -115,6 +116,12 @@ public:
         If the variable name already exists, it will be overriden.
     */
     void addVariable(const std::string &variableName, AST* type, int byteSize);
+
+    /*
+        Same as add variable but for functions
+    */
+    void addFn(const std::string &fnName, AST* type);
+    AST* getFnType(const std::string& fnName);
 
     /*
         Used for moving '$sp' pointer when creating new stack frame.
