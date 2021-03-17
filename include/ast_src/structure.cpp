@@ -47,7 +47,7 @@ void AST_FunDeclaration::generateFrames(Frame* _frame){
     // will handle generating the new frame
     if (body != nullptr) {
         body->generateFrames(_frame);
-        body->frame->isFun = true;
+        body->frame->fn = this;
         // declare parameters as variables in the frame
         if(params != nullptr)
             for(std::pair<AST*,std::string> param: *params){
@@ -144,6 +144,18 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         assemblyOut << ".size	" << name << ", .-" << name << std::endl;
     }
     assemblyOut << "# end function declaration for " << name << std::endl << std::endl;
+}
+
+AST* AST_FunDeclaration::getType(){
+    return type;
+}
+
+int AST_FunDeclaration::getBytes(){
+    return type->getBytes();
+}
+
+std::string AST_FunDeclaration::getTypeName(){
+    return type->getTypeName();
 }
 
 AST_FunDeclaration::~AST_FunDeclaration() {

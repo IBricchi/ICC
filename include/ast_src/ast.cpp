@@ -118,14 +118,14 @@ std::map<std::string, int> Frame::getCaseLabelValueMapping() const {
     return caseLabelValueMapping;
 }
 
-int Frame::getDistanceToFun(){
+std::pair<int, AST*> Frame::getFnInfo(){
     int i = 0;
     Frame* frame = this;
-    while(!frame->isFun){
+    while(frame->fn == nullptr){
         i++;
         frame = frame->parentFrame;
     }
-    return i;
+    return {i, frame->fn};
 }
 
 std::pair<std::string, int> Frame::getStartLoopLabelName(std::ostream &assemblyOut) {

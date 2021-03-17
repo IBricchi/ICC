@@ -152,8 +152,8 @@ public:
         Expects there to be a function
         Does not do error checking
     */
-    bool isFun = false;
-    int getDistanceToFun();
+    AST* fn;
+    std::pair<int, AST*> getFnInfo();
 
     /* 
         Used for 'break' and 'continue'.
