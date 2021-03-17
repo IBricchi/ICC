@@ -196,7 +196,7 @@ AST_Type::AST_Type(std::string* _name) :
 
 std::unordered_map<std::string, int> AST_Type::size_of_type = {
     {"int", 4},
-    {"char", 4},
+    {"char", 1},
     {"float", 4},
     {"double", 8}
 };

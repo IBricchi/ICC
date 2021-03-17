@@ -33,6 +33,8 @@ std::unordered_set<std::string> lexer_types = {
 "case"     { return T_CASE; }
 "default"  { return T_DEFAULT; }
 "enum"     { return T_ENUM; }
+"enum"     { return T_ENUM; }
+"sizeof"   { return T_SIZEOF; }
 
 ","       { return T_COMMA; }
 ";"       { return T_SEMI_COLON; }
