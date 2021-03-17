@@ -125,10 +125,26 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
         assemblyOut << "addiu $sp, $sp, " << 4 * (args->size() - (args->size()%2==0)) << std::endl;
     }
 
-    assemblyOut << "sw $v0, 0($sp)" << std::endl;
+    std::string typeName = getTypeName();
+    if(typeName == "float")
+        assemblyOut << "s.s $f0, 0($sp)" << std::endl;
+    else
+        assemblyOut << "sw $v0, 0($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
     assemblyOut << "# end function call " << functionName << std::endl << std::endl;
+}
+
+AST* AST_FunctionCall::getType(){
+    return frame->getFnType(functionName);
+}
+
+int AST_FunctionCall::getBytes(){
+    return getType()->getBytes();
+}
+
+std::string AST_FunctionCall::getTypeName(){
+    return frame->getFnType(functionName)->getTypeName();
 }
 
 AST_FunctionCall::~AST_FunctionCall() {
