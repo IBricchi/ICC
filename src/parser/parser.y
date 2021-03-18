@@ -3,8 +3,12 @@
   #include <cassert>
   #include <vector>
   #include <utility>
+  #include <unordered_map>
+  #include <unordered_set>
 
   extern AST *g_root; // A way of getting the AST out
+
+  extern std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types;
 
   //! This is to fix problems when generating C++
   // We are declaring the functions provided by Flex, so
@@ -43,7 +47,7 @@
 %token <CHAR> T_CONST_CHAR
 
 %token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK 
-%token T_CONTINUE T_CASE T_DEFAULT T_ENUM T_SIZEOF
+%token T_CONTINUE T_CASE T_DEFAULT T_ENUM T_SIZEOF T_TYPEDEF
 
 %token T_COMMA T_SEMI_COLON T_COLON
 %token T_BRACK_L T_BRACK_R
@@ -67,7 +71,7 @@
 %token T_BANG T_NOT
 
 %type <NODE> PROGRAM SEQUENCE DECLARATION FUN_DECLARATION VAR_DECLARATION // Structures
-%type <NODE> TYPE // helper for anything with type
+%type <NODE> TYPE TYPEDEF // helper for anything with type
 %type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT // Statements
 %type <NODE> IF_STMT WHILE_STMT FOR_STMT SWITCH_STMT CASE_STMT BLOCK // Statements
 %type <NODE> ENUM_DECLARATION // Statements
@@ -103,6 +107,7 @@ SEQUENCE : DECLARATION          { $$ = $1; }
 DECLARATION : FUN_DECLARATION  { $$ = $1; }
             | VAR_DECLARATION  { $$ = $1; }
             | ENUM_DECLARATION { $$ = $1; }
+            | TYPEDEF          { $$ = $1; }
             | STATEMENT        { $$ = $1; }
             ;
 
@@ -149,7 +154,22 @@ SIZEOF : T_SIZEOF T_BRACK_L TYPE T_BRACK_R    { $$ = new AST_Sizeof($3); }
        | T_SIZEOF T_BRACK_L PRIMARY T_BRACK_R { $$ = new AST_Sizeof($3); } // PRIMARY must be a variable
        ;
 
+TYPEDEF : T_TYPEDEF T_TYPE T_IDENTIFIER T_SEMI_COLON {
+                        // Using the lexer hack
+                        auto it = lexer_types.find(*$2);
+                        if(it != lexer_types.end()) {
+                                it->second.insert(*$3);
+                        } else {
+                                std::cerr << "Failed to find typedef type in lexer_types" << std::endl;
+                        }
+                        
+                        // Assign something that has no effect
+                        $$ = new AST_ConstInt(0);
+                }
+        ;
+
 TYPE : T_TYPE { $$ = new AST_Type($1); }
+     ;
 
 ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLON {
                                 int count = 0;

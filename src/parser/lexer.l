@@ -7,13 +7,15 @@ extern "C" int fileno(FILE *stream);
 
 #include "parser.tab.hpp"
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 
-std::unordered_set<std::string> lexer_types = {
-  "int",
-  "char",
-  "float",
-  "double"
+// map from type to set of aliases
+std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types = {
+  {"int",{}},
+  {"char",{}},
+  {"float",{}},
+  {"double",{}}
 };
 
 %}
@@ -35,6 +37,7 @@ std::unordered_set<std::string> lexer_types = {
 "enum"     { return T_ENUM; }
 "enum"     { return T_ENUM; }
 "sizeof"   { return T_SIZEOF; }
+"typedef"  { return T_TYPEDEF; }
 
 ","       { return T_COMMA; }
 ";"       { return T_SEMI_COLON; }
@@ -87,10 +90,15 @@ std::unordered_set<std::string> lexer_types = {
 [a-zA-Z]([a-zA-Z1-9_])* {
   std::string* s = new std::string(yytext);
   yylval.STR = s;
-  if(lexer_types.find(*s) != lexer_types.end())
-    return T_TYPE;
-  else
-    return T_IDENTIFIER;
+  for (auto el : lexer_types) {
+    if (el.first == *s) {
+      return T_TYPE;
+    } else if (el.second.find(*s) != el.second.end()) {
+      yylval.STR = new std::string(el.first);
+      return T_TYPE;
+    }
+  }
+  return T_IDENTIFIER;
 }
 
 \'.\' {
