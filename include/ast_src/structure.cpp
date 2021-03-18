@@ -110,7 +110,7 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
             bool loadFromReg = true;
             int availableAReg = 0;
             int availableFReg = 12;
-            int memOffset = 0;
+            int memOffset = 8;
             // i is position in vector, arg_i is position in argument order
             for(int i = params->size() - 1, arg_i = 0; arg_i < params->size(); i--, arg_i++){
                 // parameterInfo
@@ -134,10 +134,14 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
                             // update state
                             availableFReg += 2;
                             availableAReg++;
+                            if(paramTypeName == "double")
+                                availableAReg++;
                             memOffset += 4;
 
                             if(availableFReg == 16)
                                 allowFReg = false;
+                            if(availableAReg == 4)
+                                loadFromReg = false;
                         }
                         else{
                             assemblyOut << "# (reading a " << paramTypeName << " type from a reg)" << std::endl;
@@ -201,6 +205,10 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
                         memOffset += 4;
                     }
                     else if(paramTypeName == "double"){
+                        if(memOffset % 8){
+                            memOffset += 4;
+                        }
+
                         assemblyOut << "# (reading a double type from memory)" << std::endl;
                         assemblyOut << "l.d $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
                         regToVar(assemblyOut, body->frame, "$f4", param.second);

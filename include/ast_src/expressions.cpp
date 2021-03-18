@@ -149,10 +149,14 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
                         // update state
                         availableFReg += 2;
                         availableAReg++;
+                        if(paramTypeName == "double")
+                            availableAReg++;
                         memOffset += 4;
 
                         if(availableFReg == 16)
                             allowFReg = false;
+                        if(availableAReg == 4)
+                            loadFromReg = false;
                     }
                     else{
                         assemblyOut << "# (storing a " << paramTypeName << " type to a reg)" << std::endl;
