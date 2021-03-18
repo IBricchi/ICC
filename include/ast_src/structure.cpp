@@ -175,7 +175,11 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
                 else{
                     if(paramTypeName == "float"){
                         assemblyOut << "# (reading a floating type from memory)" << std::endl;
+                        assemblyOut << "l.s $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
+                        regToVar(assemblyOut, body->frame, "$f4", param.second);
 
+                        // update state
+                        memOffset += 4;
                     }
                     else{
                         assemblyOut << "# (reading a integer type from memory)" << std::endl;
