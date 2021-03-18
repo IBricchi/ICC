@@ -1409,6 +1409,11 @@ void AST_Sizeof::generateFrames(Frame* _frame) {
 void AST_Sizeof::compile(std::ostream &assemblyOut) {
     int size = operand->getBytes();
 
+    // char is treated as having the same size as int internally 
+    if (operand->getTypeName() == "char") {
+        size = 1;
+    }
+
     assemblyOut << std::endl << "# start sizeof" << std::endl;
     
     // load size into register

@@ -101,7 +101,7 @@ std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types = {
   return T_IDENTIFIER;
 }
 
-\'.\' {
+\'.{1,2}\' {
   // Remove single quotes
   yytext++;
   yytext[strlen(yytext)-1] = 0;
