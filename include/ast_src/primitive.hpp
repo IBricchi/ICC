@@ -50,13 +50,20 @@ public:
     std::string getTypeName() override;
 };
 
-/*
-   I made the change you suggested by adding an assignment AST node
-   This node will be created if an identifier acting as a variable is
-   detected in the parser
+class AST_ConstChar
+    : public AST
+{
+private:
+    char value;
+public:
+    AST_ConstChar(char _value);
 
-   I cahnged it to use a string as the name instead of an AST node
-*/
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+};
+
 class AST_Variable
     : public AST
 {
@@ -77,7 +84,6 @@ public:
         reg is the register that contains the new value.
         It should contian $.
         Example: If register is $v0, then reg = "$v0".
-        - I made the change so it was compatible with the helper function for saving and reading variables
     */
     void updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) override;
 };
@@ -97,8 +103,6 @@ public:
     void compile(std::ostream &assemblyOut) override;
     int getBytes() override;
     std::string getTypeName() override;
-
-    // dont need destructor as it holds no pointers
 };
 
 class AST_ArrayType

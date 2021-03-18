@@ -1396,3 +1396,40 @@ int AST_UnOp::getBytes(){
 AST_UnOp::~AST_UnOp(){
     delete operand;
 }
+
+AST_Sizeof::AST_Sizeof(AST* _operand) :
+    operand(_operand)
+{}
+
+void AST_Sizeof::generateFrames(Frame* _frame) {
+    frame = _frame;
+    operand->generateFrames(_frame);
+}
+
+void AST_Sizeof::compile(std::ostream &assemblyOut) {
+    int size = operand->getBytes();
+
+    assemblyOut << std::endl << "# start sizeof" << std::endl;
+    
+    // load size into register
+    assemblyOut << "addiu $t0, $0, " << size << std::endl;
+
+    // store size to top of stack
+    assemblyOut << "sw $t0, 0($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -8" << std::endl;
+
+    assemblyOut << "# end sizeof" << std::endl << std::endl;
+}
+
+AST* AST_Sizeof::getType() {
+    std::string typeName = "int";
+    return new AST_Type(&typeName);
+}
+
+int AST_Sizeof::getBytes() {
+    return 4;
+}
+
+AST_Sizeof::~AST_Sizeof() {
+    delete operand;
+}

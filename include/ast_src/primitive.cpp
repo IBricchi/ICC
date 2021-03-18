@@ -102,6 +102,36 @@ std::string AST_ConstDouble::getTypeName(){
     return "double";
 }
 
+AST_ConstChar::AST_ConstChar(char _value):
+    value(_value)
+{}
+
+void AST_ConstChar::generateFrames(Frame* _frame){
+    frame = _frame;
+}
+
+AST* AST_ConstChar::deepCopy(){
+    return new AST_ConstChar(value);
+}
+
+void AST_ConstChar::compile(std::ostream &assemblyOut){
+    assemblyOut << std::endl << "# start const char " << value << " (" << (int)value << ")" << std::endl;
+    
+    // load constant into register
+    assemblyOut << "li $t0, " << (int)value << std::endl;
+
+    // store constant to top of stack
+    assemblyOut << "sw $t0, 0($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -8" << std::endl;
+
+    assemblyOut << "# end const char " << value << " (" << (int)value << ")" << std::endl << std::endl;
+}
+
+AST* AST_ConstChar::getType() {
+    std::string typeName = "char";
+    return new AST_Type(&typeName);
+}
+
 AST_Variable::AST_Variable(std::string* _name) :
     name(*_name)
 {}
@@ -182,7 +212,7 @@ AST_Type::AST_Type(std::string* _name) :
 
 std::unordered_map<std::string, int> AST_Type::size_of_type = {
     {"int", 4},
-    {"char", 4},
+    {"char", 1},
     {"float", 4},
     {"double", 8}
 };

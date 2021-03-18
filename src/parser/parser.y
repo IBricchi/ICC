@@ -3,8 +3,12 @@
   #include <cassert>
   #include <vector>
   #include <utility>
+  #include <unordered_map>
+  #include <unordered_set>
 
   extern AST *g_root; // A way of getting the AST out
+
+  extern std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types;
 
   //! This is to fix problems when generating C++
   // We are declaring the functions provided by Flex, so
@@ -24,6 +28,7 @@
   int INT;
   float FLOAT;
   double DOUBLE;
+  char CHAR;
   std::string *STR;
   std::vector<std::pair<AST*,std::string>> *FDP; // function declaration parameters
   std::vector<AST*> *FCP; // function call parameters
@@ -39,8 +44,10 @@
 %token <INT> T_CONST_INT
 %token <FLOAT> T_CONST_FLOAT
 %token <DOUBLE> T_CONST_DOUBLE
+%token <CHAR> T_CONST_CHAR
 
-%token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK T_CONTINUE T_CASE T_DEFAULT T_ENUM
+%token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK 
+%token T_CONTINUE T_CASE T_DEFAULT T_ENUM T_SIZEOF T_TYPEDEF
 
 %token T_COMMA T_SEMI_COLON T_COLON
 %token T_BRACK_L T_BRACK_R
@@ -64,12 +71,12 @@
 %token T_BANG T_NOT
 
 %type <NODE> PROGRAM SEQUENCE DECLARATION FUN_DECLARATION VAR_DECLARATION // Structures
-%type <NODE> TYPE // helper for anything with type
+%type <NODE> TYPE TYPEDEF // helper for anything with type
 %type <NODE> STATEMENT EXPRESSION_STMT RETURN_STMT BREAK_STMT CONTINUE_STMT // Statements
 %type <NODE> IF_STMT WHILE_STMT FOR_STMT SWITCH_STMT CASE_STMT BLOCK // Statements
 %type <NODE> ENUM_DECLARATION // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
-%type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL PRIMARY // Expressions
+%type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL SIZEOF PRIMARY // Expressions
 
 %type <EN> ENUM
 %type <EL> ENUM_LIST
@@ -100,6 +107,7 @@ SEQUENCE : DECLARATION          { $$ = $1; }
 DECLARATION : FUN_DECLARATION  { $$ = $1; }
             | VAR_DECLARATION  { $$ = $1; }
             | ENUM_DECLARATION { $$ = $1; }
+            | TYPEDEF          { $$ = $1; }
             | STATEMENT        { $$ = $1; }
             ;
 
@@ -142,7 +150,26 @@ SQUARE_CHAIN : T_SQUARE_L T_CONST_INT T_SQUARE_R              { $$ = new std::ve
                 }
              ;
 
+SIZEOF : T_SIZEOF T_BRACK_L TYPE T_BRACK_R    { $$ = new AST_Sizeof($3); }
+       | T_SIZEOF T_BRACK_L PRIMARY T_BRACK_R { $$ = new AST_Sizeof($3); } // PRIMARY must be a variable
+       ;
+
+TYPEDEF : T_TYPEDEF T_TYPE T_IDENTIFIER T_SEMI_COLON {
+                        // Using the lexer hack
+                        auto it = lexer_types.find(*$2);
+                        if(it != lexer_types.end()) {
+                                it->second.insert(*$3);
+                        } else {
+                                std::cerr << "Failed to find typedef type in lexer_types" << std::endl;
+                        }
+                        
+                        // Assign something that has no effect
+                        $$ = new AST_ConstInt(0);
+                }
+        ;
+
 TYPE : T_TYPE { $$ = new AST_Type($1); }
+     ;
 
 ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLON {
                                 int count = 0;
@@ -400,7 +427,9 @@ FUN_CALL_PARAMS : T_COMMA EXPRESSION                 { $$ = new std::vector<AST*
 PRIMARY : T_CONST_INT                    { $$ = new AST_ConstInt($1); }
         | T_CONST_FLOAT                  { $$ = new AST_ConstFloat($1); }
         | T_CONST_DOUBLE                 { $$ = new AST_ConstDouble($1); }
+        | T_CONST_CHAR                   { $$ = new AST_ConstChar($1); }
         | T_IDENTIFIER                   { $$ = new AST_Variable($1); }
+        | SIZEOF                         { $$ = $1; }
         | T_BRACK_L EXPRESSION T_BRACK_R { $$ = $2; }
         ;
 
