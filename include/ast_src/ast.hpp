@@ -68,6 +68,7 @@ private:
     */ 
     std::unordered_map<std::string, int> variableBindings;
     std::unordered_map<std::string, AST*> variableType;
+    std::unordered_map<std::string, AST*> functions;
 
     // information about how much memory is needed to preserve previous stack
     // currently only stores state of $fp and $31
@@ -117,6 +118,12 @@ public:
     void addVariable(const std::string &variableName, AST* type, int byteSize);
 
     /*
+        Same as add variable but for functions
+    */
+    void addFunction(const std::string &name, AST* fn);
+    AST* getFunction(const std::string& name);
+
+    /*
         Used for moving '$sp' pointer when creating new stack frame.
         Is how much memory is required to preserve previous frames state.
 
@@ -145,8 +152,8 @@ public:
         Expects there to be a function
         Does not do error checking
     */
-    bool isFun = false;
-    int getDistanceToFun();
+    AST* fn;
+    std::pair<int, AST*> getFnInfo();
 
     /* 
         Used for 'break' and 'continue'.

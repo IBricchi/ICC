@@ -42,11 +42,12 @@ AST_FunDeclaration::AST_FunDeclaration(AST* _type, std::string* _name, AST* _bod
 void AST_FunDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
     type->generateFrames(frame);
+    frame->addFunction(name, this);
     // we don't need to generate a new frame here since the block statement that will be the body
     // will handle generating the new frame
     if (body != nullptr) {
         body->generateFrames(_frame);
-        body->frame->isFun = true;
+        body->frame->fn = this;
         // declare parameters as variables in the frame
         if(params != nullptr)
             for(std::pair<AST*,std::string> param: *params){
@@ -104,21 +105,129 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
 
         // copy over arguments from call
         if(params != nullptr){
-            for(int i = 0, arg_i = params->size() - 1; i < params->size(); i++, arg_i--){
+            // state variables
+            bool allowFReg = true;
+            bool loadFromReg = true;
+            int availableAReg = 0;
+            int availableFReg = 12;
+            int memOffset = 0;
+            // i is position in vector, arg_i is position in argument order
+            for(int i = params->size() - 1, arg_i = 0; arg_i < params->size(); i--, arg_i++){
+                // parameterInfo
+                std::pair<AST*, std::string> param = params->at(i);
+                std::string paramTypeName = param.first->getTypeName();
+
                 // comment
-                assemblyOut << std::endl << "# start loading parameter " << params->at(i).second << " in " << name << std::endl;
+                assemblyOut << std::endl << "# start loading parameter " << param.second << " in " << name << std::endl;
+                            
+                bool useMem = !loadFromReg;
+
                 // load from register
-                if(arg_i < 4){
-                    // If I didn't do it like this at runtime the strings got randomly truncated
-                    std::string reg = std::string("$a") + std::to_string(arg_i);
-                    regToVar(assemblyOut, body->frame, reg, params->at(i).second);
+                if(loadFromReg){
+                    if(paramTypeName == "float" || paramTypeName == "double"){
+                        // this part is the same for floats and doubles
+                        if(allowFReg){
+                            assemblyOut << "# (reading a " << paramTypeName << " type from f reg)" << std::endl;
+                            std::string reg = std::string("$f") + std::to_string(availableFReg);
+                            regToVar(assemblyOut, body->frame, reg, param.second);
+                            
+                            // update state
+                            availableFReg += 2;
+                            availableAReg++;
+                            memOffset += 4;
+                            if(paramTypeName == "double"){
+                                availableAReg++;
+                                memOffset += 4;
+                            }
+
+                            if(availableFReg == 16)
+                                allowFReg = false;
+                            if(availableAReg == 4)
+                                loadFromReg = false;
+                        }
+                        else{
+                            assemblyOut << "# (reading a " << paramTypeName << " type from a reg)" << std::endl;
+                            
+                            if(paramTypeName == "double"){
+                                if(availableAReg % 2){
+                                    memOffset += 4;
+                                    availableAReg++;
+                                }
+                                
+                                if(availableAReg < 4){
+                                    std::string reg = std::string("$a") + std::to_string(availableAReg);
+                                    std::string reg_2 = std::string("$a") + std::to_string(availableAReg+1);
+                                    regToVar(assemblyOut, body->frame, reg, param.second, reg_2);
+
+                                    // update state
+                                    availableAReg += 2;
+                                    memOffset += 8;
+                                }
+                                else{
+                                    loadFromReg = false;
+                                    useMem = true;
+                                }
+                            }
+                            else{
+                                std::string reg = std::string("$a") + std::to_string(availableAReg);
+                                regToVar(assemblyOut, body->frame, reg, param.second);
+                                
+                                // update state
+                                availableAReg++;
+                                memOffset += 4;
+                            }
+
+                            // check state
+                            if(availableAReg == 4)
+                                loadFromReg = false;
+                        }
+                    }
+                    else{
+                        assemblyOut << "# (reading a integer type)" << std::endl;
+                        std::string reg = std::string("$a") + std::to_string(availableAReg);
+                        regToVar(assemblyOut, body->frame, reg, param.second);
+
+                        // update state
+                        availableAReg++;
+                        allowFReg = false;
+                        memOffset += 4;
+
+                        if(availableAReg == 4)
+                            loadFromReg = false;
+                    }
                 }
                 // load from memory
-                else{
-                    assemblyOut << "lw $t0, " << 4 * arg_i + body->frame->getStoreSize() << "($fp)" << std::endl;
-                    regToVar(assemblyOut, body->frame, "$t0", params->at(i).second);
+                if(useMem){
+                    if(paramTypeName == "float"){
+                        assemblyOut << "# (reading a floating type from memory)" << std::endl;
+                        assemblyOut << "l.s $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
+                        regToVar(assemblyOut, body->frame, "$f4", param.second);
+
+                        // update state
+                        memOffset += 4;
+                    }
+                    else if(paramTypeName == "double"){
+                        if(memOffset % 8){
+                            memOffset += 4;
+                        }
+
+                        assemblyOut << "# (reading a double type from memory)" << std::endl;
+                        assemblyOut << "l.d $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
+                        regToVar(assemblyOut, body->frame, "$f4", param.second);
+
+                        // update state
+                        memOffset += 8;
+                    }
+                    else{
+                        assemblyOut << "# (reading a integer type from memory)" << std::endl;
+                        assemblyOut << "lw $t0, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
+                        regToVar(assemblyOut, body->frame, "$t0", param.second);
+
+                        // update state
+                        memOffset += 4;
+                    }
                 }
-                assemblyOut << "# loading parameter " << params->at(i).second << " in " << name << std::endl << std::endl;
+                assemblyOut << "# loading parameter " << param.second << " in " << name << std::endl << std::endl;
             }
         }
 
@@ -143,6 +252,18 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         assemblyOut << ".size	" << name << ", .-" << name << std::endl;
     }
     assemblyOut << "# end function declaration for " << name << std::endl << std::endl;
+}
+
+AST* AST_FunDeclaration::getType(){
+    return type;
+}
+
+int AST_FunDeclaration::getBytes(){
+    return type->getBytes();
+}
+
+std::string AST_FunDeclaration::getTypeName(){
+    return type->getTypeName();
 }
 
 AST_FunDeclaration::~AST_FunDeclaration() {

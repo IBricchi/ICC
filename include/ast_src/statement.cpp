@@ -18,6 +18,8 @@ void AST_Return::compile(std::ostream &assemblyOut) {
     std::string retLab = generateUniqueLabel("return");
     assemblyOut << std::endl << "# start " << retLab << std::endl;
 
+    // get info on corresponding function
+    std::pair<int, AST*> fnInfo = frame->getFnInfo();
 
     if (expr == nullptr) {
         // return 0 by default
@@ -27,12 +29,18 @@ void AST_Return::compile(std::ostream &assemblyOut) {
         expr->compile(assemblyOut);
         
         // set return register to value on top of stack
-        assemblyOut << "lw $v0, 8($sp)" << std::endl;;
+        std::string fnTypeName = fnInfo.second->getTypeName();
+        if(fnTypeName == "float")
+            assemblyOut << "l.s $f0, 8($sp)" << std::endl;
+        else if(fnTypeName == "double")
+            assemblyOut << "l.d $f0, 8($sp)" << std::endl;
+        else
+            assemblyOut << "lw $v0, 8($sp)" << std::endl;;
         // no need to shift stack pointer since return will end a scope anyway
     }
 
     // skip through frames between current frame and function frame
-    for(int i = 0; i < frame->getDistanceToFun(); i++){
+    for(int i = 0; i < fnInfo.first; i++){
         assemblyOut << "lw $fp, 12($fp)" << std::endl;
     }
 
@@ -388,9 +396,9 @@ AST* AST_Block::deepCopy(){
 void AST_Block::compile(std::ostream &assemblyOut) {
     std::string blockname = generateUniqueLabel("block");
     assemblyOut << std::endl << "# start " << blockname << std::endl;
-    if(frame->isFun) assemblyOut << "# ( funciton block ) " << std::endl;
+    if(frame->fn != nullptr) assemblyOut << "# ( funciton block ) " << std::endl;
 
-    if(!frame->isFun){
+    else{
         // increase size of current frame by required ammount for storing previous state data
         // currently storing only $31, and $fp
         assemblyOut << "addiu $sp, $sp, -" << frame->getStoreSize() << std::endl;
@@ -406,7 +414,7 @@ void AST_Block::compile(std::ostream &assemblyOut) {
         body->compile(assemblyOut);
     }
 
-    if(!frame->isFun){
+    if(frame->fn == nullptr){
         // move fp back to start of frame and re-instate previous frame
         assemblyOut << "move $sp, $fp" << std::endl;
         assemblyOut << "lw $31, 8($sp)" << std::endl;

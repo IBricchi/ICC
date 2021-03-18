@@ -83,6 +83,20 @@ void Frame::addVariable(const std::string &variableName, AST* type, int byteSize
     memOcc += byteSize + byteSize%8;
 }
 
+void Frame::addFunction(const std::string &name, AST* fn){
+    functions[name] = fn;
+}
+
+AST* Frame::getFunction(const std::string &name){
+    auto it = functions.find(name);
+    if(it != functions.end()) {
+        return it->second;
+    }
+    else {
+        return parentFrame->getFunction(name);
+    }
+}
+
 int Frame::getStoreSize() const {
     return storeSize;
 }
@@ -104,14 +118,14 @@ std::map<std::string, int> Frame::getCaseLabelValueMapping() const {
     return caseLabelValueMapping;
 }
 
-int Frame::getDistanceToFun(){
+std::pair<int, AST*> Frame::getFnInfo(){
     int i = 0;
     Frame* frame = this;
-    while(!frame->isFun){
+    while(frame->fn == nullptr){
         i++;
         frame = frame->parentFrame;
     }
-    return i;
+    return {i, frame->fn};
 }
 
 std::pair<std::string, int> Frame::getStartLoopLabelName(std::ostream &assemblyOut) {
