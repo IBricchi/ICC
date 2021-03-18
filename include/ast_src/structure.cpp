@@ -143,8 +143,10 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
                             assemblyOut << "# (reading a " << paramTypeName << " type from a reg)" << std::endl;
                             
                             if(paramTypeName == "double"){
-                                if(availableAReg % 2)
+                                if(availableAReg % 2){
+                                    memOffset += 4;
                                     availableAReg++;
+                                }
                                 
                                 if(availableAReg < 4){
                                     std::string reg = std::string("$a") + std::to_string(availableAReg);
@@ -197,6 +199,14 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
 
                         // update state
                         memOffset += 4;
+                    }
+                    else if(paramTypeName == "double"){
+                        assemblyOut << "# (reading a double type from memory)" << std::endl;
+                        assemblyOut << "l.d $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
+                        regToVar(assemblyOut, body->frame, "$f4", param.second);
+
+                        // update state
+                        memOffset += 8;
                     }
                     else{
                         assemblyOut << "# (reading a integer type from memory)" << std::endl;
