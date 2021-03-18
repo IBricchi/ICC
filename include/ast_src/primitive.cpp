@@ -192,7 +192,7 @@ int AST_Variable::getBytes(){
     return getType()->getBytes();
 }
 
-std::string AST_Variable::getTypeName(){
+std::string AST_Variable::getTypeName() {
     return getType()->getTypeName();
 }
 
@@ -211,8 +211,8 @@ AST_Type::AST_Type(std::string* _name) :
 }
 
 std::unordered_map<std::string, int> AST_Type::size_of_type = {
-    {"int", 4},
-    {"char", 1},
+    {"int", 4}, // Intentionally wrong so that char can be treated as int for binary/unary operations (e.g. using lw instead of lb)
+    {"char", 4},
     {"float", 4},
     {"double", 8}
 };
