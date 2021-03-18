@@ -105,21 +105,88 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
 
         // copy over arguments from call
         if(params != nullptr){
-            for(int i = 0, arg_i = params->size() - 1; i < params->size(); i++, arg_i--){
+            // state variables
+            bool allowFReg = true;
+            bool loadFromReg = true;
+            int availableAReg = 0;
+            int availableFReg = 12;
+            int memOffset = 0;
+            // i is position in vector, arg_i is position in argument order
+            for(int i = params->size() - 1, arg_i = 0; arg_i < params->size(); i--, arg_i++){
+                // parameterInfo
+                std::pair<AST*, std::string> param = params->at(i);
+                std::string paramTypeName = param.first->getTypeName();
+
                 // comment
-                assemblyOut << std::endl << "# start loading parameter " << params->at(i).second << " in " << name << std::endl;
+                assemblyOut << std::endl << "# start loading parameter " << param.second << " in " << name << std::endl;
+                
                 // load from register
-                if(arg_i < 4){
-                    // If I didn't do it like this at runtime the strings got randomly truncated
-                    std::string reg = std::string("$a") + std::to_string(arg_i);
-                    regToVar(assemblyOut, body->frame, reg, params->at(i).second);
+                if(loadFromReg){
+                    if(paramTypeName == "float"){
+                        std::string reg;
+                        if(allowFReg){
+                            // check if using legal register
+                            if(availableFReg < 15){
+                                assemblyOut << "# (reading a floating type from f reg)" << std::endl;
+                                std::string reg = std::string("$f") + std::to_string(availableFReg);
+                                regToVar(assemblyOut, body->frame, reg, param.second);
+                                
+                                // update state
+                                availableFReg += 2;
+                                availableAReg++;
+                                memOffset += 4;
+
+                                if(availableFReg == 16)
+                                    allowFReg = false;
+                            }
+                            else{
+                                // if illegal change to load from mem
+                                loadFromReg = false;
+                            }
+                        }
+                        else{
+                            assemblyOut << "# (reading a floating type from a reg)" << std::endl;
+                            std::string reg = std::string("$a") + std::to_string(availableAReg);
+                            regToVar(assemblyOut, body->frame, reg, param.second);
+                            
+                            // update state
+                            availableAReg++;
+                            memOffset += 4;
+
+                            if(availableAReg == 4)
+                                loadFromReg = false;
+                        }
+                    }
+                    else{
+                        assemblyOut << "# (reading a integer type)" << std::endl;
+                        std::string reg = std::string("$a") + std::to_string(availableAReg);
+                        regToVar(assemblyOut, body->frame, reg, param.second);
+
+                        // update state
+                        availableAReg++;
+                        allowFReg = false;
+                        memOffset += 4;
+
+                        if(availableAReg == 4)
+                            loadFromReg = false;
+                    }
                 }
                 // load from memory
                 else{
-                    assemblyOut << "lw $t0, " << 4 * arg_i + body->frame->getStoreSize() << "($fp)" << std::endl;
-                    regToVar(assemblyOut, body->frame, "$t0", params->at(i).second);
+                    if(paramTypeName == "float"){
+                        assemblyOut << "# (reading a floating type from memory)" << std::endl;
+
+                    }
+                    else{
+                        assemblyOut << "# (reading a integer type from memory)" << std::endl;
+                        assemblyOut << "lw $t0, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
+                        regToVar(assemblyOut, body->frame, "$t0", param.second);
+
+                        // update state
+                        memOffset += 4;
+                    }
                 }
-                assemblyOut << "# loading parameter " << params->at(i).second << " in " << name << std::endl << std::endl;
+                assemblyOut << "# loading parameter " << param.second << " in " << name << std::endl << std::endl;
             }
         }
 

@@ -17,7 +17,12 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
     
     // store register data into variable's memory address
     if (varType == "float") {
-        assemblyOut << "s.s " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
+        if(reg[1] == 'f'){
+            assemblyOut << "s.s " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
+        }
+        else{
+            assemblyOut << "sw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
+        }
     } else if (varType == "double") {
         assemblyOut << "s.d " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     } else {
