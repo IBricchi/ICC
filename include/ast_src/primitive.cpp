@@ -150,6 +150,10 @@ int AST_Variable::getBytes(){
     return getType()->getBytes();
 }
 
+std::string AST_Variable::getTypeName(){
+    return getType()->getTypeName();
+}
+
 void AST_Variable::updateVariable(std::ostream &assemblyOut, Frame* currentFrame, std::string reg) {
     assemblyOut << std::endl << "# start var update " << name << std::endl;
 

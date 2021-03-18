@@ -68,6 +68,7 @@ public:
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
     int getBytes() override;
+    std::string getTypeName() override;
 
     /*
         reg is the register that contains the new value.

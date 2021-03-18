@@ -98,23 +98,144 @@ AST* AST_FunctionCall::deepCopy(){
 
 void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start function call " << functionName << std::endl;
+    
+    int argMemSize = 0;
     if(args != nullptr){
-        // if even arguments add 4 bits of padding so sp remians properly padded
-        if(args->size()%2){
+        // loop to calculate required sizes
+        for(int i = 0; i < args->size(); i++){
+            std::string paramTypeName = args->at(i)->getTypeName();
+            if(paramTypeName == "double"){
+                if(argMemSize % 8)
+                    argMemSize += 4;
+                argMemSize += 8;
+            }
+            else{
+                argMemSize += 4;
+            }
+        }
+
+        if(argMemSize % 8){
             assemblyOut << "addiu $sp, $sp, -4" << std::endl;
         }
-        for (int i = 0, arg_i = args->size()-1; i < args->size(); i++, arg_i--) {
-            // compile all arguments
+        assemblyOut << "addiu $sp, $sp, -" << argMemSize << std::endl;
+
+        // state variables
+        bool allowFReg = true;
+        bool loadFromReg = true;
+        int availableAReg = 0;
+        int availableFReg = 12;
+        int memOffset = 0;
+
+        // loop through arguments
+        for (int i = args->size() - 1, arg_i = 0; arg_i < args->size(); i--, arg_i++) {
+            std::string paramTypeName = args->at(i)->getTypeName(); 
+            bool useMem = !loadFromReg;
+
+            // compiler argument expression
             args->at(i)->compile(assemblyOut);
-            // store first 4 arguments in registers
-            if(arg_i < 4){
-                assemblyOut << "lw $a" << arg_i << ", 8($sp)" << std::endl; 
+            assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+            
+            if(loadFromReg){
+                if(paramTypeName == "float" || paramTypeName == "double"){
+                    // this part is the same for floats and doubles
+                    if(allowFReg){
+                        assemblyOut << "# (storing a " << paramTypeName << " type to f reg)" << std::endl;
+                        std::string reg = std::string("$f") + std::to_string(availableFReg);
+                        if(paramTypeName == "float")
+                            assemblyOut << "l.s " << reg << ", 0($sp)" << std::endl;
+                        else
+                            assemblyOut << "l.d " << reg << ", 0($sp)" << std::endl;
+
+                        // update state
+                        availableFReg += 2;
+                        availableAReg++;
+                        memOffset += 4;
+
+                        if(availableFReg == 16)
+                            allowFReg = false;
+                    }
+                    else{
+                        assemblyOut << "# (storing a " << paramTypeName << " type to a reg)" << std::endl;
+                        
+                        if(paramTypeName == "double"){
+                            if(availableAReg % 2){
+                                memOffset += 4;
+                                availableAReg++;
+                            }
+                            
+                            if(availableAReg < 4){
+                                std::string reg = std::string("$a") + std::to_string(availableAReg);
+                                std::string reg_2 = std::string("$a") + std::to_string(availableAReg+1);
+                                assemblyOut << "lw " << reg << ", 0($sp)" << std::endl;
+                                assemblyOut << "lw " << reg_2 << ", -4($sp)" << std::endl;
+
+                                // update state
+                                availableAReg += 2;
+                                memOffset += 8;
+                            }
+                            else{
+                                loadFromReg = false;
+                                useMem = true;
+                            }
+                        }
+                        else{
+                            std::string reg = std::string("$a") + std::to_string(availableAReg);
+                            assemblyOut << "lw " << reg << ", 0($sp)" << std::endl;
+                            
+                            // update state
+                            availableAReg++;
+                            memOffset += 4;
+                        }
+
+                        // check state
+                        if(availableAReg == 4)
+                            loadFromReg = false;
+                    }
+                }
+                else{
+                    assemblyOut << "# (storing an integer type to reg)" << std::endl;
+                    std::string reg = std::string("$a") + std::to_string(availableAReg);
+                    assemblyOut << "lw " << reg << ", 0($sp)" << std::endl;
+
+                    // update state
+                    availableAReg++;
+                    allowFReg = false;
+                    memOffset += 4;
+
+                    if(availableAReg == 4)
+                        loadFromReg = false;
+                }
             }
-            // move sp back 4 to remove extra padding
-            assemblyOut << "addiu $sp, $sp, 4" << std::endl;
+            // load from memory
+            if(useMem){
+                if(paramTypeName == "float"){
+                    assemblyOut << "# (reading a floating type from memory)" << std::endl;
+                    // assemblyOut << "l.s $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
+                    // regToVar(assemblyOut, body->frame, "$f4", param.second);
+
+                    // update state
+                    memOffset += 4;
+                }
+                else if(paramTypeName == "double"){
+                    assemblyOut << "# (reading a double type from memory)" << std::endl;
+                    // assemblyOut << "l.d $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
+                    // regToVar(assemblyOut, body->frame, "$f4", param.second);
+
+                    // update state
+                    memOffset += 8;
+                }
+                else{
+                    assemblyOut << "# (reading a integer type from memory)" << std::endl;
+                    // assemblyOut << "lw $t0, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
+                    // regToVar(assemblyOut, body->frame, "$t0", param.second);
+
+                    // update state
+                    memOffset += 4;
+                }
+            }
         }
         // move sp back by 4 to point to first argument 
-        assemblyOut << "addiu $sp, $sp, 4" << std::endl;
+        // assemblyOut << "addiu $sp, $sp, 4" << std::endl;
     }
 
     assemblyOut << "jal " << functionName << std::endl;
@@ -122,12 +243,17 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
     
     // remove arguments from stack
     if(args  != nullptr){
-        assemblyOut << "addiu $sp, $sp, " << 4 * (args->size() - (args->size()%2==0)) << std::endl;
+        if(argMemSize % 8){
+            assemblyOut << "addiu $sp, $sp, 4" << std::endl;
+        }
+        assemblyOut << "addiu $sp, $sp, " << argMemSize << std::endl;
     }
 
     std::string typeName = getTypeName();
     if(typeName == "float")
         assemblyOut << "s.s $f0, 0($sp)" << std::endl;
+    else if(typeName == "double")
+        assemblyOut << "s.d $f0, 0($sp)" << std::endl;
     else
         assemblyOut << "sw $v0, 0($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, -8" << std::endl;
