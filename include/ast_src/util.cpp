@@ -5,7 +5,7 @@ std::string generateUniqueLabel(const std::string &labelName) {
     return labelName + std::to_string(uniqueLabelCount++);
 }
 
-void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var){
+void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var, const std::string& reg_2){
     std::pair<int, int> varAddress = frame->getVarAddress(var);
     std::string varType = frame->getVarType(var)->getTypeName();
     
@@ -24,7 +24,13 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
             assemblyOut << "sw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
         }
     } else if (varType == "double") {
-        assemblyOut << "s.d " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
+        if(reg[1] == 'f'){
+            assemblyOut << "s.d " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
+        }
+        else{
+            assemblyOut << "sw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
+            assemblyOut << "sw " << reg_2 << ", -" << varAddress.second - 4 << "($t6)" << std::endl;
+        }
     } else {
         assemblyOut << "sw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     }

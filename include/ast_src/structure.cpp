@@ -119,40 +119,57 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
 
                 // comment
                 assemblyOut << std::endl << "# start loading parameter " << param.second << " in " << name << std::endl;
-                
+                            
+                bool useMem = !loadFromReg;
+
                 // load from register
                 if(loadFromReg){
-                    if(paramTypeName == "float"){
-                        std::string reg;
+                    if(paramTypeName == "float" || paramTypeName == "double"){
+                        // this part is the same for floats and doubles
                         if(allowFReg){
-                            // check if using legal register
-                            if(availableFReg < 15){
-                                assemblyOut << "# (reading a floating type from f reg)" << std::endl;
-                                std::string reg = std::string("$f") + std::to_string(availableFReg);
-                                regToVar(assemblyOut, body->frame, reg, param.second);
-                                
-                                // update state
-                                availableFReg += 2;
-                                availableAReg++;
-                                memOffset += 4;
-
-                                if(availableFReg == 16)
-                                    allowFReg = false;
-                            }
-                            else{
-                                // if illegal change to load from mem
-                                loadFromReg = false;
-                            }
-                        }
-                        else{
-                            assemblyOut << "# (reading a floating type from a reg)" << std::endl;
-                            std::string reg = std::string("$a") + std::to_string(availableAReg);
+                            assemblyOut << "# (reading a " << paramTypeName << " type from f reg)" << std::endl;
+                            std::string reg = std::string("$f") + std::to_string(availableFReg);
                             regToVar(assemblyOut, body->frame, reg, param.second);
                             
                             // update state
+                            availableFReg += 2;
                             availableAReg++;
                             memOffset += 4;
 
+                            if(availableFReg == 16)
+                                allowFReg = false;
+                        }
+                        else{
+                            assemblyOut << "# (reading a " << paramTypeName << " type from a reg)" << std::endl;
+                            
+                            if(paramTypeName == "double"){
+                                if(availableAReg % 2)
+                                    availableAReg++;
+                                
+                                if(availableAReg < 4){
+                                    std::string reg = std::string("$a") + std::to_string(availableAReg);
+                                    std::string reg_2 = std::string("$a") + std::to_string(availableAReg+1);
+                                    regToVar(assemblyOut, body->frame, reg, param.second, reg_2);
+
+                                    // update state
+                                    availableAReg += 2;
+                                    memOffset += 8;
+                                }
+                                else{
+                                    loadFromReg = false;
+                                    useMem = true;
+                                }
+                            }
+                            else{
+                                std::string reg = std::string("$a") + std::to_string(availableAReg);
+                                regToVar(assemblyOut, body->frame, reg, param.second);
+                                
+                                // update state
+                                availableAReg++;
+                                memOffset += 4;
+                            }
+
+                            // check state
                             if(availableAReg == 4)
                                 loadFromReg = false;
                         }
@@ -172,7 +189,7 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
                     }
                 }
                 // load from memory
-                else{
+                if(useMem){
                     if(paramTypeName == "float"){
                         assemblyOut << "# (reading a floating type from memory)" << std::endl;
                         assemblyOut << "l.s $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
