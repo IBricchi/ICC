@@ -29,8 +29,11 @@ void AST_Return::compile(std::ostream &assemblyOut) {
         expr->compile(assemblyOut);
         
         // set return register to value on top of stack
-        if(fnInfo.second->getTypeName() == "float")
+        std::string fnTypeName = fnInfo.second->getTypeName();
+        if(fnTypeName == "float")
             assemblyOut << "l.s $f0, 8($sp)" << std::endl;
+        else if(fnTypeName == "double")
+            assemblyOut << "l.d $f0, 8($sp)" << std::endl;
         else
             assemblyOut << "lw $v0, 8($sp)" << std::endl;;
         // no need to shift stack pointer since return will end a scope anyway
