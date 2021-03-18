@@ -30,6 +30,10 @@ AST* AST_ConstInt::getType() {
     return new AST_Type(&typeName);
 }
 
+std::string AST_ConstInt::getTypeName(){
+    return "int";
+}
+
 AST_ConstFloat::AST_ConstFloat(float _value):
     value(_value)
 {}
@@ -60,6 +64,10 @@ AST* AST_ConstFloat::getType() {
     return new AST_Type(&typeName);
 }
 
+std::string AST_ConstFloat::getTypeName(){
+    return "float";
+}
+
 AST_ConstDouble::AST_ConstDouble(double _value):
     value(_value)
 {}
@@ -88,6 +96,10 @@ void AST_ConstDouble::compile(std::ostream &assemblyOut){
 AST* AST_ConstDouble::getType() {
     std::string typeName = "double";
     return new AST_Type(&typeName);
+}
+
+std::string AST_ConstDouble::getTypeName(){
+    return "double";
 }
 
 AST_Variable::AST_Variable(std::string* _name) :

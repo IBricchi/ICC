@@ -149,9 +149,11 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
                         // update state
                         availableFReg += 2;
                         availableAReg++;
-                        if(paramTypeName == "double")
-                            availableAReg++;
                         memOffset += 4;
+                        if(paramTypeName == "double"){
+                            availableAReg++;
+                            memOffset += 4;
+                        }
 
                         if(availableFReg == 16)
                             allowFReg = false;
@@ -213,25 +215,29 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
             // load from memory
             if(useMem){
                 if(paramTypeName == "float"){
-                    assemblyOut << "# (reading a floating type from memory)" << std::endl;
-                    // assemblyOut << "l.s $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
-                    // regToVar(assemblyOut, body->frame, "$f4", param.second);
+                    assemblyOut << "# (storing a floating type from memory)" << std::endl;
+                    assemblyOut << "l.s $f4, 0($sp)" << std::endl;
+                    assemblyOut << "s.s $f4, " << memOffset << "($sp)" << std::endl;
 
                     // update state
                     memOffset += 4;
                 }
                 else if(paramTypeName == "double"){
-                    assemblyOut << "# (reading a double type from memory)" << std::endl;
-                    // assemblyOut << "l.d $f4, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
-                    // regToVar(assemblyOut, body->frame, "$f4", param.second);
+                    if(memOffset % 8){
+                        memOffset += 4;
+                    }
+                    assemblyOut << "# (storing a double type from memory)" << std::endl;
+                    
+                    assemblyOut << "l.d $f4, 0($sp)" << std::endl;
+                    assemblyOut << "s.d $f4, " << memOffset << "($sp)" << std::endl;
 
                     // update state
                     memOffset += 8;
                 }
                 else{
-                    assemblyOut << "# (reading a integer type from memory)" << std::endl;
-                    // assemblyOut << "lw $t0, " << memOffset + body->frame->getStoreSize() << "($fp)" << std::endl;
-                    // regToVar(assemblyOut, body->frame, "$t0", param.second);
+                    assemblyOut << "# (storing a integer type from memory)" << std::endl;
+                    assemblyOut << "lw $t0, 0($sp)" << std::endl;
+                    assemblyOut << "sw $t0, " << memOffset << "($sp)" << std::endl;
 
                     // update state
                     memOffset += 4;

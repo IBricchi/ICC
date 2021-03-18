@@ -17,6 +17,7 @@ public:
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
+    std::string getTypeName() override;
 };
 
 class AST_ConstFloat
@@ -31,6 +32,7 @@ public:
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
+    std::string getTypeName() override;
 };
 
 class AST_ConstDouble
@@ -45,6 +47,7 @@ public:
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
+    std::string getTypeName() override;
 };
 
 /*
