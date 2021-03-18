@@ -136,7 +136,7 @@ void AST_FunctionCall::compile(std::ostream &assemblyOut) {
 }
 
 AST* AST_FunctionCall::getType(){
-    return frame->getFnType(functionName);
+    return frame->getFunction(functionName)->getType();
 }
 
 int AST_FunctionCall::getBytes(){
@@ -144,7 +144,7 @@ int AST_FunctionCall::getBytes(){
 }
 
 std::string AST_FunctionCall::getTypeName(){
-    return frame->getFnType(functionName)->getTypeName();
+    return frame->getFunction(functionName)->getTypeName();
 }
 
 AST_FunctionCall::~AST_FunctionCall() {

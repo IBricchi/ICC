@@ -42,7 +42,7 @@ AST_FunDeclaration::AST_FunDeclaration(AST* _type, std::string* _name, AST* _bod
 void AST_FunDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
     type->generateFrames(frame);
-    frame->addFn(name, type);
+    frame->addFunction(name, this);
     // we don't need to generate a new frame here since the block statement that will be the body
     // will handle generating the new frame
     if (body != nullptr) {
