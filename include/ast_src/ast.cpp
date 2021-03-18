@@ -35,6 +35,10 @@ std::string AST::getTypeName(){
     return "int";
 }
 
+std::string AST::getName() {
+    throw std::runtime_error("AST: getName Not implemented by child class.\n");
+}
+
 AST::~AST() {
     delete frame;
 }

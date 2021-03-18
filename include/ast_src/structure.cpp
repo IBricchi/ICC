@@ -335,6 +335,10 @@ AST* AST_VarDeclaration::getType() {
     return type;
 }
 
+std::string AST_VarDeclaration::getName() {
+    return this->name;
+}
+
 AST_VarDeclaration::~AST_VarDeclaration() {
     delete type;
     if(expr != nullptr)

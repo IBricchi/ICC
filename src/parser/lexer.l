@@ -7,6 +7,7 @@ extern "C" int fileno(FILE *stream);
 
 #include "parser.tab.hpp"
 #include <string>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -17,6 +18,9 @@ std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types = {
   {"float",{}},
   {"double",{}}
 };
+
+// map from struct name to set of member (name, type) pairs
+std::unordered_map<std::string, std::map<std::string, std::string>> lexer_structs = {};
 
 %}
 
@@ -35,7 +39,7 @@ std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types = {
 "case"     { return T_CASE; }
 "default"  { return T_DEFAULT; }
 "enum"     { return T_ENUM; }
-"enum"     { return T_ENUM; }
+"struct"   { return T_STRUCT; }
 "sizeof"   { return T_SIZEOF; }
 "typedef"  { return T_TYPEDEF; }
 
@@ -87,7 +91,7 @@ std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types = {
 "//".*                     { /* DO NOTHING (COMMENT) */ }
 "\/\*(\*(?!\/)|[^*])*\*\/" { /* DO NOTHING (COMMENT) */ }
 
-[a-zA-Z]([a-zA-Z1-9_])* {
+[a-zA-Z]([a-zA-Z1-9_\.])* {
   std::string* s = new std::string(yytext);
   yylval.STR = s;
   for (auto el : lexer_types) {

@@ -3,12 +3,14 @@
   #include <cassert>
   #include <vector>
   #include <utility>
+  #include <map>
   #include <unordered_map>
   #include <unordered_set>
 
   extern AST *g_root; // A way of getting the AST out
 
   extern std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types;
+  extern std::unordered_map<std::string, std::map<std::string, std::string>> lexer_structs;
 
   //! This is to fix problems when generating C++
   // We are declaring the functions provided by Flex, so
@@ -35,6 +37,7 @@
   std::vector<int> *SCP; // square chain parameters
   std::vector<std::pair<std::string, int>> *EL; // enum list (identifier value mapping)
   std::pair<std::string, int> *EN; // enum
+  std::vector<AST*>  *SDL; // struct declartion list
 }
 
 %token <STR> T_TYPE
@@ -47,7 +50,7 @@
 %token <CHAR> T_CONST_CHAR
 
 %token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK 
-%token T_CONTINUE T_CASE T_DEFAULT T_ENUM T_SIZEOF T_TYPEDEF
+%token T_CONTINUE T_CASE T_DEFAULT T_ENUM T_SIZEOF T_TYPEDEF T_STRUCT
 
 %token T_COMMA T_SEMI_COLON T_COLON
 %token T_BRACK_L T_BRACK_R
@@ -77,9 +80,12 @@
 %type <NODE> ENUM_DECLARATION // Statements
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL SIZEOF PRIMARY // Expressions
+%type <NODE> STRUCT_DECLARATION STRUCT_DEFINITION STRUCT_INTERNAL_DECLARATION // struct
 
 %type <EN> ENUM
 %type <EL> ENUM_LIST
+
+%type <SDL> STRUCT_INTERNAL_DECLARATION_LIST
 
 %type <FDP> FUN_DEC_PARAMS // helper for fun declaration
 %type <FCP> FUN_CALL_PARAMS // helper for fun call
@@ -104,12 +110,67 @@ SEQUENCE : DECLARATION          { $$ = $1; }
          | DECLARATION SEQUENCE { $$ = new AST_Sequence($1, $2); }
          ;
 
-DECLARATION : FUN_DECLARATION  { $$ = $1; }
-            | VAR_DECLARATION  { $$ = $1; }
-            | ENUM_DECLARATION { $$ = $1; }
-            | TYPEDEF          { $$ = $1; }
-            | STATEMENT        { $$ = $1; }
+DECLARATION : FUN_DECLARATION             { $$ = $1; }
+            | STRUCT_INTERNAL_DECLARATION { $$ = $1; }
+            | ENUM_DECLARATION            { $$ = $1; }
+            | STRUCT_DECLARATION          { $$ = $1; }
+            | STRUCT_DEFINITION           { $$ = $1; }
+            | TYPEDEF                     { $$ = $1; }
+            | STATEMENT                   { $$ = $1; }
             ;
+
+STRUCT_DECLARATION : T_STRUCT T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
+                                auto it = lexer_structs.find(*$2);
+                                std::map<std::string, std::string> declarations;
+                                if (it != lexer_structs.end()) {
+                                        declarations = it->second;
+                                } else {
+                                         throw std::runtime_error("PARSER: STRUCT_DECLARATION: Failed to find struct type in lexer_structs.\n");
+                                }
+
+                                std::string varNameStructPrefix = *$3 + ".";
+
+                                auto decIt = declarations.begin();
+                                std::string *varNamePtr = new std::string(varNameStructPrefix + decIt->first);
+                                AST *type = new AST_Type(new std::string(decIt->second));
+                                AST* seq = new AST_VarDeclaration(type, varNamePtr);
+                                ++decIt;
+                                while (decIt != declarations.end()) {
+                                        std::string *varNamePtr = new std::string(varNameStructPrefix + decIt->first);
+                                        AST *type = new AST_Type(new std::string(decIt->second));
+                                        auto declaration = new AST_VarDeclaration(type, varNamePtr);
+                                        seq = new AST_Sequence(declaration, seq);
+                                        ++decIt;
+                                }
+                                $$ = seq;
+                        }
+                   ;
+
+STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_LIST T_BRACE_R T_SEMI_COLON {
+                                // The declarations from STRUCT_INTERNAL_DECLARATION_LIST are never compiled because they
+                                // are not passed up the AST.
+                                std::map<std::string, std::string> declarations{};
+                                for (auto dec : *$4) {
+                                        std::string varName = dec->getName();
+                                        std::string typeName = dec->getType()->getTypeName();
+                                        declarations[varName] = typeName;
+                                }
+                                lexer_structs[*$2] = declarations;
+
+                                // Assign something that has no effect
+                                $$ = new AST_ConstInt(0);
+                        }
+                  ;
+
+STRUCT_INTERNAL_DECLARATION_LIST : STRUCT_DECLARATION                  { $$ = new std::vector<AST*>({$1}); }
+                                 | STRUCT_INTERNAL_DECLARATION_LIST STRUCT_DECLARATION {
+                                                $1->push_back($2);
+                                                $$ = $1;
+                                        }
+                                 ;
+
+STRUCT_INTERNAL_DECLARATION : VAR_DECLARATION  { $$ = $1; }
+                   ;
 
 FUN_DECLARATION : TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON                                  { $$ = new AST_FunDeclaration($1, $2); }
                 | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER T_BRACK_R T_SEMI_COLON                { $$ = new AST_FunDeclaration($1, $2, nullptr, new std::vector<std::pair<AST*,std::string>>({{$4, *$5}})); }
@@ -160,7 +221,7 @@ TYPEDEF : T_TYPEDEF T_TYPE T_IDENTIFIER T_SEMI_COLON {
                         if(it != lexer_types.end()) {
                                 it->second.insert(*$3);
                         } else {
-                                std::cerr << "Failed to find typedef type in lexer_types" << std::endl;
+                                throw std::runtime_error("PARSER: TYPEDEF: Failed to find typedef type in lexer_types.\n");
                         }
                         
                         // Assign something that has no effect

@@ -68,6 +68,8 @@ public:
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
 
+    std::string getName() override;
+
     ~AST_VarDeclaration();
 };
 
