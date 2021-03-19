@@ -23,6 +23,14 @@ void AST_Sequence::compile(std::ostream &assemblyOut) {
     second->compile(assemblyOut);
 }
 
+void AST_Sequence::setName(std::string newName) {
+    this->name = newName;
+}
+
+std::string AST_Sequence::getName() {
+    return this->name;
+}
+
 AST_Sequence::~AST_Sequence(){
     delete first;
     delete second;
@@ -333,6 +341,10 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
 
 AST* AST_VarDeclaration::getType() {
     return type;
+}
+
+std::string AST_VarDeclaration::getName() {
+    return this->name;
 }
 
 AST_VarDeclaration::~AST_VarDeclaration() {

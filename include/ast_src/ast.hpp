@@ -53,6 +53,9 @@ public:
     virtual int getBytes();
 
     virtual std::string getTypeName();
+
+    virtual void setName(std::string newName);
+    virtual std::string getName();
 };
 
 /*
