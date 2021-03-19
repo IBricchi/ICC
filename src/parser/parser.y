@@ -162,8 +162,8 @@ STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_
                         }
                   ;
 
-STRUCT_INTERNAL_DECLARATION_LIST : STRUCT_DECLARATION                  { $$ = new std::vector<AST*>({$1}); }
-                                 | STRUCT_INTERNAL_DECLARATION_LIST STRUCT_DECLARATION {
+STRUCT_INTERNAL_DECLARATION_LIST : STRUCT_INTERNAL_DECLARATION                                  { $$ = new std::vector<AST*>({$1}); }
+                                 | STRUCT_INTERNAL_DECLARATION_LIST STRUCT_INTERNAL_DECLARATION {
                                                 $1->push_back($2);
                                                 $$ = $1;
                                         }
