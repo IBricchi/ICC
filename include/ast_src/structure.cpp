@@ -23,12 +23,12 @@ void AST_Sequence::compile(std::ostream &assemblyOut) {
     second->compile(assemblyOut);
 }
 
-void AST_Sequence::setName(std::string newName) {
-    this->name = newName;
+void AST_Sequence::setStructName(std::string newName) {
+    this->structName = newName;
 }
 
-std::string AST_Sequence::getName() {
-    return this->name;
+std::string AST_Sequence::getStructName() {
+    return this->structName;
 }
 
 AST_Sequence::~AST_Sequence(){
@@ -345,6 +345,14 @@ AST* AST_VarDeclaration::getType() {
 
 std::string AST_VarDeclaration::getName() {
     return this->name;
+}
+
+void AST_VarDeclaration::setStructName(std::string newName) {
+    this->structName = newName;
+}
+
+std::string AST_VarDeclaration::getStructName() {
+    return this->structName;
 }
 
 AST_VarDeclaration::~AST_VarDeclaration() {

@@ -144,7 +144,7 @@ STRUCT_DECLARATION : T_STRUCT T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
                                 }
 
                                 // set name for parsing of nested structs (format: "structName*structInstanceName")
-                                seq->setName(*$2 + "*" + *$3);
+                                seq->setStructName(*$2 + "*" + *$3);
 
                                 $$ = seq;
                         }
@@ -157,7 +157,7 @@ STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_
                                 for (auto dec : *$4) {
                                         // check if nested child struct
                                         if (dynamic_cast<AST_Sequence*>(dec)) {
-                                                std::string childStructString = dec->getName();
+                                                std::string childStructString = dec->getStructName();
                                                 auto it = lexer_structs.find(childStructString.substr(0,childStructString.find("*")));
                                                 std::map<std::string, std::string> childDeclarations{};
                                                 if (it != lexer_structs.end()) {

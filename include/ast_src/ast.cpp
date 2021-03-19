@@ -35,12 +35,16 @@ std::string AST::getTypeName(){
     return "int";
 }
 
-void AST::setName(std::string newName) {
-    throw std::runtime_error("AST: setName Not implemented by child class.\n");
-}
-
 std::string AST::getName() {
     throw std::runtime_error("AST: getName Not implemented by child class.\n");
+}
+
+void AST::setStructName(std::string newName) {
+    throw std::runtime_error("AST: setStructName Not implemented by child class.\n");
+}
+
+std::string AST::getStructName() {
+    throw std::runtime_error("AST: getStructName Not implemented by child class.\n");
 }
 
 AST::~AST() {

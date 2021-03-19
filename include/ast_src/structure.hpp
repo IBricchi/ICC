@@ -12,7 +12,7 @@ private:
     AST* second;
 
     // Used for struct
-    std::string name;
+    std::string structName;
 
 public:
     AST_Sequence(AST* _first, AST* _second);
@@ -21,8 +21,8 @@ public:
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
 
-    void setName(std::string newName) override;
-    std::string getName() override;
+    void setStructName(std::string newName) override;
+    std::string getStructName() override;
 
     ~AST_Sequence();
 };
@@ -63,6 +63,9 @@ private:
     std::string name;
     AST* expr;
 
+    // Used for struct
+    std::string structName;
+
 public:
     /*
         Corresponding object is AST_Variable in primitive.hpp.
@@ -75,6 +78,9 @@ public:
     AST* getType() override;
 
     std::string getName() override;
+
+    void setStructName(std::string newName) override;
+    std::string getStructName() override;
 
     ~AST_VarDeclaration();
 };
