@@ -11,12 +11,18 @@ private:
     AST* first;
     AST* second;
 
+    // Used for struct
+    std::string name;
+
 public:
     AST_Sequence(AST* _first, AST* _second);
 
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+
+    void setName(std::string newName) override;
+    std::string getName() override;
 
     ~AST_Sequence();
 };

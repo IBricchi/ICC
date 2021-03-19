@@ -142,6 +142,10 @@ STRUCT_DECLARATION : T_STRUCT T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
                                         seq = new AST_Sequence(declaration, seq);
                                         ++decIt;
                                 }
+
+                                // set name for parsing of nested structs
+                                seq->setName(*$2);
+
                                 $$ = seq;
                         }
                    ;
@@ -151,9 +155,26 @@ STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_
                                 // are not passed up the AST.
                                 std::map<std::string, std::string> declarations{};
                                 for (auto dec : *$4) {
-                                        std::string varName = dec->getName();
-                                        std::string typeName = dec->getType()->getTypeName();
-                                        declarations[varName] = typeName;
+                                        // check if nested child struct
+                                        if (dynamic_cast<AST_Sequence*>(dec)) {
+                                                auto it = lexer_structs.find(dec->getName());
+                                                std::map<std::string, std::string> childDeclarations{};
+                                                if (it != lexer_structs.end()) {
+                                                        childDeclarations = it->second;
+                                                } else {
+                                                        throw std::runtime_error("PARSER: STRUCT_DEFINITION: Failed to find child struct type in lexer_structs.\n");
+                                                }
+
+                                                std::string childNamePrefix = dec->getName() + ".";
+                                                for (auto childDeclaration : childDeclarations) {
+                                                        declarations[childNamePrefix + childDeclaration.first] = childDeclaration.second;
+                                                }
+                                        } else {
+                                                // AST_VarDeclaration
+                                                std::string varName = dec->getName();
+                                                std::string typeName = dec->getType()->getTypeName();
+                                                declarations[varName] = typeName;
+                                        }
                                 }
                                 lexer_structs[*$2] = declarations;
 
@@ -169,8 +190,9 @@ STRUCT_INTERNAL_DECLARATION_LIST : STRUCT_INTERNAL_DECLARATION                  
                                         }
                                  ;
 
-STRUCT_INTERNAL_DECLARATION : VAR_DECLARATION  { $$ = $1; }
-                   ;
+STRUCT_INTERNAL_DECLARATION : VAR_DECLARATION    { $$ = $1; }
+                            | STRUCT_DECLARATION { $$ = $1; }
+                            ;
 
 FUN_DECLARATION : TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON                                  { $$ = new AST_FunDeclaration($1, $2); }
                 | TYPE T_IDENTIFIER T_BRACK_L TYPE T_IDENTIFIER T_BRACK_R T_SEMI_COLON                { $$ = new AST_FunDeclaration($1, $2, nullptr, new std::vector<std::pair<AST*,std::string>>({{$4, *$5}})); }
