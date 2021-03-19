@@ -143,8 +143,8 @@ STRUCT_DECLARATION : T_STRUCT T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
                                         ++decIt;
                                 }
 
-                                // set name for parsing of nested structs
-                                seq->setName(*$2);
+                                // set name for parsing of nested structs (format: "structName*structInstanceName")
+                                seq->setName(*$2 + "*" + *$3);
 
                                 $$ = seq;
                         }
@@ -157,7 +157,8 @@ STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_
                                 for (auto dec : *$4) {
                                         // check if nested child struct
                                         if (dynamic_cast<AST_Sequence*>(dec)) {
-                                                auto it = lexer_structs.find(dec->getName());
+                                                std::string childStructString = dec->getName();
+                                                auto it = lexer_structs.find(childStructString.substr(0,childStructString.find("*")));
                                                 std::map<std::string, std::string> childDeclarations{};
                                                 if (it != lexer_structs.end()) {
                                                         childDeclarations = it->second;
@@ -165,7 +166,7 @@ STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_
                                                         throw std::runtime_error("PARSER: STRUCT_DEFINITION: Failed to find child struct type in lexer_structs.\n");
                                                 }
 
-                                                std::string childNamePrefix = dec->getName() + ".";
+                                                std::string childNamePrefix = childStructString.substr(childStructString.find("*")+1) + ".";
                                                 for (auto childDeclaration : childDeclarations) {
                                                         declarations[childNamePrefix + childDeclaration.first] = childDeclaration.second;
                                                 }
