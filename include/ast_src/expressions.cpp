@@ -571,7 +571,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 break;
             }
         }
-    } else if (varType == "double") {
+    }
+    else if (varType == "double") {
         // storing result in memory is done in every case statement because results are
         // int (boolean) or double
         switch (type) {
@@ -815,7 +816,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 break;
             }
         }
-    } else {
+    }
+    else {
         switch (type) {
             case Type::LOGIC_OR:
             {
@@ -1226,6 +1228,8 @@ AST_UnOp::AST_UnOp(AST_UnOp::Type _type, AST* _operand):
 
 void AST_UnOp::generateFrames(Frame* _frame){
     frame = _frame;
+    if(type == Type::ADDRESS)
+        operand->returnPtr = true;
     operand->generateFrames(_frame);
 }
 
@@ -1262,7 +1266,8 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
 
         // push onto operand stack
         assemblyOut << "s.s $f6, 8($sp)" << std::endl;
-    } else if (varType == "double") {
+    }
+    else if (varType == "double") {
         assemblyOut << "l.d $f4, 8($sp)" << std::endl;
 
         switch (type) {
@@ -1282,10 +1287,24 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
 
         // push onto operand stack
         assemblyOut << "s.d $f6, 8($sp)" << std::endl;
-    } else {
+    }
+    else {
         assemblyOut << "lw $t0, 8($sp)" << std::endl;
 
         switch (type) {
+            case Type::ADDRESS:
+            {
+                assemblyOut << "# " << unLabel << " is &" << std::endl;
+                // does nothing in compile part
+            }
+            case Type::DEREFERENCE:
+            {
+                assemblyOut << "# " << unLabel << " is *" << std::endl;
+                
+                if(!returnPtr){
+                    assemblyOut << "lw $t1, 0($t1)" << std::endl;
+                }
+            }
             case Type::BANG:
             {
                 // if 0, set to 1 else, set to 0

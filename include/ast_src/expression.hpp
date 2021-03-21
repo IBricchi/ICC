@@ -108,7 +108,8 @@ public:
     enum struct Type{
         BANG, NOT, MINUS, PLUS,
         PRE_INCREMENT, PRE_DECREMENT,
-        POST_INCREMENT, POST_DECREMENT
+        POST_INCREMENT, POST_DECREMENT,
+        DEREFERENCE, ADDRESS
     };
 private:
     Type type;

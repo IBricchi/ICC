@@ -478,7 +478,9 @@ FACTOR : UNARY_PRE T_STAR FACTOR    { $$ = new AST_BinOp(AST_BinOp::Type::STAR, 
        | UNARY_PRE                  { $$ = $1; }
        ;
 
-UNARY_PRE : T_BANG UNARY_PRE          { $$ = new AST_UnOp(AST_UnOp::Type::BANG, $2); }
+UNARY_PRE : T_AND_B UNARY_PRE         { $$ = new AST_UnOp(AST_UnOp::Type::ADDRESS, $2); }
+          | T_STAR UNARY_PRE          { $$ = new AST_UnOp(AST_UnOp::Type::DEREFERENCE, $2); }
+          | T_BANG UNARY_PRE          { $$ = new AST_UnOp(AST_UnOp::Type::BANG, $2); }
           | T_NOT UNARY_PRE           { $$ = new AST_UnOp(AST_UnOp::Type::NOT, $2); }
           | T_MINUS UNARY_PRE         { $$ = new AST_UnOp(AST_UnOp::Type::MINUS, $2); }
           | T_MINUSMINUS UNARY_PRE    { $$ = new AST_UnOp(AST_UnOp::Type::PRE_DECREMENT, $2); }

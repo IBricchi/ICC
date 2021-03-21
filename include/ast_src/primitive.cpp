@@ -275,28 +275,28 @@ AST_Pointer::AST_Pointer(AST* _type) :
     type(_type)
 {}
 
-void AST_ArrayType::generateFrames(Frame* _frame){
+void AST_Pointer::generateFrames(Frame* _frame){
     frame = _frame;
     type->generateFrames(_frame);
 }
 
-AST* AST_ArrayType::deepCopy(){
+AST* AST_Pointer::deepCopy(){
     AST* new_type = type->deepCopy();
     return new AST_Pointer(new_type);
 }
 
-void AST_ArrayType::compile(std::ostream &assemblyOut) {
+void AST_Pointer::compile(std::ostream &assemblyOut) {
     throw std::runtime_error("PointerType should never be compiled.\n");
 }
 
-AST* AST_ArrayType::getType(){
+AST* AST_Pointer::getType(){
     return type;
 }
 
-int AST_ArrayType::getBytes(){
+int AST_Pointer::getBytes(){
     return 4;
 }
 
-AST_ArrayType::~AST_ArrayType(){
+AST_Pointer::~AST_Pointer(){
     delete type;
 }
