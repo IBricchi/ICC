@@ -123,3 +123,20 @@ public:
 
     ~AST_ArrayType();
 };
+
+class AST_Pointer
+    : public AST
+{
+private:
+    AST* type;
+public:
+    AST_Pointer(AST* _type);
+    
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+    int getBytes() override;
+
+    ~AST_Pointer();
+};
