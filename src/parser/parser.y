@@ -253,7 +253,7 @@ TYPEDEF : T_TYPEDEF T_TYPE T_IDENTIFIER T_SEMI_COLON {
         ;
 
 TYPE : T_TYPE        { $$ = new AST_Type($1); }
-     | T_TYPE T_STAR { $$ = new AST_Pointer($1); }
+     | TYPE T_STAR { $$ = new AST_Pointer($1); }
      ;
 
 ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLON {

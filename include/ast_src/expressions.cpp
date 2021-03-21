@@ -1296,6 +1296,8 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
             {
                 assemblyOut << "# " << unLabel << " is &" << std::endl;
                 // does nothing in compile part
+                assemblyOut << "move $t1, $t0" << std::endl;
+                break;
             }
             case Type::DEREFERENCE:
             {
@@ -1304,6 +1306,10 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
                 if(!returnPtr){
                     assemblyOut << "lw $t1, 0($t1)" << std::endl;
                 }
+                else{
+                    assemblyOut << "move $t0, $t1" << std::endl;
+                }
+                break;
             }
             case Type::BANG:
             {

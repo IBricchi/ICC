@@ -297,6 +297,10 @@ int AST_Pointer::getBytes(){
     return 4;
 }
 
+std::string AST_Pointer::getTypeName(){
+    return "pointer";
+}
+
 AST_Pointer::~AST_Pointer(){
     delete type;
 }
