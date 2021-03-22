@@ -290,6 +290,13 @@ AST_VarDeclaration::AST_VarDeclaration(AST* _type, std::string* _name, AST* _exp
     expr(_expr)
 {}
 
+// Used for struct
+AST_VarDeclaration::AST_VarDeclaration(AST* _type, std::string* _name, const std::map<std::string, std::string> &_structAttributeNameTypeMap) :
+    type(_type),
+    name(*_name),
+    structAttributeNameTypeMap(_structAttributeNameTypeMap)
+{}
+
 void AST_VarDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
     type->generateFrames(_frame);

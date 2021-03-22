@@ -129,7 +129,7 @@ STRUCT_DECLARATION : T_STRUCT T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
                                 }
 
                                 AST *type = new AST_Type(new std::string("struct"), declarations);
-                                AST* seq = new AST_VarDeclaration(type, $3);
+                                AST* seq = new AST_VarDeclaration(type, $3, declarations);
 
                                 std::string varNameStructPrefix = *$3 + ".";
                                 auto decIt = declarations.begin();

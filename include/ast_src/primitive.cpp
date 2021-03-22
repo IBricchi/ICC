@@ -212,15 +212,19 @@ AST_Type::AST_Type(std::string* _name) :
     bytes = size_of_type[*_name];
 }
 
-AST_Type::AST_Type(std::string* _name, std::map<std::string, std::string> &attributeNameTypeMap) :
+AST_Type::AST_Type(std::string* _name, const std::map<std::string, std::string> &attributeNameTypeMap) :
      name(*_name)
 {
     bytes = 0;
     for (auto attribute : attributeNameTypeMap) {
         if (attribute.second == "struct") {
-            // Not implemented => skip
+            bytes += frame->getVarType(attribute.first)->getBytes();
         } else if (attribute.second == "array") {
             // Not implemented => skip
+            continue;
+        } else if (attribute.second == "char") {
+            // size_of_type map contains incorrect char size
+            bytes += 1;
         } else {
             bytes += size_of_type[attribute.second];
         }

@@ -98,7 +98,7 @@ public:
     AST_Type(std::string* name);
 
     // Used for struct type
-    AST_Type(std::string* name, std::map<std::string, std::string> &attributeNameTypeMap);
+    AST_Type(std::string* name, const std::map<std::string, std::string> &attributeNameTypeMap);
 
     static std::unordered_map<std::string, int> size_of_type;
     
