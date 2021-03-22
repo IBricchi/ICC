@@ -128,13 +128,11 @@ STRUCT_DECLARATION : T_STRUCT T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
                                          throw std::runtime_error("PARSER: STRUCT_DECLARATION: Failed to find struct type in lexer_structs.\n");
                                 }
 
-                                std::string varNameStructPrefix = *$3 + ".";
+                                AST *type = new AST_Type(new std::string("struct"), declarations);
+                                AST* seq = new AST_VarDeclaration(type, $3);
 
+                                std::string varNameStructPrefix = *$3 + ".";
                                 auto decIt = declarations.begin();
-                                std::string *varNamePtr = new std::string(varNameStructPrefix + decIt->first);
-                                AST *type = new AST_Type(new std::string(decIt->second));
-                                AST* seq = new AST_VarDeclaration(type, varNamePtr);
-                                ++decIt;
                                 while (decIt != declarations.end()) {
                                         std::string *varNamePtr = new std::string(varNameStructPrefix + decIt->first);
                                         AST *type = new AST_Type(new std::string(decIt->second));

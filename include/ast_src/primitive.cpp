@@ -212,12 +212,22 @@ AST_Type::AST_Type(std::string* _name) :
     bytes = size_of_type[*_name];
 }
 
+AST_Type::AST_Type(std::string* _name, std::map<std::string, std::string> &attributeNameTypeMap) :
+     name(*_name)
+{
+    bytes = 0;
+    for (auto attribute : attributeNameTypeMap) {
+        bytes += size_of_type[attribute.second];
+    }
+}
+
 std::unordered_map<std::string, int> AST_Type::size_of_type = {
     {"int", 4}, // Intentionally wrong so that char can be treated as int for binary/unary operations (e.g. using lw instead of lb)
     {"char", 4},
     {"float", 4},
     {"double", 8},
-    {"unsigned", 4}
+    {"unsigned", 4},
+    {"struct", -1}, // Size needs to be computed dynamically
 };
 
 void AST_Type::generateFrames(Frame* _frame){
