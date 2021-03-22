@@ -11,6 +11,12 @@ struct x{
     int y;
     struct a z;
     struct b zu;
+
+    struct {
+        double a;
+        float b;
+        unsigned c;
+    } f;
 };
 
 int f()
@@ -21,5 +27,5 @@ int f()
 
     return  (sizeof(small) == 4 + 1) &&
             (sizeof(arrSmall) == 4*10) &&
-            (sizeof(big) == 4 + (4 + 1) + (4*10));
+            (sizeof(big) == 4 + (4 + 1) + (4*10) + (8+4+4));
 }
