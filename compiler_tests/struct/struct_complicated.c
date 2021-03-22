@@ -15,12 +15,12 @@ struct outer{
 
     struct innerB e;
 
-    // int arr[5];
+    int arr[5];
 
-    // struct {
-    //     int a;
-    //     int b;
-    // } f;
+    struct {
+        int a;
+        int b;
+    } f;
 };
 
 int f()
@@ -35,13 +35,18 @@ int f()
     st.e.inner.a = 22;
     st.e.inner.b = 222;
 
-    // st.arr[1] = 11;
+    st.arr[1] = 11;
+    st.arr[3] = 44;
+
+    st.f.a = 345;
 
     return  (st.a == 5) &&
             (st.b == 43.0f) &&
             (st.c == 3424.43) &&
             (st.d == '\r') &&
             (st.e.inner.a == 22) &&
-            (st.e.inner.b == 222) ;
-            // (st.arr[1] == 11);
+            (st.e.inner.b == 222) &&
+            (st.arr[1] == 11) &&
+            (st.arr[3] == 44) &&
+            (st.f.a == 345);
 }

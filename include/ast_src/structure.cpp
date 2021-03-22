@@ -290,6 +290,13 @@ AST_VarDeclaration::AST_VarDeclaration(AST* _type, std::string* _name, AST* _exp
     expr(_expr)
 {}
 
+// Used for struct
+AST_VarDeclaration::AST_VarDeclaration(AST* _type, std::string* _name, const std::map<std::string, std::string> &_structAttributeNameTypeMap) :
+    type(_type),
+    name(*_name),
+    structAttributeNameTypeMap(_structAttributeNameTypeMap)
+{}
+
 void AST_VarDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
     type->generateFrames(_frame);
@@ -391,6 +398,14 @@ void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {
     assemblyOut << "addiu $t0, $fp, -" << frame->getVarAddress(name).second - 8 << std::endl;
     regToVar(assemblyOut, frame, "$t0", name);
     assemblyOut << "# end array declaration " << name << std::endl << std::endl;
+}
+
+AST* AST_ArrayDeclaration::getType() {
+    return this->type;
+}
+
+std::string AST_ArrayDeclaration::getName() {
+    return this->name;
 }
 
 AST_ArrayDeclaration::~AST_ArrayDeclaration(){

@@ -128,17 +128,24 @@ STRUCT_DECLARATION : T_STRUCT T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
                                          throw std::runtime_error("PARSER: STRUCT_DECLARATION: Failed to find struct type in lexer_structs.\n");
                                 }
 
-                                std::string varNameStructPrefix = *$3 + ".";
+                                AST *type = new AST_Type(new std::string("struct"), declarations);
+                                AST* seq = new AST_VarDeclaration(type, $3, declarations);
 
+                                std::string varNameStructPrefix = *$3 + ".";
                                 auto decIt = declarations.begin();
-                                std::string *varNamePtr = new std::string(varNameStructPrefix + decIt->first);
-                                AST *type = new AST_Type(new std::string(decIt->second));
-                                AST* seq = new AST_VarDeclaration(type, varNamePtr);
-                                ++decIt;
                                 while (decIt != declarations.end()) {
                                         std::string *varNamePtr = new std::string(varNameStructPrefix + decIt->first);
-                                        AST *type = new AST_Type(new std::string(decIt->second));
-                                        auto declaration = new AST_VarDeclaration(type, varNamePtr);
+
+                                        AST* declaration;
+                                        if (decIt->second.find("*") != std::string::npos) {
+                                                AST* type = new AST_Type(new std::string(decIt->second.substr(0, decIt->second.find("*"))));
+                                                int size = std::stoi(decIt->second.substr(decIt->second.find("*")+1));
+                                                AST* arrayType = new AST_ArrayType(type, size);
+                                                declaration = new AST_ArrayDeclaration(arrayType, varNamePtr);
+                                        } else {
+                                                AST* type = new AST_Type(new std::string(decIt->second));
+                                                declaration = new AST_VarDeclaration(type, varNamePtr);
+                                        }
                                         seq = new AST_Sequence(declaration, seq);
                                         ++decIt;
                                 }
@@ -170,6 +177,10 @@ STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_
                                                 for (auto childDeclaration : childDeclarations) {
                                                         declarations[childNamePrefix + childDeclaration.first] = childDeclaration.second;
                                                 }
+                                        } else if (dynamic_cast<AST_ArrayDeclaration*>(dec)) {
+                                                std::string varName = dec->getName();
+                                                std::string typeNameCoding = dec->getType()->getType()->getTypeName() + "*" + std::to_string(dec->getType()->getSize());
+                                                declarations[varName] = typeNameCoding;
                                         } else {
                                                 // AST_VarDeclaration
                                                 std::string varName = dec->getName();
@@ -182,6 +193,69 @@ STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_
                                 // Assign something that has no effect
                                 $$ = new AST_ConstInt(0);
                         }
+                  | T_STRUCT T_BRACE_L STRUCT_INTERNAL_DECLARATION_LIST T_BRACE_R T_IDENTIFIER T_SEMI_COLON {
+                                // The following is very hacky. Combined from STRUCT_DEFINITION and STRUCT_DECLARATION.
+
+                                // The declarations from STRUCT_INTERNAL_DECLARATION_LIST are never compiled because they
+                                // are not passed up the AST.
+                                std::map<std::string, std::string> declarations{};
+                                for (auto dec : *$3) {
+                                        // check if nested child struct
+                                        if (dynamic_cast<AST_Sequence*>(dec)) {
+                                                std::string childStructString = dec->getStructName();
+                                                auto it = lexer_structs.find(childStructString.substr(0,childStructString.find("*")));
+                                                std::map<std::string, std::string> childDeclarations{};
+                                                if (it != lexer_structs.end()) {
+                                                        childDeclarations = it->second;
+                                                } else {
+                                                        throw std::runtime_error("PARSER: STRUCT_DEFINITION: Failed to find child struct type in lexer_structs.\n");
+                                                }
+
+                                                std::string childNamePrefix = childStructString.substr(childStructString.find("*")+1) + ".";
+                                                for (auto childDeclaration : childDeclarations) {
+                                                        declarations[childNamePrefix + childDeclaration.first] = childDeclaration.second;
+                                                }
+                                        } else if (dynamic_cast<AST_ArrayDeclaration*>(dec)) {
+                                                std::string varName = dec->getName();
+                                                std::string typeNameCoding = dec->getType()->getType()->getTypeName() + "*" + std::to_string(dec->getType()->getSize());
+                                                declarations[varName] = typeNameCoding;
+                                        } else {
+                                                // AST_VarDeclaration
+                                                std::string varName = dec->getName();
+                                                std::string typeName = dec->getType()->getTypeName();
+                                                declarations[varName] = typeName;
+                                        }
+                                }
+
+                                lexer_structs[*$5 + "unnamedStruct"] = declarations;
+                                
+                                AST *type = new AST_Type(new std::string("struct"), declarations);
+                                AST* seq = new AST_VarDeclaration(type, $5, declarations);
+
+                                std::string varNameStructPrefix = *$5 + ".";
+                                auto decIt = declarations.begin();
+                                while (decIt != declarations.end()) {
+                                        std::string *varNamePtr = new std::string(varNameStructPrefix + decIt->first);
+
+                                        AST* declaration;
+                                        if (decIt->second.find("*") != std::string::npos) {
+                                                AST* type = new AST_Type(new std::string(decIt->second.substr(0, decIt->second.find("*"))));
+                                                int size = std::stoi(decIt->second.substr(decIt->second.find("*")+1));
+                                                AST* arrayType = new AST_ArrayType(type, size);
+                                                declaration = new AST_ArrayDeclaration(arrayType, varNamePtr);
+                                        } else {
+                                                AST* type = new AST_Type(new std::string(decIt->second));
+                                                declaration = new AST_VarDeclaration(type, varNamePtr);
+                                        }
+                                        seq = new AST_Sequence(declaration, seq);
+                                        ++decIt;
+                                }
+
+                                // set name for parsing of nested structs (format: "structName*structInstanceName")
+                                seq->setStructName(*$5 + "unnamedStruct" + "*" + *$5);
+
+                                $$ = seq;
+                        }
                   ;
 
 STRUCT_INTERNAL_DECLARATION_LIST : STRUCT_INTERNAL_DECLARATION                                  { $$ = new std::vector<AST*>({$1}); }
@@ -193,6 +267,7 @@ STRUCT_INTERNAL_DECLARATION_LIST : STRUCT_INTERNAL_DECLARATION                  
 
 STRUCT_INTERNAL_DECLARATION : VAR_DECLARATION    { $$ = $1; }
                             | STRUCT_DECLARATION { $$ = $1; }
+                            | STRUCT_DEFINITION  { $$ = $1; } // Unnamed struct
                             ;
 
 FUN_DECLARATION : TYPE T_IDENTIFIER T_BRACK_L T_BRACK_R T_SEMI_COLON                                  { $$ = new AST_FunDeclaration($1, $2); }

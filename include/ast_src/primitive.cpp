@@ -212,12 +212,34 @@ AST_Type::AST_Type(std::string* _name) :
     bytes = size_of_type[*_name];
 }
 
+AST_Type::AST_Type(std::string* _name, const std::map<std::string, std::string> &attributeNameTypeMap) :
+     name(*_name)
+{
+    bytes = 0;
+    for (auto attribute : attributeNameTypeMap) {
+        if (attribute.second == "struct") {
+            bytes += frame->getVarType(attribute.first)->getBytes();
+        } else if (attribute.second.find("*") != std::string::npos) {
+            // array
+            std::string typeName = attribute.second.substr(0, attribute.second.find("*"));
+            int size = std::stoi(attribute.second.substr(attribute.second.find("*")+1));
+            bytes += size_of_type[typeName] * size;
+        } else if (attribute.second == "char") {
+            // size_of_type map contains incorrect char size
+            bytes += 1;
+        } else {
+            bytes += size_of_type[attribute.second];
+        }
+    }
+}
+
 std::unordered_map<std::string, int> AST_Type::size_of_type = {
     {"int", 4}, // Intentionally wrong so that char can be treated as int for binary/unary operations (e.g. using lw instead of lb)
     {"char", 4},
     {"float", 4},
     {"double", 8},
-    {"unsigned", 4}
+    {"unsigned", 4},
+    {"struct", -1}, // Size needs to be computed dynamically
 };
 
 void AST_Type::generateFrames(Frame* _frame){
@@ -271,6 +293,10 @@ int AST_ArrayType::getBytes(){
 
 std::string AST_ArrayType::getTypeName(){
     return "pointer";
+}
+
+int AST_ArrayType::getSize() {
+    return this->size;
 }
 
 AST_ArrayType::~AST_ArrayType(){

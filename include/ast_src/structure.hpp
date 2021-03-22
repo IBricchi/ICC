@@ -55,6 +55,9 @@ public:
     ~AST_FunDeclaration();
 };
 
+/*
+    Corresponding object is AST_Variable in primitive.hpp.
+*/
 class AST_VarDeclaration
     : public AST
 {
@@ -65,12 +68,13 @@ private:
 
     // Used for struct
     std::string structName;
+    std::map<std::string, std::string> structAttributeNameTypeMap;
 
 public:
-    /*
-        Corresponding object is AST_Variable in primitive.hpp.
-    */
     AST_VarDeclaration(AST* _type, std::string* _name, AST* _expr = nullptr);
+
+    // Used for struct
+    AST_VarDeclaration(AST* _type, std::string* _name, const std::map<std::string, std::string> &_structAttributeNameTypeMap);
 
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
@@ -97,6 +101,9 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+
+    std::string getName() override;
 
     ~AST_ArrayDeclaration();
 };
