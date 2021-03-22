@@ -221,6 +221,7 @@ AST_Type::AST_Type(std::string* _name, const std::map<std::string, std::string> 
             bytes += frame->getVarType(attribute.first)->getBytes();
         } else if (attribute.second == "array") {
             // Not implemented => skip
+            std::cerr << "AST_Type::AST_Type: skipping sizeof array struct attribute" << std::endl;
             continue;
         } else if (attribute.second == "char") {
             // size_of_type map contains incorrect char size
