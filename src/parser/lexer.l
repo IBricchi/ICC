@@ -16,7 +16,8 @@ std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types = {
   {"int",{}},
   {"char",{}},
   {"float",{}},
-  {"double",{}}
+  {"double",{}},
+  {"unsigned",{}}
 };
 
 // map from struct name to set of member (name, type) pairs
