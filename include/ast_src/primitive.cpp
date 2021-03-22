@@ -272,7 +272,6 @@ AST_ArrayType::~AST_ArrayType(){
     delete type;
 }
 
-
 AST_Pointer::AST_Pointer(AST* _type) :
     type(_type)
 {}

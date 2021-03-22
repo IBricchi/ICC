@@ -375,7 +375,8 @@ void AST_ArrayDeclaration::generateFrames(Frame* _frame){
     // this isn't useful for int's but when we need double word sized types this will save us
     // a lot of headaches.
     // no need to pad type->getType() since addVariable does that for us
-    _frame->addVariable(name, type, pointer_size + pointer_size % 8 + type->getBytes());
+    _frame->addVariable(name, type, pointer_size % 8 + type->getBytes());
+    _frame->addVariable(name, type, pointer_size);
 }
 
 AST* AST_ArrayDeclaration::deepCopy(){
@@ -387,7 +388,7 @@ void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {
     // get pointer to start of allocated memory space
     // always a double word away from allocated memory space
     assemblyOut << std::endl << "# start array declaration " << name << std::endl; 
-    assemblyOut << "addiu $t0, $fp, -" << frame->getVarAddress(name).second + 8 << std::endl;
+    assemblyOut << "addiu $t0, $fp, -" << frame->getVarAddress(name).second - 8 << std::endl;
     regToVar(assemblyOut, frame, "$t0", name);
     assemblyOut << "# end array declaration " << name << std::endl << std::endl;
 }
