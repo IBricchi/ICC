@@ -266,7 +266,11 @@ AST_ArrayType::AST_ArrayType(AST* _type, int _size) :
     type(_type),
     size(_size)
 {
-    bytes = _type->getBytes() * size;
+    if (_type->getTypeName() == "char") {
+        bytes = size;
+    } else {
+        bytes = _type->getBytes() * size;
+    }
 }
 
 void AST_ArrayType::generateFrames(Frame* _frame){
