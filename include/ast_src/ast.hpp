@@ -59,6 +59,8 @@ public:
 
     virtual void setStructName(std::string newName);
     virtual std::string getStructName();
+
+    virtual int getSize();
 };
 
 /*

@@ -400,6 +400,14 @@ void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {
     assemblyOut << "# end array declaration " << name << std::endl << std::endl;
 }
 
+AST* AST_ArrayDeclaration::getType() {
+    return this->type;
+}
+
+std::string AST_ArrayDeclaration::getName() {
+    return this->name;
+}
+
 AST_ArrayDeclaration::~AST_ArrayDeclaration(){
     delete type;
 }

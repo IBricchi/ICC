@@ -125,6 +125,7 @@ public:
     AST* getType() override;
     int getBytes() override;
     std::string getTypeName() override;
+    int getSize() override;
 
     ~AST_ArrayType();
 };

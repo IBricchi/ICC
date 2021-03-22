@@ -135,8 +135,17 @@ STRUCT_DECLARATION : T_STRUCT T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
                                 auto decIt = declarations.begin();
                                 while (decIt != declarations.end()) {
                                         std::string *varNamePtr = new std::string(varNameStructPrefix + decIt->first);
-                                        AST *type = new AST_Type(new std::string(decIt->second));
-                                        auto declaration = new AST_VarDeclaration(type, varNamePtr);
+
+                                        AST* declaration;
+                                        if (decIt->second.find("*") != std::string::npos) {
+                                                AST* type = new AST_Type(new std::string(decIt->second.substr(0, decIt->second.find("*"))));
+                                                int size = std::stoi(decIt->second.substr(decIt->second.find("*")+1));
+                                                AST* arrayType = new AST_ArrayType(type, size);
+                                                declaration = new AST_ArrayDeclaration(arrayType, varNamePtr);
+                                        } else {
+                                                AST* type = new AST_Type(new std::string(decIt->second));
+                                                declaration = new AST_VarDeclaration(type, varNamePtr);
+                                        }
                                         seq = new AST_Sequence(declaration, seq);
                                         ++decIt;
                                 }
@@ -168,6 +177,10 @@ STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_
                                                 for (auto childDeclaration : childDeclarations) {
                                                         declarations[childNamePrefix + childDeclaration.first] = childDeclaration.second;
                                                 }
+                                        } else if (dynamic_cast<AST_ArrayDeclaration*>(dec)) {
+                                                std::string varName = dec->getName();
+                                                std::string typeNameCoding = dec->getType()->getType()->getTypeName() + "*" + std::to_string(dec->getType()->getSize());
+                                                declarations[varName] = typeNameCoding;
                                         } else {
                                                 // AST_VarDeclaration
                                                 std::string varName = dec->getName();

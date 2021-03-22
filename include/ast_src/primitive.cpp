@@ -294,6 +294,10 @@ std::string AST_ArrayType::getTypeName(){
     return "pointer";
 }
 
+int AST_ArrayType::getSize() {
+    return this->size;
+}
+
 AST_ArrayType::~AST_ArrayType(){
     delete type;
 }

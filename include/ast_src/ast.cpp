@@ -47,6 +47,10 @@ std::string AST::getStructName() {
     throw std::runtime_error("AST: getStructName Not implemented by child class.\n");
 }
 
+int AST::getSize() {
+    throw std::runtime_error("AST: getSize Not implemented by child class.\n");
+}
+
 AST::~AST() {
     delete frame;
 }

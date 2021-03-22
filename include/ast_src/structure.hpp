@@ -101,6 +101,9 @@ public:
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+
+    std::string getName() override;
 
     ~AST_ArrayDeclaration();
 };
