@@ -217,7 +217,13 @@ AST_Type::AST_Type(std::string* _name, std::map<std::string, std::string> &attri
 {
     bytes = 0;
     for (auto attribute : attributeNameTypeMap) {
-        bytes += size_of_type[attribute.second];
+        if (attribute.second == "struct") {
+            // Not implemented => skip
+        } else if (attribute.second == "array") {
+            // Not implemented => skip
+        } else {
+            bytes += size_of_type[attribute.second];
+        }
     }
 }
 
