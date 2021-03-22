@@ -843,34 +843,9 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
                 assemblyOut << "# " << binLabel << " is pointer arithmetic -" << std::endl;
-                assemblyOut << "addiu $t2, $0, " << getBytes() << std::endl;
+                assemblyOut << "addiu $t2, $0, " << getType()->getBytes() << std::endl;
                 assemblyOut << "mult $t1, $t2" << std::endl;
-                assemblyOut << "mflo $t1" << std::endl;
-                assemblyOut << "sub $t2, $t0, $t1" << std::endl;
-                break;
-            }
-            case Type::ARRAY:
-            {
-                // load result of index expression into register
-                right->compile(assemblyOut);
-                
-                assemblyOut << "lw $t0, 16($sp)" << std::endl;
-                assemblyOut << "lw $t1, 8($sp)" << std::endl;
-
-                assemblyOut << "# " << binLabel << " [] " << std::endl;
-                assemblyOut << "addiu $t2, $0, " << getBytes() << std::endl;
-                assemblyOut << "multu $t1, $t2" << std::endl;
-                assemblyOut << "mflo $t1" << std::endl;
-                assemblyOut << "add $t2, $t0, $t1" << std::endl;
-                // if not left of assign load value
-                if(!returnPtr)
-                    assemblyOut << "lw $t2, 0($t2)" << std::endl;
-                
-                break;
-            }
-            default:
-            {
-                throw std::runtime_error("AST_BinOp: Pointer Not Implemented Yet.\n");
+                assemblyOut << "sub $t2, $t0, $lo" << std::endl;
                 break;
             }
         }
@@ -1197,6 +1172,25 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "mfhi $t2" << std::endl;
                 break;
             }
+            case Type::ARRAY:
+            {
+                // load result of index expression into register
+                right->compile(assemblyOut);
+                
+                assemblyOut << "lw $t0, 16($sp)" << std::endl;
+                assemblyOut << "lw $t1, 8($sp)" << std::endl;
+
+                assemblyOut << "# " << binLabel << " [] " << std::endl;
+                assemblyOut << "addiu $t2, $0, " << getBytes() << std::endl;
+                assemblyOut << "multu $t1, $t2" << std::endl;
+                assemblyOut << "mflo $t1" << std::endl;
+                assemblyOut << "add $t2, $t0, $t1" << std::endl;
+                // if not left of assign load value
+                if(!returnPtr)
+                    assemblyOut << "lw $t2, 0($t2)" << std::endl;
+                
+                break;
+            }
             default:
             {
                 throw std::runtime_error("AST_BinOp: Not Implemented Yet.\n");
@@ -1220,7 +1214,11 @@ void AST_BinOp::setType(std::string newType) {
 AST* AST_BinOp::getType(){
     if (this->internalDataType == nullptr) {
         // save internal type
-        this->internalDataType = left->getType();
+        AST* left_type = left->getType();
+        if(type == Type::ARRAY){
+            left_type = left_type->getType();
+        }
+        this->internalDataType = left_type;
 
         // change type to int (result is boolean)
         if (type == Type::EQUAL_EQUAL || type == Type::BANG_EQUAL || type == Type::LESS
@@ -1245,10 +1243,9 @@ int AST_BinOp::getBytes(){
     // assuming left and right have same type
     // we don't need to implement implicit casting so this should be fine
     int bytes = left->getBytes();
-    if(left->getTypeName() == "pointer"){
+    if(type == Type::ARRAY){
         bytes = left->getType()->getType()->getBytes();
     }
-    return bytes;
 }
 
 AST_BinOp::~AST_BinOp(){
@@ -1274,8 +1271,7 @@ AST* AST_UnOp::deepCopy(){
 }
 
 void AST_UnOp::compile(std::ostream &assemblyOut) {
-    getType();
-    std::string varType = this->internalDataType->getTypeName();
+    std::string varType = this->getType()->getTypeName();
 
     std::string unLabel = generateUniqueLabel("unOp");
     assemblyOut << std::endl << "# start " << unLabel << std::endl;
@@ -1447,32 +1443,15 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
 }
 
 AST* AST_UnOp::getType(){
-    if(internalDataType == nullptr){
-        // save internal type
-        this->internalDataType = operand->getType();
-
-        if(type == Type::ADDRESS){
-            this->dataType = new AST_Pointer(internalDataType->deepCopy());
-        }
+    AST* lt = operand->getType();
+    if(type == TYPE::DEREFERENCE){
+        lt = lt->getType();
     }
-
-    if(dataType == nullptr){
-        // save internal type
-        AST* otype = operand->getType();
-        if(type == Type::DEREFERENCE){
-            otype = otype->getType();
-        }
-        this->dataType = otype;
-    }
-
-    return this->dataType;
+    return lt;
 }
 
 int AST_UnOp::getBytes(){
-    if(dataType == nullptr){
-        getType();
-    }
-    return dataType->getBytes();
+    return this->operand->getBytes();
 }
 
 AST_UnOp::~AST_UnOp(){

@@ -134,7 +134,9 @@ AST* AST_ConstChar::getType() {
 
 AST_Variable::AST_Variable(std::string* _name) :
     name(*_name)
-{}
+{
+    isVar = true;
+}
 
 void AST_Variable::generateFrames(Frame* _frame){
     frame = _frame;
@@ -214,7 +216,8 @@ std::unordered_map<std::string, int> AST_Type::size_of_type = {
     {"int", 4}, // Intentionally wrong so that char can be treated as int for binary/unary operations (e.g. using lw instead of lb)
     {"char", 4},
     {"float", 4},
-    {"double", 8}
+    {"double", 8},
+    {"unsigned", 4}
 };
 
 void AST_Type::generateFrames(Frame* _frame){
@@ -266,6 +269,44 @@ int AST_ArrayType::getBytes(){
     return bytes;
 }
 
+std::string AST_ArrayType::getTypeName(){
+    return "pointer";
+}
+
 AST_ArrayType::~AST_ArrayType(){
+    delete type;
+}
+
+AST_Pointer::AST_Pointer(AST* _type) :
+    type(_type)
+{}
+
+void AST_Pointer::generateFrames(Frame* _frame){
+    frame = _frame;
+    type->generateFrames(_frame);
+}
+
+AST* AST_Pointer::deepCopy(){
+    AST* new_type = type->deepCopy();
+    return new AST_Pointer(new_type);
+}
+
+void AST_Pointer::compile(std::ostream &assemblyOut) {
+    throw std::runtime_error("PointerType should never be compiled.\n");
+}
+
+AST* AST_Pointer::getType(){
+    return type;
+}
+
+int AST_Pointer::getBytes(){
+    return 4;
+}
+
+std::string AST_Pointer::getTypeName(){
+    return "pointer";
+}
+
+AST_Pointer::~AST_Pointer(){
     delete type;
 }
