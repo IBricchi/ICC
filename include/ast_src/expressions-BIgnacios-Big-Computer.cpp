@@ -828,7 +828,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
                 assemblyOut << "# " << binLabel << " is pointer arithmetic +" << std::endl;
-                assemblyOut << "addiu $t2, $0, " << internalDataType->getBytes() << std::endl;
+                assemblyOut << "addiu $t2, $0, " << getBytes() << std::endl;
                 assemblyOut << "multu $t1, $t2" << std::endl;
                 assemblyOut << "mflo $t1" << std::endl;
                 assemblyOut << "add $t2, $t0, $t1" << std::endl;
@@ -843,7 +843,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
                 assemblyOut << "# " << binLabel << " is pointer arithmetic -" << std::endl;
-                assemblyOut << "addiu $t2, $0, " << internalDataType->getBytes() << std::endl;
+                assemblyOut << "addiu $t2, $0, " << getType()->getBytes() << std::endl;
                 assemblyOut << "mult $t1, $t2" << std::endl;
                 assemblyOut << "sub $t2, $t0, $lo" << std::endl;
                 break;
@@ -1246,7 +1246,6 @@ int AST_BinOp::getBytes(){
     if(type == Type::ARRAY){
         bytes = left->getType()->getType()->getBytes();
     }
-    return bytes;
 }
 
 AST_BinOp::~AST_BinOp(){
@@ -1272,8 +1271,7 @@ AST* AST_UnOp::deepCopy(){
 }
 
 void AST_UnOp::compile(std::ostream &assemblyOut) {
-    getType();
-    std::string varType = this->internalDataType->getTypeName();
+    std::string varType = this->getType()->getTypeName();
 
     std::string unLabel = generateUniqueLabel("unOp");
     assemblyOut << std::endl << "# start " << unLabel << std::endl;
@@ -1445,36 +1443,15 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
 }
 
 AST* AST_UnOp::getType(){
-    if(internalDataType == nullptr){
-        // save internal type
-        AST* otype = operand->getType();
-        if(type == Type::DEREFERENCE){
-            otype = otype->getType();
-        }
-        this->internalDataType = otype;
-
-        if(type == Type::ADDRESS){
-            this->dataType = new AST_Pointer(otype->deepCopy());
-        }
+    AST* lt = operand->getType();
+    if(type == TYPE::DEREFERENCE){
+        lt = lt->getType();
     }
-
-    if(dataType == nullptr){
-        // save internal type
-        AST* otype = operand->getType();
-        if(type == Type::DEREFERENCE){
-            otype = otype->getType();
-        }
-        this->dataType = otype;
-    }
-
-    return this->dataType;
+    return lt;
 }
 
 int AST_UnOp::getBytes(){
-    if(dataType == nullptr){
-        getType();
-    }
-    return dataType->getBytes();
+    return this->operand->getBytes();
 }
 
 AST_UnOp::~AST_UnOp(){

@@ -134,7 +134,9 @@ AST* AST_ConstChar::getType() {
 
 AST_Variable::AST_Variable(std::string* _name) :
     name(*_name)
-{}
+{
+    isVar = true;
+}
 
 void AST_Variable::generateFrames(Frame* _frame){
     frame = _frame;

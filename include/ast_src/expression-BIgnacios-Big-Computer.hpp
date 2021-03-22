@@ -115,6 +115,7 @@ private:
     Type type;
     AST* operand;
 public:
+    // Used for float to int conversion when binOp is a comparison
     AST* dataType;
     AST* internalDataType;
 

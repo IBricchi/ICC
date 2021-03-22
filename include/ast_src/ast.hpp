@@ -17,6 +17,7 @@ class AST
 {
 public:
     Frame* frame;
+    bool isVar = false;
     bool returnPtr = false;
 
     virtual ~AST();
