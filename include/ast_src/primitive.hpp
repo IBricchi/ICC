@@ -120,6 +120,7 @@ public:
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
     int getBytes() override;
+    std::string getTypeName() override;
 
     ~AST_ArrayType();
 };

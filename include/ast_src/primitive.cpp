@@ -268,6 +268,10 @@ int AST_ArrayType::getBytes(){
     return bytes;
 }
 
+std::string AST_ArrayType::getTypeName(){
+    return "pointer";
+}
+
 AST_ArrayType::~AST_ArrayType(){
     delete type;
 }
