@@ -219,10 +219,11 @@ AST_Type::AST_Type(std::string* _name, const std::map<std::string, std::string> 
     for (auto attribute : attributeNameTypeMap) {
         if (attribute.second == "struct") {
             bytes += frame->getVarType(attribute.first)->getBytes();
-        } else if (attribute.second == "array") {
-            // Not implemented => skip
-            std::cerr << "AST_Type::AST_Type: skipping sizeof array struct attribute" << std::endl;
-            continue;
+        } else if (attribute.second.find("*") != std::string::npos) {
+            // array
+            std::string typeName = attribute.second.substr(0, attribute.second.find("*"));
+            int size = std::stoi(attribute.second.substr(attribute.second.find("*")+1));
+            bytes += size_of_type[typeName] * size;
         } else if (attribute.second == "char") {
             // size_of_type map contains incorrect char size
             bytes += 1;
