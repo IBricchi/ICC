@@ -19,7 +19,7 @@ public:
     AST* getType() override;
     std::string getTypeName() override;
 
-    int getValue() override;
+    int getIntValue() override;
 };
 
 class AST_ConstFloat

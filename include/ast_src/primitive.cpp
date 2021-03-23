@@ -34,7 +34,7 @@ std::string AST_ConstInt::getTypeName(){
     return "int";
 }
 
-int AST_ConstInt::getValue() {
+int AST_ConstInt::getIntValue() {
     return value;
 }
 

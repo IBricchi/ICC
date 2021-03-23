@@ -63,7 +63,7 @@ public:
     virtual int getSize();
 
     // Used for global variables => cannot get value through stack
-    virtual int getValue();
+    virtual int getIntValue();
 };
 
 /*

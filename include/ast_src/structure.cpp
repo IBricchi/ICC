@@ -324,7 +324,7 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
         assemblyOut << std::endl << "# start " << varType << " var dec with definition " << name << std::endl;
 
         if (this->frame->isGlobal) {
-            valueToVarLabel(assemblyOut, expr->getValue(), this->name);
+            valueToVarLabel(assemblyOut, expr->getIntValue(), this->name);
         } else {
             expr->compile(assemblyOut);
 
