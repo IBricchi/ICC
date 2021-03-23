@@ -18,6 +18,8 @@ public:
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
     std::string getTypeName() override;
+
+    int getValue() override;
 };
 
 class AST_ConstFloat

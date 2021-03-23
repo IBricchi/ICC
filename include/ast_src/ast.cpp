@@ -51,6 +51,10 @@ int AST::getSize() {
     throw std::runtime_error("AST: getSize Not implemented by child class.\n");
 }
 
+int AST::getValue() {
+    throw std::runtime_error("AST: int getValue Not implemented by child class.\n");
+}
+
 AST::~AST() {
     delete frame;
 }
@@ -78,6 +82,11 @@ std::pair<int, int> Frame::getVarAddress(const std::string &variableName) {
     while(pos == -1){
         depth++;
         frame = frame->parentFrame;
+
+        if (frame->isGlobal) {
+            return {-1,-1};
+        }
+
         pos = frame->getVarPos(variableName);
     }
     return {depth, pos};

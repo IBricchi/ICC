@@ -8,6 +8,11 @@ std::string generateUniqueLabel(const std::string &labelName) {
 void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var, const std::string& reg_2){
     std::pair<int, int> varAddress = frame->getVarAddress(var);
     std::string varType = frame->getVarType(var)->getTypeName();
+
+    // check if global variable => cannot be reached using stack
+    if (varAddress.first == -1 && varAddress.second == -1) {
+        throw std::runtime_error("regToVar: Cannot use regToVar for global variables.\n");
+    }
     
     // coppy frame pointer to t6 and recurse back expected number of frames
     assemblyOut << "move $t6, $fp" << std::endl;
@@ -36,9 +41,34 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
     }
 }
 
+void valueToVarLabel(std::ostream &assemblyOut, int value, std::string varLabel) {
+    assemblyOut << ".data" << std::endl;
+    assemblyOut << ".align 2" << std::endl;
+    assemblyOut << ".type " << varLabel << ", @object" << std::endl;
+    assemblyOut << ".size " << varLabel << ", 4" << std::endl;
+
+    assemblyOut << varLabel << ":" << std::endl;
+    assemblyOut << ".word " << value << std::endl;
+}
+
 void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var){
     std::pair<int, int> varAddress = frame->getVarAddress(var);
     std::string varType = frame->getVarType(var)->getTypeName();
+
+    // check if global variable => cannot be reached using stack
+    if (varAddress.first == -1 && varAddress.second == -1) {
+        if (varType == "float") {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "l.s " << reg << ", 0($t6)" << std::endl;
+        } else if (varType == "double") {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "l.d " << reg << ", 0($t6)" << std::endl;
+        } else {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "lw " << reg << ", 0($t6)" << std::endl;
+        }
+        return;
+    }
     
     // coppy frame pointer to t6 and recurse back expected number of frames
     assemblyOut << "move $t6, $fp" << std::endl;
@@ -58,6 +88,12 @@ void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
 
 void varAddressToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var){
     std::pair<int, int> varAddress = frame->getVarAddress(var);
+
+    // check if global variable => cannot be reached using stack
+    if (varAddress.first == -1 && varAddress.second == -1) {
+        assemblyOut << "la " << reg << ", " << var << std::endl;
+        return;
+    }
     
     // coppy frame pointer to t6 and recurse back expected number of frames
     assemblyOut << "move $t6, $fp" << std::endl;
