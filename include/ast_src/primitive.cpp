@@ -34,6 +34,10 @@ std::string AST_ConstInt::getTypeName(){
     return "int";
 }
 
+int AST_ConstInt::getValue() {
+    return value;
+}
+
 AST_ConstFloat::AST_ConstFloat(float _value):
     value(_value)
 {}

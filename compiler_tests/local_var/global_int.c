@@ -3,5 +3,6 @@ int b = 121;
 
 int g()
 {
-    return a == 22 && b == 121;
+    a++;
+    return a == 23 && b == 121;
 }

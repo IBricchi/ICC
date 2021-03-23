@@ -12,7 +12,6 @@ void printAssemblyHeader(std::ostream &assemblyOut) {
     assemblyOut << ".module	oddspreg" << std::endl;
     assemblyOut << ".abicalls" << std::endl;
     assemblyOut << ".option pic0" << std::endl;
-    assemblyOut << ".text" << std::endl;
 }
 
 void printAssemblyFooter(std::ostream &assemblyOut) {
@@ -29,6 +28,7 @@ int main()
 
         // global frame
         Frame* globalFrame = new Frame();
+        globalFrame->isGlobal = true;
 
         // pre-process AST to generate Frame objects
         ast->generateFrames(globalFrame);

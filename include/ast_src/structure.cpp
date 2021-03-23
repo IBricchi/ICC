@@ -84,6 +84,7 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start function declaration for "<< name << std::endl;
     if (body != nullptr) {
         // function header
+        assemblyOut << ".text" << std::endl;
         assemblyOut << ".align  2" << std::endl;
         assemblyOut << ".global " << name << std::endl;
         assemblyOut << ".set	nomips16" << std::endl;
@@ -322,24 +323,28 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
 
         assemblyOut << std::endl << "# start " << varType << " var dec with definition " << name << std::endl;
 
-        expr->compile(assemblyOut);
-
-        // load top of stack into register
-        if (varType == "float") {
-            assemblyOut << "l.s $f4, 8($sp)" << std::endl;
-            assemblyOut << "addiu $sp, $sp, 8" << std::endl;
-
-            regToVar(assemblyOut, frame, "$f4", name);
-        } else if (varType == "double") {
-            assemblyOut << "l.d $f4, 8($sp)" << std::endl;
-            assemblyOut << "addiu $sp, $sp, 8" << std::endl;
-
-            regToVar(assemblyOut, frame, "$f4", name);
+        if (this->frame->isGlobal) {
+            valueToVarLabel(assemblyOut, expr->getValue(), this->name);
         } else {
-            assemblyOut << "lw $t0, 8($sp)" << std::endl;
-            assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+            expr->compile(assemblyOut);
 
-            regToVar(assemblyOut, frame, "$t0", name);
+            // load top of stack into register
+            if (varType == "float") {
+                assemblyOut << "l.s $f4, 8($sp)" << std::endl;
+                assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+
+                regToVar(assemblyOut, frame, "$f4", name);
+            } else if (varType == "double") {
+                assemblyOut << "l.d $f4, 8($sp)" << std::endl;
+                assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+
+                regToVar(assemblyOut, frame, "$f4", name);
+            } else {
+                assemblyOut << "lw $t0, 8($sp)" << std::endl;
+                assemblyOut << "addiu $sp, $sp, 8" << std::endl;
+
+                regToVar(assemblyOut, frame, "$t0", name);
+            }
         }
         
         assemblyOut << "# end " << varType << " var dec with definition " << name << std::endl << std::endl;

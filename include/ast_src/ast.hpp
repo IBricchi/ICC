@@ -61,6 +61,9 @@ public:
     virtual std::string getStructName();
 
     virtual int getSize();
+
+    // Used for global variables => cannot get value through stack
+    virtual int getValue();
 };
 
 /*
@@ -104,6 +107,12 @@ public:
     */
     Frame *parentFrame;
 
+    /*
+        Used for global variables.
+        There should only ever be one global frame.
+    */
+    bool isGlobal;
+
     Frame(Frame* _parentFrame = nullptr);
 
     ~Frame();
@@ -112,8 +121,8 @@ public:
         First tries to find variable in current frame.
         If it does not exist in the current frame, it tries to find it in the parent frame
         and so on.
-        Expects the variable to exist in its current frame or one of its parent frame:
-        Does not do error checking.
+        
+        Returns {-1,-1} if the global frame is reached.
     */
     int getVarPos(const std::string& variableName) const;
     std::pair<int, int> getVarAddress(const std::string &variableName);
