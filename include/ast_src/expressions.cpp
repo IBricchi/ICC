@@ -59,9 +59,6 @@ void AST_Assign::compile(std::ostream &assemblyOut){
     assemblyOut << "# end " << name << " for " << varType << std::endl << std::endl;
 }
 
-// void regToVar(std::ostream &assemblyOut, Frame *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
-// void regToVar(std::ostream &assemblyOut, <error-type> *frame, const std::__cxx11::string &reg, const std::__cxx11::string &var)
-
 AST_Assign::~AST_Assign(){
     delete assignee;
     delete expr;

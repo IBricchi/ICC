@@ -11,7 +11,17 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
 
     // check if global variable => cannot be reached using stack
     if (varAddress.first == -1 && varAddress.second == -1) {
-        throw std::runtime_error("regToVar: Cannot use regToVar for global variables.\n");
+        if (varType == "float") {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "s.s " << reg << ", 0($t6)" << std::endl;
+        } else if (varType == "double") {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "s.d " << reg << ", 0($t6)" << std::endl;
+        } else {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "sw " << reg << ", 0($t6)" << std::endl;
+        }
+        return;
     }
     
     // coppy frame pointer to t6 and recurse back expected number of frames
