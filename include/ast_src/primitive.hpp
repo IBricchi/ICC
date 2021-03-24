@@ -155,3 +155,12 @@ public:
 
     ~AST_Pointer();
 };
+
+// For parser
+class AST_NoEffect
+    : public AST
+{
+public:
+    void generateFrames(Frame* _frame = nullptr) override;
+    void compile(std::ostream &assemblyOut) override;
+};

@@ -356,3 +356,11 @@ std::string AST_Pointer::getTypeName(){
 AST_Pointer::~AST_Pointer(){
     delete type;
 }
+
+void AST_NoEffect::generateFrames(Frame* _frame) {
+     frame = _frame;
+}
+
+void AST_NoEffect::compile(std::ostream &assemblyOut) {
+    // Do nothing 
+}
