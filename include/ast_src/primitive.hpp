@@ -66,6 +66,8 @@ public:
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
+
+    int getIntValue() override;
 };
 
 class AST_Variable

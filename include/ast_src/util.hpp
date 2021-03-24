@@ -4,9 +4,10 @@
 
 // General utility functions
 
+// Undefined behaviour but works on the environment defined by the Vagrant file and g++ compiler
 union {
-        uint32_t num;
-        float fnum;
+    uint32_t num;
+    float fnum;
 } singleIEEE754Float;
 
 std::string generateUniqueLabel(const std::string &labelName);

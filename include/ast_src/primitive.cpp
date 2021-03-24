@@ -140,6 +140,10 @@ AST* AST_ConstChar::getType() {
     return new AST_Type(&typeName);
 }
 
+int AST_ConstChar::getIntValue() {
+    return value;
+}
+
 AST_Variable::AST_Variable(std::string* _name) :
     name(*_name)
 {
