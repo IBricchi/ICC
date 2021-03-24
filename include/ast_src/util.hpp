@@ -8,7 +8,11 @@
 union {
     uint32_t num;
     float fnum;
-} singleIEEE754Float;
+} ieee754Float;
+union {
+    uint64_t num;
+    double dnum;
+} ieee754Double;
 
 std::string generateUniqueLabel(const std::string &labelName);
 
@@ -23,6 +27,7 @@ void varAddressToReg(std::ostream &assemblyOut, Frame* frame, const std::string&
 // for global variables
 void valueToVarLabel(std::ostream &assemblyOut, int value, std::string varLabel);
 void valueToVarLabel(std::ostream &assemblyOut, float value, std::string varLabel);
+void valueToVarLabel(std::ostream &assemblyOut, double value, std::string varLabel);
 
 // check if string ends with suffix
 bool hasEnding(const std::string &fullString, const std::string &ending);

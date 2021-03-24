@@ -110,6 +110,10 @@ std::string AST_ConstDouble::getTypeName(){
     return "double";
 }
 
+double AST_ConstDouble::getDoubleValue() {
+    return value;
+}
+
 AST_ConstChar::AST_ConstChar(char _value):
     value(_value)
 {}

@@ -52,6 +52,8 @@ public:
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
     std::string getTypeName() override;
+
+    double getDoubleValue() override;
 };
 
 class AST_ConstChar
