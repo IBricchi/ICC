@@ -55,6 +55,10 @@ int AST::getIntValue() {
     throw std::runtime_error("AST: getIntValue Not implemented by child class.\n");
 }
 
+float AST::getFloatValue() {
+    throw std::runtime_error("AST: getFloatValue Not implemented by child class.\n");
+}
+
 AST::~AST() {
     delete frame;
 }

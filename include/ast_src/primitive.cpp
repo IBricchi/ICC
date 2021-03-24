@@ -72,6 +72,10 @@ std::string AST_ConstFloat::getTypeName(){
     return "float";
 }
 
+float AST_ConstFloat::getFloatValue() {
+    return value;
+}
+
 AST_ConstDouble::AST_ConstDouble(double _value):
     value(_value)
 {}

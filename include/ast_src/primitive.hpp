@@ -35,6 +35,8 @@ public:
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
     std::string getTypeName() override;
+
+    float getFloatValue() override;
 };
 
 class AST_ConstDouble

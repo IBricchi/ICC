@@ -64,6 +64,7 @@ public:
 
     // Used for global variables => cannot get value through stack
     virtual int getIntValue();
+    virtual float getFloatValue();
 };
 
 /*
