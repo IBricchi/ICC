@@ -51,16 +51,6 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
     }
 }
 
-void valueToVarLabel(std::ostream &assemblyOut, int value, std::string varLabel) {
-    assemblyOut << ".data" << std::endl;
-    assemblyOut << ".align 2" << std::endl;
-    assemblyOut << ".type " << varLabel << ", @object" << std::endl;
-    assemblyOut << ".size " << varLabel << ", 4" << std::endl;
-
-    assemblyOut << varLabel << ":" << std::endl;
-    assemblyOut << ".word " << value << std::endl;
-}
-
 void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var){
     std::pair<int, int> varAddress = frame->getVarAddress(var);
     std::string varType = frame->getVarType(var)->getTypeName();
@@ -113,6 +103,39 @@ void varAddressToReg(std::ostream &assemblyOut, Frame* frame, const std::string&
     
     // store variable address into register
     assemblyOut << "addiu " << reg << ", $t6, -" << varAddress.second << std::endl;
+}
+
+void valueToVarLabel(std::ostream &assemblyOut, int value, std::string varLabel) {
+    assemblyOut << ".data" << std::endl;
+    assemblyOut << ".align 2" << std::endl;
+    assemblyOut << ".type " << varLabel << ", @object" << std::endl;
+    assemblyOut << ".size " << varLabel << ", 4" << std::endl;
+
+    assemblyOut << varLabel << ":" << std::endl;
+    assemblyOut << ".word " << value << std::endl;
+}
+
+void valueToVarLabel(std::ostream &assemblyOut, float value, std::string varLabel) {
+    assemblyOut << ".data" << std::endl;
+    assemblyOut << ".align 2" << std::endl;
+    assemblyOut << ".type " << varLabel << ", @object" << std::endl;
+    assemblyOut << ".size " << varLabel << ", 4" << std::endl;
+
+    assemblyOut << varLabel << ":" << std::endl;
+    ieee754Float.fnum = value;
+    assemblyOut << ".word " << ieee754Float.num << std::endl;
+}
+
+void valueToVarLabel(std::ostream &assemblyOut, double value, std::string varLabel) {
+    assemblyOut << ".data" << std::endl;
+    assemblyOut << ".align 2" << std::endl;
+    assemblyOut << ".type " << varLabel << ", @object" << std::endl;
+    assemblyOut << ".size " << varLabel << ", 8" << std::endl;
+
+    assemblyOut << varLabel << ":" << std::endl;
+    ieee754Double.dnum = value;
+    assemblyOut << ".word " << (ieee754Double.num >> 32) << std::endl;
+    assemblyOut << ".word " << (ieee754Double.num & 0xFFFFFFFF) << std::endl;
 }
 
 bool hasEnding(const std::string &fullString, const std::string &ending) {

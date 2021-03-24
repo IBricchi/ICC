@@ -51,8 +51,16 @@ int AST::getSize() {
     throw std::runtime_error("AST: getSize Not implemented by child class.\n");
 }
 
-int AST::getValue() {
-    throw std::runtime_error("AST: int getValue Not implemented by child class.\n");
+int AST::getIntValue() {
+    throw std::runtime_error("AST: getIntValue Not implemented by child class.\n");
+}
+
+float AST::getFloatValue() {
+    throw std::runtime_error("AST: getFloatValue Not implemented by child class.\n");
+}
+
+double AST::getDoubleValue() {
+    throw std::runtime_error("AST: getDoubleValue Not implemented by child class.\n");
 }
 
 AST::~AST() {

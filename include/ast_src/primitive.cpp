@@ -34,7 +34,7 @@ std::string AST_ConstInt::getTypeName(){
     return "int";
 }
 
-int AST_ConstInt::getValue() {
+int AST_ConstInt::getIntValue() {
     return value;
 }
 
@@ -72,6 +72,10 @@ std::string AST_ConstFloat::getTypeName(){
     return "float";
 }
 
+float AST_ConstFloat::getFloatValue() {
+    return value;
+}
+
 AST_ConstDouble::AST_ConstDouble(double _value):
     value(_value)
 {}
@@ -106,6 +110,10 @@ std::string AST_ConstDouble::getTypeName(){
     return "double";
 }
 
+double AST_ConstDouble::getDoubleValue() {
+    return value;
+}
+
 AST_ConstChar::AST_ConstChar(char _value):
     value(_value)
 {}
@@ -134,6 +142,10 @@ void AST_ConstChar::compile(std::ostream &assemblyOut){
 AST* AST_ConstChar::getType() {
     std::string typeName = "char";
     return new AST_Type(&typeName);
+}
+
+int AST_ConstChar::getIntValue() {
+    return value;
 }
 
 AST_Variable::AST_Variable(std::string* _name) :

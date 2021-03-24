@@ -324,7 +324,13 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
         assemblyOut << std::endl << "# start " << varType << " var dec with definition " << name << std::endl;
 
         if (this->frame->isGlobal) {
-            valueToVarLabel(assemblyOut, expr->getValue(), this->name);
+            if (varType == "float") {
+                valueToVarLabel(assemblyOut, expr->getFloatValue(), this->name);
+            } else if (varType == "double") {
+                valueToVarLabel(assemblyOut, expr->getDoubleValue(), this->name);
+            } else {
+                valueToVarLabel(assemblyOut, expr->getIntValue(), this->name);
+            }
         } else {
             expr->compile(assemblyOut);
 

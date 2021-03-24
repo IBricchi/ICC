@@ -19,7 +19,7 @@ public:
     AST* getType() override;
     std::string getTypeName() override;
 
-    int getValue() override;
+    int getIntValue() override;
 };
 
 class AST_ConstFloat
@@ -35,6 +35,8 @@ public:
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
     std::string getTypeName() override;
+
+    float getFloatValue() override;
 };
 
 class AST_ConstDouble
@@ -50,6 +52,8 @@ public:
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
     std::string getTypeName() override;
+
+    double getDoubleValue() override;
 };
 
 class AST_ConstChar
@@ -64,6 +68,8 @@ public:
     AST* deepCopy() override;
     void compile(std::ostream &assemblyOut) override;
     AST* getType() override;
+
+    int getIntValue() override;
 };
 
 class AST_Variable
