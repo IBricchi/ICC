@@ -19,6 +19,13 @@ std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types = {
   {"double",{}},
   {"unsigned",{}}
 };
+std::unordered_map<std::string, std::unordered_set<std::string>> lexer_pointerTypes = {
+  {"int",{}},
+  {"char",{}},
+  {"float",{}},
+  {"double",{}},
+  {"unsigned",{}}
+};
 
 // map from struct name to set of member (name, type) pairs
 std::unordered_map<std::string, std::map<std::string, std::string>> lexer_structs = {};
@@ -101,6 +108,12 @@ std::unordered_map<std::string, std::map<std::string, std::string>> lexer_struct
     } else if (el.second.find(*s) != el.second.end()) {
       yylval.STR = new std::string(el.first);
       return T_TYPE;
+    }
+  }
+  for (auto el : lexer_pointerTypes) {
+    if (el.second.find(*s) != el.second.end()) {
+      yylval.STR = new std::string(el.first);
+      return T_POINTERTYPE;
     }
   }
   return T_IDENTIFIER;

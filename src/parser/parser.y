@@ -10,6 +10,7 @@
   extern AST *g_root; // A way of getting the AST out
 
   extern std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types;
+  extern std::unordered_map<std::string, std::unordered_set<std::string>> lexer_pointerTypes;
   extern std::unordered_map<std::string, std::map<std::string, std::string>> lexer_structs;
 
   //! This is to fix problems when generating C++
@@ -41,6 +42,7 @@
 }
 
 %token <STR> T_TYPE
+%token <STR> T_POINTERTYPE
 
 %token <STR> T_IDENTIFIER
 
@@ -191,7 +193,7 @@ STRUCT_DEFINITION : T_STRUCT T_IDENTIFIER T_BRACE_L STRUCT_INTERNAL_DECLARATION_
                                 lexer_structs[*$2] = declarations;
 
                                 // Assign something that has no effect
-                                $$ = new AST_ConstInt(0);
+                                $$ = new AST_NoEffect();
                         }
                   | T_STRUCT T_BRACE_L STRUCT_INTERNAL_DECLARATION_LIST T_BRACE_R T_IDENTIFIER T_SEMI_COLON {
                                 // The following is very hacky. Combined from STRUCT_DEFINITION and STRUCT_DECLARATION.
@@ -323,12 +325,37 @@ TYPEDEF : T_TYPEDEF T_TYPE T_IDENTIFIER T_SEMI_COLON {
                         }
                         
                         // Assign something that has no effect
-                        $$ = new AST_ConstInt(0);
+                        $$ = new AST_NoEffect();
+                }
+        | T_TYPEDEF T_TYPE T_STAR T_IDENTIFIER T_SEMI_COLON {
+                        // Using the lexer hack
+                        auto it = lexer_pointerTypes.find(*$2);
+                        if(it != lexer_pointerTypes.end()) {
+                                it->second.insert(*$4);
+                        } else {
+                                throw std::runtime_error("PARSER: TYPEDEF: Failed to find typedef type in lexer_pointerTypes.\n");
+                        }
+                        
+                        // Assign something that has no effect
+                        $$ = new AST_NoEffect();
+                }
+        | T_TYPEDEF T_POINTERTYPE T_IDENTIFIER T_SEMI_COLON {
+                        // Using the lexer hack
+                        auto it = lexer_pointerTypes.find(*$2);
+                        if(it != lexer_pointerTypes.end()) {
+                                it->second.insert(*$3);
+                        } else {
+                                throw std::runtime_error("PARSER: TYPEDEF: Failed to find typedef type in lexer_pointerTypes.\n");
+                        }
+                        
+                        // Assign something that has no effect
+                        $$ = new AST_NoEffect();
                 }
         ;
 
 TYPE : T_TYPE        { $$ = new AST_Type($1); }
-     | TYPE T_STAR { $$ = new AST_Pointer($1); }
+     | TYPE T_STAR   { $$ = new AST_Pointer($1); }
+     | T_POINTERTYPE { $$ = new AST_Pointer(new AST_Type($1)); }
      ;
 
 ENUM_DECLARATION : T_ENUM T_IDENTIFIER T_BRACE_L ENUM_LIST T_BRACE_R T_SEMI_COLON {
