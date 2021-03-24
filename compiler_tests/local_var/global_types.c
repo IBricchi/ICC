@@ -4,8 +4,6 @@ double c = 234.567;
 char d = '7';
 unsigned e = 11;
 
-int intArr[10];
-
 int g()
 {
     a = a+1;
@@ -14,12 +12,9 @@ int g()
     d = d+1;
     e = e+1;
 
-    intArr[5] = 789;
-
     return  (a == 23) && 
             (b == 122.5f) &&
             (c == 235.567) &&
             (d == '8') &&
-            (e == 12) &&
-            (intArr[5] == 789);
+            (e == 12) ;
 }
