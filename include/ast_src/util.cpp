@@ -83,7 +83,7 @@ void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
         assemblyOut << "l.s " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     } else if (varType == "double") {
         assemblyOut << "l.d " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
-    } else if (varType == "double") {
+    } else if (varType == "char") {
         assemblyOut << "lb " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     } else {
         assemblyOut << "lw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
