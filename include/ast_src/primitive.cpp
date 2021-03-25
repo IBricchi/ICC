@@ -148,6 +148,43 @@ int AST_ConstChar::getIntValue() {
     return value;
 }
 
+AST_ConstStr::AST_ConstStr(std::string* _value):
+    value(*_value)
+{ }
+
+void AST_ConstStr::generateFrames(Frame* _frame){
+    frame = _frame;
+}
+
+AST* AST_ConstStr::deepCopy(){
+    return new AST_ConstStr(&value);
+}
+
+void AST_ConstStr::compile(std::ostream &assemblyOut){
+    std::string label = generateUniqueLabel("$LC");
+    
+    assemblyOut << std::endl << "# start const str '" << value << "'" << std::endl;
+    
+    // annoying but required
+    assemblyOut << ".rdata" << std::endl;
+	assemblyOut << ".align 2" << std::endl;
+    assemblyOut << label << ":" << std::endl;
+    assemblyOut << ".ascii \"" << value << "\"" << std::endl;
+
+    assemblyOut << ".text" << std::endl;
+    assemblyOut << ".align 2" << std::endl;
+
+    assemblyOut << "lui $t0, %hi(" << label << ")" << std::endl;
+    assemblyOut << "addiu $t0, %lo(" << label << ")" << std::endl;
+    assemblyOut << "sw $t0, 0($sp)" << std::endl;
+    assemblyOut << "addiu $sp, $sp, -8" << std::endl;
+}
+
+AST* AST_ConstStr::getType(){
+    std::string typeName = "pointer";
+    return new AST_Type(&typeName);
+}
+
 AST_Variable::AST_Variable(std::string* _name) :
     name(*_name)
 {

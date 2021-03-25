@@ -50,6 +50,7 @@
 %token <FLOAT> T_CONST_FLOAT
 %token <DOUBLE> T_CONST_DOUBLE
 %token <CHAR> T_CONST_CHAR
+%token <STR> T_CONST_STR
 
 %token T_RETURN T_IF T_ELSE T_WHILE T_FOR T_SWITCH T_BREAK 
 %token T_CONTINUE T_CASE T_DEFAULT T_ENUM T_SIZEOF T_TYPEDEF T_STRUCT
@@ -617,6 +618,7 @@ PRIMARY : T_CONST_INT                    { $$ = new AST_ConstInt($1); }
         | T_CONST_FLOAT                  { $$ = new AST_ConstFloat($1); }
         | T_CONST_DOUBLE                 { $$ = new AST_ConstDouble($1); }
         | T_CONST_CHAR                   { $$ = new AST_ConstChar($1); }
+        | T_CONST_STR                    { $$ = new AST_ConstStr($1); }
         | T_IDENTIFIER                   { $$ = new AST_Variable($1); }
         | SIZEOF                         { $$ = $1; }
         | T_BRACK_L EXPRESSION T_BRACK_R { $$ = $2; }

@@ -30,12 +30,13 @@ int main()
         Frame* globalFrame = new Frame();
         globalFrame->isGlobal = true;
 
+        // write MIPS assembly to stdout
+        printAssemblyHeader(std::cout);
+
         // pre-process AST to generate Frame objects
         ast->generateFrames(globalFrame);
         std::cerr << "Frame Generation Works!" << std::endl;
-
-        // write MIPS assembly to stdout
-        printAssemblyHeader(std::cout);
+                
         ast->compile(std::cout);
         printAssemblyFooter(std::cout);
         std::cerr << "Compiling Works!" << std::endl;
