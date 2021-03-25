@@ -433,6 +433,7 @@ void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {
             for(int i = 0; i < type->getBytes(); i+=4){
                 assemblyOut << ".word 0" << std::endl;
             }
+            assemblyOut << ".text" << std::endl;
     }
     else{
         assemblyOut << std::endl << "# start array declaration " << name << std::endl; 

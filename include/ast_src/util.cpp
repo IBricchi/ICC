@@ -123,6 +123,7 @@ void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, char value
 
     assemblyOut << varLabel << ":" << std::endl;
     assemblyOut << ".byte " << (int)value << std::endl;
+    assemblyOut << ".text " << std::endl;
 }
 
 void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, int value) {
@@ -133,6 +134,7 @@ void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, int value)
 
     assemblyOut << varLabel << ":" << std::endl;
     assemblyOut << ".word " << value << std::endl;
+    assemblyOut << ".text " << std::endl;
 }
 
 void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, float value) {
@@ -144,6 +146,7 @@ void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, float valu
     assemblyOut << varLabel << ":" << std::endl;
     ieee754Float.fnum = value;
     assemblyOut << ".word " << ieee754Float.num << std::endl;
+    assemblyOut << ".text " << std::endl;
 }
 
 void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, double value) {
@@ -156,6 +159,7 @@ void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, double val
     ieee754Double.dnum = value;
     assemblyOut << ".word " << (ieee754Double.num >> 32) << std::endl;
     assemblyOut << ".word " << (ieee754Double.num & 0xFFFFFFFF) << std::endl;
+    assemblyOut << ".text " << std::endl;
 }
 
 bool hasEnding(const std::string &fullString, const std::string &ending) {
