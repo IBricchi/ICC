@@ -255,6 +255,7 @@ std::unordered_map<std::string, int> AST_Type::size_of_type = {
     {"float", 4},
     {"double", 8},
     {"unsigned", 4},
+    {"void", 4},
     {"struct", -1}, // Size needs to be computed dynamically
 };
 

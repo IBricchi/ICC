@@ -17,14 +17,16 @@ std::unordered_map<std::string, std::unordered_set<std::string>> lexer_types = {
   {"char",{}},
   {"float",{}},
   {"double",{}},
-  {"unsigned",{}}
+  {"unsigned",{}},
+  {"void",{}}
 };
 std::unordered_map<std::string, std::unordered_set<std::string>> lexer_pointerTypes = {
   {"int",{}},
   {"char",{}},
   {"float",{}},
   {"double",{}},
-  {"unsigned",{}}
+  {"unsigned",{}},
+  {"void",{}},
 };
 
 // map from struct name to set of member (name, type) pairs
