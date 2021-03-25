@@ -1355,6 +1355,9 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
                 }
                 break;
             }
+            case Type::ADDRESS:
+                // does nothing at all
+                break;
             default:
             {
                 throw std::runtime_error("AST_UnOp: Pointer Not Implemented Yet.\n");
