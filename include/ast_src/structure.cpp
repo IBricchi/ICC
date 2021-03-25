@@ -398,7 +398,7 @@ void AST_ArrayDeclaration::generateFrames(Frame* _frame){
     // this isn't useful for int's but when we need double word sized types this will save us
     // a lot of headaches.
     // no need to pad type->getType() since addVariable does that for us
-    _frame->addVariable(name, type, pointer_size % 8 + type->getBytes());
+    _frame->addVariable(name, type, type->getBytes());
     _frame->addVariable(name, type, pointer_size);
 }
 

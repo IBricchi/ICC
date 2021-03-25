@@ -251,7 +251,7 @@ AST_Type::AST_Type(std::string* _name, const std::map<std::string, std::string> 
 
 std::unordered_map<std::string, int> AST_Type::size_of_type = {
     {"int", 4}, // Intentionally wrong so that char can be treated as int for binary/unary operations (e.g. using lw instead of lb)
-    {"char", 4},
+    {"char", 1},
     {"float", 4},
     {"double", 8},
     {"unsigned", 4},
