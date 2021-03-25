@@ -1358,11 +1358,61 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
             case Type::ADDRESS:
                 // does nothing at all
                 break;
+            case Type::PRE_INCREMENT:
+            {
+                assemblyOut << "# " << unLabel << " is pre ++" << std::endl;
+
+                assemblyOut << "addiu $t1, $t0, " << internalDataType->getType()->getBytes() << std::endl;
+
+                // update variable
+                operand->updateVariable(assemblyOut, frame, "$t1");
+                break;
+            }
+            case Type::PRE_DECREMENT:
+            {
+                assemblyOut << "# " << unLabel << " is pre --" << std::endl;
+
+                assemblyOut << "addiu $t1, $t0, -" << internalDataType->getType()->getBytes() << std::endl;
+
+                // update variable
+                operand->updateVariable(assemblyOut, frame, "$t1");
+                break;
+            }
+            case Type::POST_INCREMENT:
+            {
+                assemblyOut << "# " << unLabel << " is post ++" << std::endl;
+
+                // push onto operand stack
+                assemblyOut << "sw $t0, 8($sp)" << std::endl;
+
+                assemblyOut << "addiu $t1, $t0, " << internalDataType->getType()->getBytes() << std::endl;
+
+                // update variable
+                operand->updateVariable(assemblyOut, frame, "$t1");
+                break;
+            }
+            case Type::POST_DECREMENT:
+            {
+                assemblyOut << "# " << unLabel << " is post --" << std::endl;
+                
+                // push onto operand stack
+                assemblyOut << "sw $t0, 8($sp)" << std::endl;
+
+                assemblyOut << "addiu $t1, $t0, -" << internalDataType->getType()->getBytes() << std::endl;
+
+                // update variable
+                operand->updateVariable(assemblyOut, frame, "$t1");
+                break;
+            }
             default:
             {
                 throw std::runtime_error("AST_UnOp: Pointer Not Implemented Yet.\n");
                 break;
             }
+        }
+        // push onto operand stack
+        if (type != Type::POST_DECREMENT && type != Type::POST_INCREMENT) {
+            assemblyOut << "sw $t1, 8($sp)" << std::endl;
         }
     }
     else {
