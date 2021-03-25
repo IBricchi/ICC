@@ -27,7 +27,7 @@
 // Represents the value associated with any kind of
 // AST node.
 %union{
-  AST* NODE ;
+  AST* NODE;
   int INT;
   float FLOAT;
   double DOUBLE;
@@ -38,7 +38,8 @@
   std::vector<int> *SCP; // square chain parameters
   std::vector<std::pair<std::string, int>> *EL; // enum list (identifier value mapping)
   std::pair<std::string, int> *EN; // enum
-  std::vector<AST*>  *SDL; // struct declartion list
+  std::vector<AST*> *SDL; // struct declartion list
+  std::vector<AST*> *AIL; // array initializer list
 }
 
 %token <STR> T_TYPE
@@ -84,11 +85,14 @@
 %type <NODE> EXPRESSION ASSIGNMENT LOGIC_OR LOGIC_AND BIT_OR BIT_XOR BIT_AND // Expressions
 %type <NODE> EQUALITY COMPARISON BIT_SHIFT TERM FACTOR UNARY_PRE UNARY_POST CALL SIZEOF PRIMARY // Expressions
 %type <NODE> STRUCT_DECLARATION STRUCT_DEFINITION STRUCT_INTERNAL_DECLARATION // struct
+%type <NODE> ARRAY_INITIALIZATION
 
 %type <EN> ENUM
 %type <EL> ENUM_LIST
 
 %type <SDL> STRUCT_INTERNAL_DECLARATION_LIST
+
+%type <AIL> ARRAY_INITIALIZER_LIST
 
 %type <FDP> FUN_DEC_PARAMS // helper for fun declaration
 %type <FCP> FUN_CALL_PARAMS // helper for fun call
@@ -120,6 +124,7 @@ DECLARATION : FUN_DECLARATION             { $$ = $1; }
             | STRUCT_DEFINITION           { $$ = $1; }
             | TYPEDEF                     { $$ = $1; }
             | STATEMENT                   { $$ = $1; }
+            | ARRAY_INITIALIZATION        { $$ = $1; }
             ;
 
 STRUCT_DECLARATION : T_STRUCT T_IDENTIFIER T_IDENTIFIER T_SEMI_COLON {
@@ -293,6 +298,35 @@ FUN_DEC_PARAMS : T_COMMA TYPE T_IDENTIFIER                     { $$ = new std::v
                                 $$ = $4;
                         }
                ;
+
+ARRAY_INITIALIZATION : TYPE T_IDENTIFIER SQUARE_CHAIN T_EQUAL T_BRACE_L ARRAY_INITIALIZER_LIST T_BRACE_R T_SEMI_COLON {
+                                        AST* type = new AST_ArrayType($1, $3->at($3->size()-1));
+                                        for(int i = $3->size() - 2; i >= 0; i--){
+                                                type = new AST_ArrayType(type, $3->at(i));
+                                        }
+
+                                        AST* seq = new AST_ArrayDeclaration(type, $2);
+
+                                        auto vals = $6;
+                                        AST* arr = new AST_Variable($2);
+                                        for (int i=0; i<vals->size(); i++) {
+                                                AST* idx = new AST_ConstInt(i);
+                                                AST* el = new AST_BinOp(AST_BinOp::Type::ARRAY, arr, idx);
+                                                AST* assignment = new AST_Assign(el, vals->at(i));
+
+                                                seq = new AST_Sequence(seq, assignment);
+                                        }
+
+                                        $$ = seq;
+                                }
+                     ;
+
+ARRAY_INITIALIZER_LIST  : ARRAY_INITIALIZER_LIST T_COMMA LOGIC_OR { 
+                                        $1->push_back($3);
+                                        $$ = $1;
+                                }
+                        | LOGIC_OR                                { $$ = new std::vector<AST*>({$1}); }
+                        ;
 
 VAR_DECLARATION : TYPE T_IDENTIFIER T_SEMI_COLON                                   { $$ = new AST_VarDeclaration($1, $2); }
                 | TYPE T_IDENTIFIER T_EQUAL LOGIC_OR T_SEMI_COLON %prec VAR_DEC    { $$ = new AST_VarDeclaration($1, $2, $4); }
