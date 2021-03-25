@@ -821,6 +821,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
     }
     else if(varType == "pointer"){
+        bool useT2 = true;
         switch (type) {
             case Type::PLUS:
             {
@@ -867,8 +868,16 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "add $t2, $t0, $t1" << std::endl;
                 // if not left of assign load value
                 if(!returnPtr){
-                    std::string load = internalDataType->getType()->getTypeName()=="char"?"lb":"lw";
-                    assemblyOut << load << " $t2, 0($t2)" << std::endl;
+                    std::string returnType = internalDataType->getType()->getTypeName();
+                    if(returnType == "double"){
+                        assemblyOut << "l.d $f4, 0($t2)" << std::endl;
+                        assemblyOut << "s.d $f4, 16($sp)" << std::endl;
+                        useT2 = false;
+                    }
+                    else{
+                        std::string load = returnType =="char"?"lb":"lw";
+                        assemblyOut << load << " $t2, 0($t2)" << std::endl;
+                    }
                 }
                 
                 break;
@@ -880,7 +889,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             }
         }
         // store result in memory
-        assemblyOut << "sw $t2, 16($sp)" << std::endl;
+        if(useT2)
+            assemblyOut << "sw $t2, 16($sp)" << std::endl;
     }
     else {
         switch (type) {
