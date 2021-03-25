@@ -46,6 +46,8 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
             assemblyOut << "sw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
             assemblyOut << "sw " << reg_2 << ", -" << varAddress.second - 4 << "($t6)" << std::endl;
         }
+    } else if (varType == "char"){
+        assemblyOut << "sb " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     } else {
         assemblyOut << "sw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     }
@@ -81,6 +83,8 @@ void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
         assemblyOut << "l.s " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     } else if (varType == "double") {
         assemblyOut << "l.d " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
+    } else if (varType == "double") {
+        assemblyOut << "lb " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     } else {
         assemblyOut << "lw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     }
