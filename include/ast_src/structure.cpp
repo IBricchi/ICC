@@ -243,6 +243,11 @@ void AST_FunDeclaration::compile(std::ostream &assemblyOut) {
         // body
         body->compile(assemblyOut);
 
+        // load 0 into the return vairbale
+        // this code only ever get's called if a void function is used, all other functions will
+        // exit the scope with the code compiled by the return
+        assemblyOut << "move $v0, $0" << std::endl;
+
         // move fp back to start of frame and re-instate previous frame
         assemblyOut << "move $sp, $fp" << std::endl;
         assemblyOut << "lw $31, 8($sp)" << std::endl;
