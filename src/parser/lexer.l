@@ -137,11 +137,13 @@ std::unordered_map<std::string, std::map<std::string, std::string>> lexer_struct
   return T_CONST_CHAR;
 }
 
-[1-9][0-9]*                      { yylval.INT = strtol(yytext, 0, 10); return T_CONST_INT; }
-0x[0-9a-fA-F]*                   { yylval.INT = strtol(yytext, 0, 16); return T_CONST_INT; }
-0[0-9]*                          { yylval.INT = strtol(yytext, 0, 8); return T_CONST_INT; }
-([0-9]+([.][0-9]*)?|[.][0-9]+)f  { yylval.FLOAT = std::stof(yytext); return T_CONST_FLOAT; }
-[0-9]+([.][0-9]*)?|[.][0-9]+     { yylval.DOUBLE = std::stod(yytext); return T_CONST_DOUBLE; }
+[1-9][0-9]*                                             { yylval.INT = strtol(yytext, 0, 10); return T_CONST_INT; }
+0x[0-9a-fA-F]*                                          { yylval.INT = strtol(yytext, 0, 16); return T_CONST_INT; }
+0[0-9]*                                                 { yylval.INT = strtol(yytext, 0, 8); return T_CONST_INT; }
+((-?[0-9]*)\.?[0-9]+([eE]-|[eE]\+|[eE]|[0-9]+)[0-9]+)f  { yylval.FLOAT = std::stof(yytext); return T_CONST_FLOAT; }
+([0-9]+([.][0-9]*)?|[.][0-9]+)f                         { yylval.FLOAT = std::stof(yytext); return T_CONST_FLOAT; }
+(-?[0-9]*)\.?[0-9]+([eE]-|[eE]\+|[eE]|[0-9]+)[0-9]+     { yylval.DOUBLE = std::stod(yytext); return T_CONST_DOUBLE; }
+[0-9]+([.][0-9]*)?|[.][0-9]+                            { yylval.DOUBLE = std::stod(yytext); return T_CONST_DOUBLE; }
 
 [ \t\r\n]+		{;}
 
