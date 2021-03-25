@@ -1283,6 +1283,13 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
         assemblyOut << "l.s $f4, 8($sp)" << std::endl;
 
         switch (type) {
+            case Type::ADDRESS:
+            {
+                assemblyOut << "# " << unLabel << " is &" << std::endl;
+                // does nothing in compile part
+                assemblyOut << "mov.s $f6, $f4" << std::endl;
+                break;
+            }
             case Type::MINUS:
             {
                 assemblyOut << "# " << unLabel << " is float -" << std::endl;
@@ -1302,8 +1309,15 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
     }
     else if (varType == "double") {
         assemblyOut << "l.d $f4, 8($sp)" << std::endl;
-
+        bool useF6 = true;
         switch (type) {
+            case Type::ADDRESS:
+            {
+                assemblyOut << "# " << unLabel << " is &" << std::endl;
+                // does nothing in compile part
+                useF6 = false;
+                break;
+            }
             case Type::MINUS:
             {
                 assemblyOut << "# " << unLabel << " is double -" << std::endl;
@@ -1313,13 +1327,40 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
             }
             default:
             {
-                throw std::runtime_error("AST_BinOp: Double Not Implemented Yet.\n");
+                throw std::runtime_error("AST_UnOp: Double Not Implemented Yet.\n");
                 break;
             }
         }
 
         // push onto operand stack
-        assemblyOut << "s.d $f6, 8($sp)" << std::endl;
+        if(useF6)
+            assemblyOut << "s.d $f6, 8($sp)" << std::endl;
+    }
+    else if(varType == "pointer"){
+        assemblyOut << "lw $t0, 8($sp)" << std::endl;
+        switch(type){
+            case Type::DEREFERENCE:
+            {
+                assemblyOut << "# " << unLabel << " is *" << std::endl;
+                
+                if(!returnPtr){
+                    if(dataType->getTypeName() == "double"){
+                        assemblyOut << "l.d $f4, 0($t0)" << std::endl;
+                        assemblyOut << "s.d $f4, 8($sp)" << std::endl;
+                    }
+                    else{
+                        assemblyOut << "lw $t1, 0($t0)" << std::endl;
+                        assemblyOut << "sw $t1, 8($sp)" << std::endl;
+                    }
+                }
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("AST_UnOp: Pointer Not Implemented Yet.\n");
+                break;
+            }
+        }
     }
     else {
         assemblyOut << "lw $t0, 8($sp)" << std::endl;
@@ -1330,18 +1371,6 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "# " << unLabel << " is &" << std::endl;
                 // does nothing in compile part
                 assemblyOut << "move $t1, $t0" << std::endl;
-                break;
-            }
-            case Type::DEREFERENCE:
-            {
-                assemblyOut << "# " << unLabel << " is *" << std::endl;
-                
-                if(!returnPtr){
-                    assemblyOut << "lw $t1, 0($t0)" << std::endl;
-                }
-                else{
-                    assemblyOut << "move $t0, $t1" << std::endl;
-                }
                 break;
             }
             case Type::BANG:
