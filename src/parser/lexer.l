@@ -51,6 +51,14 @@ std::unordered_map<std::string, std::map<std::string, std::string>> lexer_struct
 "sizeof"   { return T_SIZEOF; }
 "typedef"  { return T_TYPEDEF; }
 
+"unsigned int" {
+  std::string s = std::string(yytext);
+  s = s.substr(0,s.find(" "));
+  std::string* ps = new std::string(s);
+  yylval.STR = ps;
+  return T_TYPE;
+}
+
 ","       { return T_COMMA; }
 ";"       { return T_SEMI_COLON; }
 ":"       { return T_COLON; }
