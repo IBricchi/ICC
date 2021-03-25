@@ -333,6 +333,8 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
                 valueToVarLabel(assemblyOut, this->name, expr->getFloatValue());
             } else if (varType == "double") {
                 valueToVarLabel(assemblyOut, this->name, expr->getDoubleValue());
+            } else if (varType == "char") {
+                valueToVarLabel(assemblyOut, this->name, (char)expr->getIntValue());
             } else {
                 valueToVarLabel(assemblyOut, this->name, expr->getIntValue());
             }
@@ -362,11 +364,13 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
     }
     else if(this->frame->isGlobal){
         if (varType == "float") {
-            valueToVarLabel(assemblyOut, this->name, 0);
+            valueToVarLabel(assemblyOut, this->name, (double)0);
         } else if (varType == "double") {
-            valueToVarLabel(assemblyOut, this->name, 0);
+            valueToVarLabel(assemblyOut, this->name, (float)0);
+        } else if (varType == "char"){
+            valueToVarLabel(assemblyOut, this->name, (char)0);
         } else {
-            valueToVarLabel(assemblyOut, this->name, 0);
+            valueToVarLabel(assemblyOut, this->name, (int)0);
         }
     }
 }
@@ -420,7 +424,15 @@ void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {
     // get pointer to start of allocated memory space
     // always a double word away from allocated memory space
     if (this->frame->isGlobal){
+            assemblyOut << ".data" << std::endl;
+            assemblyOut << ".align 2" << std::endl;
+            assemblyOut << ".type " << name << ", @object" << std::endl;
+            assemblyOut << ".size " << name << ", " << type->getBytes() << std::endl;
 
+            assemblyOut << name << ":" << std::endl;
+            for(int i = 0; i < type->getBytes(); i+=4){
+                assemblyOut << ".word 0" << std::endl;
+            }
     }
     else{
         assemblyOut << std::endl << "# start array declaration " << name << std::endl; 

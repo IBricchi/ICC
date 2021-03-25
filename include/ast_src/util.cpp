@@ -17,6 +17,9 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
         } else if (varType == "double") {
             assemblyOut << "la $t6, " << var << std::endl;
             assemblyOut << "s.d " << reg << ", 0($t6)" << std::endl;
+        } else if (varType == "char") {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "sb " << reg << ", 0($t6)" << std::endl;
         } else {
             assemblyOut << "la $t6, " << var << std::endl;
             assemblyOut << "sw " << reg << ", 0($t6)" << std::endl;
@@ -65,6 +68,9 @@ void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
         } else if (varType == "double") {
             assemblyOut << "la $t6, " << var << std::endl;
             assemblyOut << "l.d " << reg << ", 0($t6)" << std::endl;
+        } else if (varType == "char") {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "lb " << reg << ", 0($t6)" << std::endl;
         } else {
             assemblyOut << "la $t6, " << var << std::endl;
             assemblyOut << "lw " << reg << ", 0($t6)" << std::endl;
@@ -107,6 +113,16 @@ void varAddressToReg(std::ostream &assemblyOut, Frame* frame, const std::string&
     
     // store variable address into register
     assemblyOut << "addiu " << reg << ", $t6, -" << varAddress.second << std::endl;
+}
+
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, char value) {
+    assemblyOut << ".data" << std::endl;
+    assemblyOut << ".align 2" << std::endl;
+    assemblyOut << ".type " << varLabel << ", @object" << std::endl;
+    assemblyOut << ".size " << varLabel << ", 1" << std::endl;
+
+    assemblyOut << varLabel << ":" << std::endl;
+    assemblyOut << ".byte " << (int)value << std::endl;
 }
 
 void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, int value) {

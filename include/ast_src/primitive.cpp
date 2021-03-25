@@ -205,7 +205,7 @@ void AST_Variable::compile(std::ostream &assemblyOut) {
     assemblyOut << std::endl << "# start " << varType << " variable read " << name << std::endl;
 
     // if left of assign load address otherwise load value
-    if(returnPtr){
+    if(returnPtr || (frame->getVarAddress(name).first == -1 && varType == "pointer")){
         assemblyOut << "# (reading address)" << std::endl;
         
         varAddressToReg(assemblyOut, frame, "$t0", name);
