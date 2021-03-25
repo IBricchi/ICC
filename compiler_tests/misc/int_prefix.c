@@ -5,5 +5,5 @@ int f(){
     int oct = 052;
 
     return  (hex == 426) &&
-            (oct = 42);
+            (oct == 42);
 }
