@@ -1366,6 +1366,10 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
 
                 // update variable
                 operand->updateVariable(assemblyOut, frame, "$t1");
+
+                // push onto stack            
+                assemblyOut << "sw $t1, 8($sp)" << std::endl;
+                
                 break;
             }
             case Type::PRE_DECREMENT:
@@ -1376,6 +1380,9 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
 
                 // update variable
                 operand->updateVariable(assemblyOut, frame, "$t1");
+
+                // push onto stack            
+                assemblyOut << "sw $t1, 8($sp)" << std::endl;
                 break;
             }
             case Type::POST_INCREMENT:
@@ -1409,10 +1416,6 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
                 throw std::runtime_error("AST_UnOp: Pointer Not Implemented Yet.\n");
                 break;
             }
-        }
-        // push onto operand stack
-        if (type != Type::POST_DECREMENT && type != Type::POST_INCREMENT) {
-            assemblyOut << "sw $t1, 8($sp)" << std::endl;
         }
     }
     else {
