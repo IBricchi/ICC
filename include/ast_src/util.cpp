@@ -109,7 +109,7 @@ void varAddressToReg(std::ostream &assemblyOut, Frame* frame, const std::string&
     assemblyOut << "addiu " << reg << ", $t6, -" << varAddress.second << std::endl;
 }
 
-void valueToVarLabel(std::ostream &assemblyOut, int value, std::string varLabel) {
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, int value) {
     assemblyOut << ".data" << std::endl;
     assemblyOut << ".align 2" << std::endl;
     assemblyOut << ".type " << varLabel << ", @object" << std::endl;
@@ -119,7 +119,7 @@ void valueToVarLabel(std::ostream &assemblyOut, int value, std::string varLabel)
     assemblyOut << ".word " << value << std::endl;
 }
 
-void valueToVarLabel(std::ostream &assemblyOut, float value, std::string varLabel) {
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, float value) {
     assemblyOut << ".data" << std::endl;
     assemblyOut << ".align 2" << std::endl;
     assemblyOut << ".type " << varLabel << ", @object" << std::endl;
@@ -130,7 +130,7 @@ void valueToVarLabel(std::ostream &assemblyOut, float value, std::string varLabe
     assemblyOut << ".word " << ieee754Float.num << std::endl;
 }
 
-void valueToVarLabel(std::ostream &assemblyOut, double value, std::string varLabel) {
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, double value) {
     assemblyOut << ".data" << std::endl;
     assemblyOut << ".align 2" << std::endl;
     assemblyOut << ".type " << varLabel << ", @object" << std::endl;

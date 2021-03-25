@@ -323,18 +323,18 @@ AST* AST_VarDeclaration::deepCopy(){
 }
 
 void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
+    std::string varType = this->getType()->getTypeName();
     if (expr != nullptr) {
-        std::string varType = this->getType()->getTypeName();
 
         assemblyOut << std::endl << "# start " << varType << " var dec with definition " << name << std::endl;
 
         if (this->frame->isGlobal) {
             if (varType == "float") {
-                valueToVarLabel(assemblyOut, expr->getFloatValue(), this->name);
+                valueToVarLabel(assemblyOut, this->name, expr->getFloatValue());
             } else if (varType == "double") {
-                valueToVarLabel(assemblyOut, expr->getDoubleValue(), this->name);
+                valueToVarLabel(assemblyOut, this->name, expr->getDoubleValue());
             } else {
-                valueToVarLabel(assemblyOut, expr->getIntValue(), this->name);
+                valueToVarLabel(assemblyOut, this->name, expr->getIntValue());
             }
         } else {
             expr->compile(assemblyOut);
@@ -359,6 +359,15 @@ void AST_VarDeclaration::compile(std::ostream &assemblyOut) {
         }
         
         assemblyOut << "# end " << varType << " var dec with definition " << name << std::endl << std::endl;
+    }
+    else if(this->frame->isGlobal){
+        if (varType == "float") {
+            valueToVarLabel(assemblyOut, this->name, 0);
+        } else if (varType == "double") {
+            valueToVarLabel(assemblyOut, this->name, 0);
+        } else {
+            valueToVarLabel(assemblyOut, this->name, 0);
+        }
     }
 }
 
@@ -410,10 +419,15 @@ AST* AST_ArrayDeclaration::deepCopy(){
 void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {
     // get pointer to start of allocated memory space
     // always a double word away from allocated memory space
-    assemblyOut << std::endl << "# start array declaration " << name << std::endl; 
-    assemblyOut << "addiu $t0, $fp, -" << frame->getVarAddress(name).second - 8 << std::endl;
-    regToVar(assemblyOut, frame, "$t0", name);
-    assemblyOut << "# end array declaration " << name << std::endl << std::endl;
+    if (this->frame->isGlobal){
+
+    }
+    else{
+        assemblyOut << std::endl << "# start array declaration " << name << std::endl; 
+        assemblyOut << "addiu $t0, $fp, -" << frame->getVarAddress(name).second - 8 << std::endl;
+        regToVar(assemblyOut, frame, "$t0", name);
+        assemblyOut << "# end array declaration " << name << std::endl << std::endl;
+    }
 }
 
 AST* AST_ArrayDeclaration::getType() {

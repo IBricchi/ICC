@@ -25,9 +25,9 @@ void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
 void varAddressToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, const std::string& var);
 
 // for global variables
-void valueToVarLabel(std::ostream &assemblyOut, int value, std::string varLabel);
-void valueToVarLabel(std::ostream &assemblyOut, float value, std::string varLabel);
-void valueToVarLabel(std::ostream &assemblyOut, double value, std::string varLabel);
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, int value);
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, float value);
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, double value);
 
 // check if string ends with suffix
 bool hasEnding(const std::string &fullString, const std::string &ending);
