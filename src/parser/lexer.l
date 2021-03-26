@@ -134,13 +134,77 @@ std::unordered_map<std::string, std::map<std::string, std::string>> lexer_struct
   yytext++;
   yytext[strlen(yytext)-1] = 0;
   yylval.CHAR = *yytext;
-  if(yytext[0] == '\\' && yytext[1] == '0'){
-    yylval.CHAR = 0;
+  if(yytext[0] == '\\'){
+    switch(yytext[1]){
+      case '0':
+        yylval.CHAR = '\0';
+        break;
+      case '1':
+        yylval.CHAR = '\1';
+        break;
+      case '2':
+        yylval.CHAR = '\2';
+        break;
+      case '3':
+        yylval.CHAR = '\3';
+        break;
+      case '4':
+        yylval.CHAR = '\4';
+        break;
+      case '5':
+        yylval.CHAR = '\5';
+        break;
+      case '6':
+        yylval.CHAR = '\6';
+        break;
+      case '7':
+        yylval.CHAR = '\7';
+        break;
+      case 'a':
+        yylval.CHAR = '\a';
+        break;
+      case 'b':
+        yylval.CHAR = '\b';
+        break;
+      case 'e':
+        yylval.CHAR = '\e';
+        break;
+      case 'f':
+        yylval.CHAR = '\f';
+        break;
+      case 'n':
+        yylval.CHAR = '\n';
+        break;
+      case 'r':
+        yylval.CHAR = '\r';
+        break;
+      case 't':
+        yylval.CHAR = '\t';
+        break;
+      case 'v':
+        yylval.CHAR = '\v';
+        break;
+      case '\\':
+        yylval.CHAR = '\\';
+        break;
+      case '\'':
+        yylval.CHAR = '\'';
+        break;
+      case '\"':
+        yylval.CHAR = '\"';
+        break;
+      case '\?':
+        yylval.CHAR = '\?';
+        break;
+      default:
+        yylval.CHAR = 0;
+        break;
+    }
   }
   return T_CONST_CHAR;
 }
 
-\'\\[0-7]{3}\' {
+\'\\[0-7]{2,3}\' {
   // remove single quotes and back slash
   yytext += 2;
   yytext[strlen(yytext)-1] = 0;
@@ -149,7 +213,7 @@ std::unordered_map<std::string, std::map<std::string, std::string>> lexer_struct
   return T_CONST_CHAR;
 }
 
-\'\\x[0-9a-fA-F]{2}\' {
+\'\\x[0-9a-fA-F]{1,2}\' {
   // remove single quotes and back slash and x
   yytext += 3;
   yytext[strlen(yytext)-1] = 0;
