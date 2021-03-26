@@ -95,8 +95,17 @@ class AST_ArrayDeclaration
 private:
     AST* type;
     std::string name;
+
+    std::vector<AST*>* initializerList1D;
+    std::vector<std::vector<AST*>*>* initializerList2D;
 public:
     AST_ArrayDeclaration(AST* _type, std::string* _name);
+
+    // 1D array initializer list
+    AST_ArrayDeclaration(AST* _type, std::string* _name, std::vector<AST*>* initializerList);
+
+    // 2D array initializer list
+    AST_ArrayDeclaration(AST* _type, std::string* _name, std::vector<std::vector<AST*>*>* initializerList);
 
     void generateFrames(Frame* _frame = nullptr) override;
     AST* deepCopy() override;

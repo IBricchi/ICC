@@ -307,10 +307,10 @@ ARRAY_INITIALIZATION : TYPE T_IDENTIFIER SQUARE_CHAIN T_EQUAL T_BRACE_L ARRAY_IN
                                         for(int i = $3->size() - 2; i >= 0; i--){
                                                 type = new AST_ArrayType(type, $3->at(i));
                                         }
-
-                                        AST* seq = new AST_ArrayDeclaration(type, $2);
-
+                                        
                                         auto vals = $6;
+                                        AST* seq = new AST_ArrayDeclaration(type, $2, vals);
+
                                         for (int i=0; i<vals->size(); i++) {
                                                 for (int j=0; j<vals->at(0)->size(); j++) {
                                                         AST* arr = new AST_Variable($2);
@@ -333,9 +333,9 @@ ARRAY_INITIALIZATION : TYPE T_IDENTIFIER SQUARE_CHAIN T_EQUAL T_BRACE_L ARRAY_IN
                                                 type = new AST_ArrayType(type, $3->at(i));
                                         }
 
-                                        AST* seq = new AST_ArrayDeclaration(type, $2);
-
                                         auto vals = $6;
+                                        AST* seq = new AST_ArrayDeclaration(type, $2, vals);
+
                                         for (int i=0; i<vals->size(); i++) {
                                                 AST* arr = new AST_Variable($2);
                                                 AST* idx = new AST_ConstInt(i);
