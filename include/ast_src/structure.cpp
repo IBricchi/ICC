@@ -402,6 +402,20 @@ AST_ArrayDeclaration::AST_ArrayDeclaration(AST* _type, std::string* _name) :
     name(*_name)
 {}
 
+AST_ArrayDeclaration::AST_ArrayDeclaration(AST* _type, std::string* _name, std::vector<AST*>* initializerList) :
+    type(_type),
+    name(*_name),
+    initializerList1D(initializerList),
+    initializerList2D({})
+{}
+
+AST_ArrayDeclaration::AST_ArrayDeclaration(AST* _type, std::string* _name, std::vector<std::vector<AST*>*>* initializerList) :
+    type(_type),
+    name(*_name),
+    initializerList1D({}),
+    initializerList2D(initializerList)
+{}
+
 void AST_ArrayDeclaration::generateFrames(Frame* _frame){
     frame = _frame;
     type->generateFrames(_frame);
@@ -424,15 +438,41 @@ void AST_ArrayDeclaration::compile(std::ostream &assemblyOut) {
     // get pointer to start of allocated memory space
     // always a double word away from allocated memory space
     if (this->frame->isGlobal){
+            std::string varType = this->getType()->getType()->getTypeName();
             assemblyOut << ".data" << std::endl;
             assemblyOut << ".align 2" << std::endl;
             assemblyOut << ".type " << name << ", @object" << std::endl;
             assemblyOut << ".size " << name << ", " << type->getBytes() << std::endl;
 
             assemblyOut << name << ":" << std::endl;
-            for(int i = 0; i < type->getBytes(); i+=4){
-                assemblyOut << ".word 0" << std::endl;
-            }
+            if (!initializerList1D->empty()) {
+                    if (varType == "float") {
+                        for (int i = 0; i < type->getBytes(); i+=4) {
+                            ieee754Float.fnum = initializerList1D->at(i/4)->getFloatValue();
+                            assemblyOut << ".word " << ieee754Float.num << std::endl;
+                        }
+                    } else if (varType == "double") {
+                        for (int i = 0; i < type->getBytes(); i+=8) {
+                            ieee754Double.dnum = initializerList1D->at(i/8)->getDoubleValue();
+                            assemblyOut << ".word " << (ieee754Double.num >> 32) << std::endl;
+                            assemblyOut << ".word " << (ieee754Double.num & 0xFFFFFFFF) << std::endl;
+                        }
+                    } else if (varType == "char") {
+                        for (int i = 0; i < type->getBytes(); i++) {
+                            assemblyOut << ".byte " << initializerList1D->at(i)->getIntValue() << std::endl;
+                        }
+                    } else {
+                        for (int i = 0; i < type->getBytes(); i+=4) {
+                             assemblyOut << ".word " << initializerList1D->at(i/4)->getIntValue() << std::endl;
+                        }
+                    }
+                } else if(!initializerList2D->empty()) {
+
+                } else {
+                    for(int i = 0; i < type->getBytes(); i+=4){
+                        assemblyOut << ".word 0" << std::endl;
+                    }
+                }
             assemblyOut << ".text" << std::endl;
     }
     else{
