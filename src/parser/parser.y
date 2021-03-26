@@ -40,7 +40,7 @@
   std::pair<std::string, int> *EN; // enum
   std::vector<AST*> *SDL; // struct declartion list
   std::vector<AST*> *AIL; // array initializer list
-  std::vector<std::vector<AST*>> *AILC; // array initializer list chain (allows for 2D initializer lists)
+  std::vector<std::vector<AST*>*> *AILC; // array initializer list chain (allows for 2D initializer lists)
 }
 
 %token <STR> T_TYPE
@@ -301,6 +301,7 @@ FUN_DEC_PARAMS : T_COMMA TYPE T_IDENTIFIER                     { $$ = new std::v
                ;
 
 ARRAY_INITIALIZATION : TYPE T_IDENTIFIER SQUARE_CHAIN T_EQUAL T_BRACE_L ARRAY_INITIALIZER_LIST_CHAIN T_BRACE_R T_SEMI_COLON {
+                                        // 2D array initializer list
                                         AST* type = new AST_ArrayType($1, $3->at($3->size()-1));
                                         for(int i = $3->size() - 2; i >= 0; i--){
                                                 type = new AST_ArrayType(type, $3->at(i));
@@ -309,8 +310,33 @@ ARRAY_INITIALIZATION : TYPE T_IDENTIFIER SQUARE_CHAIN T_EQUAL T_BRACE_L ARRAY_IN
                                         AST* seq = new AST_ArrayDeclaration(type, $2);
 
                                         auto vals = $6;
-                                        AST* arr = new AST_Variable($2);
                                         for (int i=0; i<vals->size(); i++) {
+                                                for (int j=0; j<vals->at(0)->size(); j++) {
+                                                        AST* arr = new AST_Variable($2);
+                                                        AST* idx = new AST_ConstInt(i);
+                                                        AST* el = new AST_BinOp(AST_BinOp::Type::ARRAY, arr, idx);
+                                                        AST* innerIdx = new AST_ConstInt(j);
+                                                        AST* innerEl = new AST_BinOp(AST_BinOp::Type::ARRAY, el, innerIdx);
+                                                        AST* assignment = new AST_Assign(innerEl, vals->at(i)->at(j));
+
+                                                        seq = new AST_Sequence(seq, assignment);
+                                                }
+                                        }
+
+                                        $$ = seq;
+                                }
+                     | TYPE T_IDENTIFIER SQUARE_CHAIN T_EQUAL T_BRACE_L ARRAY_INITIALIZER_LIST T_BRACE_R T_SEMI_COLON {
+                                        // 1D array initializer list
+                                        AST* type = new AST_ArrayType($1, $3->at($3->size()-1));
+                                        for(int i = $3->size() - 2; i >= 0; i--){
+                                                type = new AST_ArrayType(type, $3->at(i));
+                                        }
+
+                                        AST* seq = new AST_ArrayDeclaration(type, $2);
+
+                                        auto vals = $6;
+                                        for (int i=0; i<vals->size(); i++) {
+                                                AST* arr = new AST_Variable($2);
                                                 AST* idx = new AST_ConstInt(i);
                                                 AST* el = new AST_BinOp(AST_BinOp::Type::ARRAY, arr, idx);
                                                 AST* assignment = new AST_Assign(el, vals->at(i));
@@ -327,7 +353,7 @@ ARRAY_INITIALIZER_LIST_CHAIN : ARRAY_INITIALIZER_LIST_CHAIN T_COMMA T_BRACE_L AR
                                         $1->push_back($4);
                                         $$ = $1;
                                 }
-                             | T_BRACE_L ARRAY_INITIALIZER_LIST T_BRACE_R                                      { $$ = new std::vector<std::vector<AST*>>({$2}); }
+                             | T_BRACE_L ARRAY_INITIALIZER_LIST T_BRACE_R                                      { $$ = new std::vector<std::vector<AST*>*>({$2}); }
                              ;
 
 ARRAY_INITIALIZER_LIST  : ARRAY_INITIALIZER_LIST T_COMMA LOGIC_OR { 
