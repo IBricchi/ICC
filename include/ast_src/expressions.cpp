@@ -1248,7 +1248,7 @@ AST* AST_BinOp::getType(){
         // assuming left and right have same type
         // we don't need to implement implicit casting so this should be fine
         AST* left_type = left->getType();
-        if(left_type->getTypeName() == "pointer"){
+        if(type == AST_BinOp::Type::ARRAY){
             left_type = left_type->getType();
         }
         this->dataType = left_type;
