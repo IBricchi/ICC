@@ -832,7 +832,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
                 assemblyOut << "# " << binLabel << " is pointer arithmetic +" << std::endl;
-                assemblyOut << "addiu $t2, $0, " << getBytes() << std::endl;
+                assemblyOut << "addiu $t2, $0, " << internalDataType->getType()->getBytes() << std::endl;
                 assemblyOut << "multu $t1, $t2" << std::endl;
                 assemblyOut << "mflo $t1" << std::endl;
                 assemblyOut << "add $t2, $t0, $t1" << std::endl;
@@ -847,7 +847,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
                 assemblyOut << "# " << binLabel << " is pointer arithmetic -" << std::endl;
-                assemblyOut << "addiu $t2, $0, " << getBytes() << std::endl;
+                assemblyOut << "addiu $t2, $0, " << internalDataType->getType()->getBytes() << std::endl;
                 assemblyOut << "mult $t1, $t2" << std::endl;
                 assemblyOut << "mflo $t1" << std::endl;
                 assemblyOut << "sub $t2, $t0, $t1" << std::endl;
@@ -862,7 +862,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
                 assemblyOut << "# " << binLabel << " [] " << std::endl;
-                assemblyOut << "addiu $t2, $0, " << getBytes() << std::endl;
+                assemblyOut << "addiu $t2, $0, " << internalDataType->getType()->getBytes() << std::endl;
                 assemblyOut << "multu $t1, $t2" << std::endl;
                 assemblyOut << "mflo $t1" << std::endl;
                 assemblyOut << "add $t2, $t0, $t1" << std::endl;
@@ -1248,7 +1248,7 @@ AST* AST_BinOp::getType(){
         // assuming left and right have same type
         // we don't need to implement implicit casting so this should be fine
         AST* left_type = left->getType();
-        if(type == Type::ARRAY){
+        if(left_type->getTypeName() == "pointer"){
             left_type = left_type->getType();
         }
         this->dataType = left_type;
