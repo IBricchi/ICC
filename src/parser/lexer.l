@@ -134,6 +134,9 @@ std::unordered_map<std::string, std::map<std::string, std::string>> lexer_struct
   yytext++;
   yytext[strlen(yytext)-1] = 0;
   yylval.CHAR = *yytext;
+  if(yytext[0] == '\\' && yytext[1] == '0'){
+    yylval.CHAR = 0;
+  }
   return T_CONST_CHAR;
 }
 
