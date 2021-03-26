@@ -1,6 +1,5 @@
-int a;
+int a = 22;
 int b = 121;
-a = 22;
 
 int g()
 {
