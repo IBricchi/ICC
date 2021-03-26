@@ -140,6 +140,24 @@ std::unordered_map<std::string, std::map<std::string, std::string>> lexer_struct
   return T_CONST_CHAR;
 }
 
+\'\\[0-7]{3}\' {
+  // remove single quotes and back slash
+  yytext += 2;
+  yytext[strlen(yytext)-1] = 0;
+  std::string val = std::string(yytext);
+  yylval.CHAR = std::stoi(val, 0, 8);
+  return T_CONST_CHAR;
+}
+
+\'\\x[0-9a-fA-F]{2}\' {
+  // remove single quotes and back slash and x
+  yytext += 3;
+  yytext[strlen(yytext)-1] = 0;
+  std::string val = std::string(yytext);
+  yylval.CHAR = std::stoi(val, 0, 16);
+  return T_CONST_CHAR;
+}
+
 L?\"(\\.|[^\\"])*\" {
   // remove single qutoes
   std::string* s = new std::string(yytext);
