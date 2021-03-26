@@ -137,6 +137,15 @@ std::unordered_map<std::string, std::map<std::string, std::string>> lexer_struct
   return T_CONST_CHAR;
 }
 
+L?\"(\\.|[^\\"])*\" {
+  // remove single qutoes
+  std::string* s = new std::string(yytext);
+  std::string nt = "\\000";
+  *s = s->substr(1, s->size() - 2) + nt;
+  yylval.STR = s;
+  return T_CONST_STR;
+}
+
 [1-9][0-9]*                                             { yylval.INT = strtol(yytext, 0, 10); return T_CONST_INT; }
 0x[0-9a-fA-F]*                                          { yylval.INT = strtol(yytext, 0, 16); return T_CONST_INT; }
 0[0-9]*                                                 { yylval.INT = strtol(yytext, 0, 8); return T_CONST_INT; }

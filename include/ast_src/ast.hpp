@@ -113,7 +113,7 @@ public:
         Used for global variables.
         There should only ever be one global frame.
     */
-    bool isGlobal;
+    bool isGlobal = false;
 
     Frame(Frame* _parentFrame = nullptr);
 

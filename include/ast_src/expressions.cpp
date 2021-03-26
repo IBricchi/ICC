@@ -45,6 +45,12 @@ void AST_Assign::compile(std::ostream &assemblyOut){
         
         // assign memory address
         assemblyOut << "s.d $f4, 0($t1)" << std::endl;
+    } else if (varType == "char"){
+        // load result of expression
+        assemblyOut << "lw $t0, 16($sp)" << std::endl;
+
+        // assign memory address
+        assemblyOut << "sb $t0, 0($t1)" << std::endl;
     } else {
         // load result of expression
         assemblyOut << "lw $t0, 16($sp)" << std::endl;
@@ -815,6 +821,7 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
         }
     }
     else if(varType == "pointer"){
+        bool useT2 = true;
         switch (type) {
             case Type::PLUS:
             {
@@ -860,8 +867,18 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "mflo $t1" << std::endl;
                 assemblyOut << "add $t2, $t0, $t1" << std::endl;
                 // if not left of assign load value
-                if(!returnPtr)
-                    assemblyOut << "lw $t2, 0($t2)" << std::endl;
+                if(!returnPtr){
+                    std::string returnType = internalDataType->getType()->getTypeName();
+                    if(returnType == "double"){
+                        assemblyOut << "l.d $f4, 0($t2)" << std::endl;
+                        assemblyOut << "s.d $f4, 16($sp)" << std::endl;
+                        useT2 = false;
+                    }
+                    else{
+                        std::string load = returnType =="char"?"lb":"lw";
+                        assemblyOut << load << " $t2, 0($t2)" << std::endl;
+                    }
+                }
                 
                 break;
             }
@@ -872,7 +889,8 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
             }
         }
         // store result in memory
-        assemblyOut << "sw $t2, 16($sp)" << std::endl;
+        if(useT2)
+            assemblyOut << "sw $t2, 16($sp)" << std::endl;
     }
     else {
         switch (type) {
@@ -1347,6 +1365,11 @@ void AST_UnOp::compile(std::ostream &assemblyOut) {
                     if(dataType->getTypeName() == "double"){
                         assemblyOut << "l.d $f4, 0($t0)" << std::endl;
                         assemblyOut << "s.d $f4, 8($sp)" << std::endl;
+                    }
+                    if(dataType->getTypeName() == "char"){
+                        assemblyOut << "move $t1, $0" << std::endl;
+                        assemblyOut << "lb $t1, 0($t0)" << std::endl;
+                        assemblyOut << "sw $t1, 8($sp)" << std::endl;
                     }
                     else{
                         assemblyOut << "lw $t1, 0($t0)" << std::endl;

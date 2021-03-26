@@ -17,6 +17,9 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
         } else if (varType == "double") {
             assemblyOut << "la $t6, " << var << std::endl;
             assemblyOut << "s.d " << reg << ", 0($t6)" << std::endl;
+        } else if (varType == "char") {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "sb " << reg << ", 0($t6)" << std::endl;
         } else {
             assemblyOut << "la $t6, " << var << std::endl;
             assemblyOut << "sw " << reg << ", 0($t6)" << std::endl;
@@ -46,6 +49,8 @@ void regToVar(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
             assemblyOut << "sw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
             assemblyOut << "sw " << reg_2 << ", -" << varAddress.second - 4 << "($t6)" << std::endl;
         }
+    } else if (varType == "char"){
+        assemblyOut << "sb " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     } else {
         assemblyOut << "sw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     }
@@ -63,6 +68,9 @@ void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
         } else if (varType == "double") {
             assemblyOut << "la $t6, " << var << std::endl;
             assemblyOut << "l.d " << reg << ", 0($t6)" << std::endl;
+        } else if (varType == "char") {
+            assemblyOut << "la $t6, " << var << std::endl;
+            assemblyOut << "lb " << reg << ", 0($t6)" << std::endl;
         } else {
             assemblyOut << "la $t6, " << var << std::endl;
             assemblyOut << "lw " << reg << ", 0($t6)" << std::endl;
@@ -81,6 +89,8 @@ void varToReg(std::ostream &assemblyOut, Frame* frame, const std::string& reg, c
         assemblyOut << "l.s " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     } else if (varType == "double") {
         assemblyOut << "l.d " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
+    } else if (varType == "char") {
+        assemblyOut << "lb " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     } else {
         assemblyOut << "lw " << reg << ", -" << varAddress.second << "($t6)" << std::endl;
     }
@@ -105,7 +115,18 @@ void varAddressToReg(std::ostream &assemblyOut, Frame* frame, const std::string&
     assemblyOut << "addiu " << reg << ", $t6, -" << varAddress.second << std::endl;
 }
 
-void valueToVarLabel(std::ostream &assemblyOut, int value, std::string varLabel) {
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, char value) {
+    assemblyOut << ".data" << std::endl;
+    assemblyOut << ".align 2" << std::endl;
+    assemblyOut << ".type " << varLabel << ", @object" << std::endl;
+    assemblyOut << ".size " << varLabel << ", 1" << std::endl;
+
+    assemblyOut << varLabel << ":" << std::endl;
+    assemblyOut << ".byte " << (int)value << std::endl;
+    assemblyOut << ".text " << std::endl;
+}
+
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, int value) {
     assemblyOut << ".data" << std::endl;
     assemblyOut << ".align 2" << std::endl;
     assemblyOut << ".type " << varLabel << ", @object" << std::endl;
@@ -113,9 +134,10 @@ void valueToVarLabel(std::ostream &assemblyOut, int value, std::string varLabel)
 
     assemblyOut << varLabel << ":" << std::endl;
     assemblyOut << ".word " << value << std::endl;
+    assemblyOut << ".text " << std::endl;
 }
 
-void valueToVarLabel(std::ostream &assemblyOut, float value, std::string varLabel) {
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, float value) {
     assemblyOut << ".data" << std::endl;
     assemblyOut << ".align 2" << std::endl;
     assemblyOut << ".type " << varLabel << ", @object" << std::endl;
@@ -124,9 +146,10 @@ void valueToVarLabel(std::ostream &assemblyOut, float value, std::string varLabe
     assemblyOut << varLabel << ":" << std::endl;
     ieee754Float.fnum = value;
     assemblyOut << ".word " << ieee754Float.num << std::endl;
+    assemblyOut << ".text " << std::endl;
 }
 
-void valueToVarLabel(std::ostream &assemblyOut, double value, std::string varLabel) {
+void valueToVarLabel(std::ostream &assemblyOut, std::string varLabel, double value) {
     assemblyOut << ".data" << std::endl;
     assemblyOut << ".align 2" << std::endl;
     assemblyOut << ".type " << varLabel << ", @object" << std::endl;
@@ -136,6 +159,7 @@ void valueToVarLabel(std::ostream &assemblyOut, double value, std::string varLab
     ieee754Double.dnum = value;
     assemblyOut << ".word " << (ieee754Double.num >> 32) << std::endl;
     assemblyOut << ".word " << (ieee754Double.num & 0xFFFFFFFF) << std::endl;
+    assemblyOut << ".text " << std::endl;
 }
 
 bool hasEnding(const std::string &fullString, const std::string &ending) {

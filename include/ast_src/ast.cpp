@@ -113,7 +113,7 @@ AST* Frame::getVarType(const std::string& variableName) const{
 void Frame::addVariable(const std::string &variableName, AST* type, int byteSize) {
     variableBindings[variableName] = memOcc;
     variableType[variableName] = type;
-    memOcc += byteSize + byteSize%8;
+    memOcc += byteSize + 8 - 1 - (byteSize + 8 - 1)%8;
 }
 
 void Frame::addFunction(const std::string &name, AST* fn){

@@ -72,6 +72,20 @@ public:
     int getIntValue() override;
 };
 
+class AST_ConstStr
+    : public AST
+{
+private:
+    std::string value;
+public:
+    AST_ConstStr(std::string* _value);
+
+    void generateFrames(Frame* _frame = nullptr) override;
+    AST* deepCopy() override;
+    void compile(std::ostream &assemblyOut) override;
+    AST* getType() override;
+};
+
 class AST_Variable
     : public AST
 {
