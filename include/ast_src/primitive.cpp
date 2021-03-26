@@ -127,7 +127,7 @@ AST* AST_ConstChar::deepCopy(){
 }
 
 void AST_ConstChar::compile(std::ostream &assemblyOut){
-    assemblyOut << std::endl << "# start const char " << value << " (" << (int)value << ")" << std::endl;
+    assemblyOut << std::endl << "# start const char (" << (int)value << ")" << std::endl;
     
     // load constant into register
     assemblyOut << "li $t0, " << (int)value << std::endl;
@@ -136,7 +136,7 @@ void AST_ConstChar::compile(std::ostream &assemblyOut){
     assemblyOut << "sw $t0, 0($sp)" << std::endl;
     assemblyOut << "addiu $sp, $sp, -8" << std::endl;
 
-    assemblyOut << "# end const char " << value << " (" << (int)value << ")" << std::endl << std::endl;
+    assemblyOut << "# end const char (" << (int)value << ")" << std::endl << std::endl;
 }
 
 AST* AST_ConstChar::getType() {
