@@ -1158,8 +1158,18 @@ void AST_BinOp::compile(std::ostream &assemblyOut) {
                 assemblyOut << "lw $t0, 16($sp)" << std::endl;
                 assemblyOut << "lw $t1, 8($sp)" << std::endl;
 
-                assemblyOut << "# " << binLabel << " is +" << std::endl;
-                assemblyOut << "add $t2, $t0, $t1" << std::endl;
+                if(right->getTypeName() == "pointer"){
+                    assemblyOut << "# " << binLabel << " is pointer arithmetic +" << std::endl;
+                    assemblyOut << "addiu $t2, $0, " << internalDataType->getType()->getBytes() << std::endl;
+                    assemblyOut << "multu $t0, $t2" << std::endl;
+                    assemblyOut << "mflo $t0" << std::endl;
+                    assemblyOut << "add $t2, $t1, $t0" << std::endl;
+                    break;
+                }
+                else{
+                    assemblyOut << "# " << binLabel << " is +" << std::endl;
+                    assemblyOut << "add $t2, $t0, $t1" << std::endl;
+                }
                 break;
             }
             case Type::MINUS:
@@ -1257,6 +1267,9 @@ AST* AST_BinOp::getType(){
         AST* left_type = left->getType();
         if(type == AST_BinOp::Type::ARRAY){
             left_type = left_type->getType();
+        }
+        if(left->getTypeName() == "int" && right->getTypeName() == "pointer" && type == AST_BinOp::Type::PLUS){
+            left_type = right->getType();
         }
         this->dataType = left_type;
     }
